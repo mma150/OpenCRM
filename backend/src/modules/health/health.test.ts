@@ -1,5 +1,5 @@
 import request from "supertest";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 
 import { createApp } from "../../app";
 import { prisma } from "../../lib/prisma";
@@ -10,6 +10,10 @@ interface HealthEnvelope {
     database: { connected: boolean; serverTime: string };
   };
   meta: Record<string, unknown>;
+}
+
+interface ErrorEnvelope {
+  error: { code: string; message: string; details: unknown };
 }
 
 // Must match test.env.CORS_ORIGINS in vitest.config.ts.
@@ -47,5 +51,28 @@ describe("GET /api/v1/health", () => {
     const response = await request(app).get("/api/v1/health").set("Origin", blockedOrigin);
 
     expect(response.headers["access-control-allow-origin"]).toBeUndefined();
+  });
+
+  it("sets an X-Request-Id header and the baseline security headers", async () => {
+    const response = await request(app).get("/api/v1/health");
+
+    expect(response.headers["x-request-id"]).toBeTruthy();
+    expect(response.headers["x-content-type-options"]).toBe("nosniff");
+  });
+
+  it("returns 503 SERVICE_UNAVAILABLE when the database cannot be reached", async () => {
+    const spy = vi
+      .spyOn(prisma, "$queryRaw")
+      .mockRejectedValueOnce(new Error("connect ECONNREFUSED 10.0.0.9:5432"));
+
+    const response = await request(app).get("/api/v1/health");
+    const body = response.body as ErrorEnvelope;
+    spy.mockRestore();
+
+    expect(response.status).toBe(503);
+    expect(body.error.code).toBe("SERVICE_UNAVAILABLE");
+    expect(body.error.message).toBe("Database is unavailable");
+    expect(response.text).not.toContain("ECONNREFUSED");
+    expect(response.headers["x-request-id"]).toBeTruthy();
   });
 });
