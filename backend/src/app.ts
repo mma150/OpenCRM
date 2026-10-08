@@ -6,7 +6,7 @@ import { env } from "./env";
 import { httpLogger } from "./lib/logger";
 import { errorHandler } from "./middleware/error-handler";
 import { notFound } from "./middleware/not-found";
-import { healthRouter } from "./modules/health/health.routes";
+import { v1Router } from "./routes";
 
 export function createApp() {
   const app = express();
@@ -21,7 +21,7 @@ export function createApp() {
   app.use(cors({ origin: origins, exposedHeaders: ["X-Request-Id"] }));
   app.use(express.json());
 
-  app.use("/api/v1/health", healthRouter);
+  app.use("/api/v1", v1Router);
 
   // Last: an unmatched route becomes NOT_FOUND, then every error becomes the error envelope.
   app.use(notFound);
