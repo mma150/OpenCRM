@@ -1,0 +1,48 @@
+# Checks the pull request title and its commits against the commit standard (CI-02, D-16).
+# Uses the same commitlint configuration as the local commit-msg hook.
+#
+# SECURITY: a pull request title is untrusted input. It reaches the script only through
+# an environment variable (PR_TITLE); it is never written into a script body with ${{ }},
+# which would let a crafted title run commands on the runner.
+name: pr-title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-title:
+    # Dependabot titles are forced to "chore: ..." by .github/dependabot.yml but can be
+    # longer than 72 characters, so its pull requests are exempt. A skipped job counts as
+    # passed for a required check.
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The commit range below needs the base and head commits.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Check the pull request title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s\n' "$PR_TITLE" | pnpm exec commitlint
+      - name: Check the commits in the pull request
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: pnpm exec commitlint --from "$BASE_SHA" --to "$HEAD_SHA"

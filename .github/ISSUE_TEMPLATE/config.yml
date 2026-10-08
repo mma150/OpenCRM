@@ -1,0 +1,7 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    # A relative path from the issue chooser (/OWNER/REPO/issues/new/choose) to the security policy page.
+    # Never use a public issue for a vulnerability. Replace with the full policy URL if GitHub does not resolve it.
+    url: ../../../security/policy
+    about: Report vulnerabilities privately through the repository's security policy, not through a public issue.

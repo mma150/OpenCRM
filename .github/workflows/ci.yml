@@ -1,0 +1,93 @@
+# Lint, format check, type-check, test and build for both apps (CI-01).
+#
+# Both jobs run on every push and every pull request. There is deliberately no path
+# filter: a required check from a workflow that was skipped by a path filter never
+# reports, and the pull request would wait for it forever (see docs/standards/github-settings.md).
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+# A newer push to the same ref cancels the run that is still going.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      # Read by next build (src/env.ts). The build also fetches the page font from Google.
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Generated API types are up to date
+        run: |
+          pnpm api:types
+          git diff --exit-code -- src/lib/api/schema.d.ts
+
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      # The tests create and use their own opencrm_test database on this server.
+      DATABASE_URL: postgresql://opencrm:opencrm@localhost:5432/opencrm
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: opencrm
+          POSTGRES_PASSWORD: opencrm
+          POSTGRES_DB: opencrm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U opencrm -d opencrm"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: backend/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: backend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: OpenAPI document is up to date
+        run: |
+          pnpm openapi:generate
+          git diff --exit-code -- openapi/openapi.json
