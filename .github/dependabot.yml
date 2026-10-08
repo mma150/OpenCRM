@@ -1,0 +1,112 @@
+# Dependabot version updates (SEC-01, D-22). Written to be read: see docs/standards/security.md.
+#
+# - Routine updates (minor and patch) arrive as ONE grouped pull request per app per week.
+#   Each npm entry below is its own app, so two apps never share a pull request.
+# - Major updates arrive as their own pull requests, never inside the group.
+# - Security updates are never grouped by "routine" (it applies to version updates only), so
+#   a security fix opens immediately on its own, whatever day it is.
+# - Every title starts with "chore:" so it satisfies the commit standard (docs/standards/commits.md).
+# - The cooldown keeps Dependabot from proposing a release younger than two days. pnpm refuses
+#   releases younger than one day (minimumReleaseAge), and a lockfile pull request that picked
+#   one would fail to install. Security updates ignore the cooldown.
+version: 2
+
+updates:
+  # Root tooling package (husky, lint-staged, commitlint).
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore"
+    cooldown:
+      default-days: 2
+    groups:
+      routine:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore"
+    cooldown:
+      default-days: 2
+    groups:
+      routine:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # typescript-eslint does not support TypeScript 7 yet.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      # Must follow the Node major pinned in .nvmrc, which is changed on purpose.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore"
+    cooldown:
+      default-days: 2
+    groups:
+      routine:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # Prisma 8 is a deliberate migration, not a routine bump.
+      - dependency-name: "prisma"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@prisma/client"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@prisma/adapter-pg"
+        update-types: ["version-update:semver-major"]
+
+  # The workflow files in .github/workflows.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore"
+
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore"
+
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore"
+
+  # compose.yaml (the postgres image).
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore"
