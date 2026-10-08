@@ -61,6 +61,48 @@ services:
       # The first start installs dependencies through the bind mount (over a minute).
       start_period: 180s
 
+  web:
+    build:
+      context: ./frontend
+      args:
+        NODE_VERSION: "24"
+    env_file:
+      - path: frontend/.env.example
+        required: true
+      - path: frontend/.env
+        required: false
+    environment:
+      # The browser calls the API, so this is a localhost URL, never the host name "api".
+      NEXT_PUBLIC_API_URL: http://localhost:${API_PORT:-4000}/api/v1
+      # Next.js dev does not see edits made through a Windows bind mount without polling.
+      WATCHPACK_POLLING: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      # Keep the pnpm store on the same volume as node_modules (hard links, and no store on the host).
+      pnpm_config_store_dir: /app/node_modules/.pnpm-store
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    volumes:
+      - ./frontend:/app
+      - web-node-modules:/app/node_modules
+      - web-next:/app/.next
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      # The slim Node image has neither curl nor wget, so use Node itself.
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:3000').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      # The first start installs dependencies through the bind mount and compiles the first page.
+      start_period: 240s
+
 volumes:
   db-data:
   api-node-modules:
+  web-node-modules:
+  web-next:
