@@ -1,0 +1,58 @@
+# Dependency security gates (SEC-01, D-24).
+#
+# audit: fails when either app has a high or critical advisory. Moderate and low are
+#   reported in the log and do not fail. Also runs weekly, so a new advisory turns main
+#   red without any code change.
+# dependency-review: fails a pull request that introduces a dependency with a high or
+#   critical advisory.
+#
+# Nothing here is advisory: no job is allowed to fail quietly. An advisory that has no fix may be
+# ignored only with a dated entry in docs/standards/security.md.
+name: audit
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # Mondays, 05:37 UTC.
+    - cron: "37 5 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Audit the frontend dependencies
+        working-directory: frontend
+        run: pnpm audit --audit-level=high
+      # Runs even when the frontend audit failed, so one run reports both apps.
+      - name: Audit the backend dependencies
+        if: ${{ !cancelled() }}
+        working-directory: backend
+        run: pnpm audit --audit-level=high
+
+  dependency-review:
+    # Compares the dependencies of a pull request with its base branch, so it only has
+    # something to review on pull requests.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
