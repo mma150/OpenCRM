@@ -9,31 +9,31 @@ Requirements for the first release (web + API). Each maps to roadmap phases.
 
 ### Foundation & Standards
 
-- [ ] **FND-01**: Repository has separate top-level `frontend/`, `backend/` and `mobile/` folders, each with the conventional structure for its stack
-- [ ] **FND-02**: Contributor can read a written standards document covering folder structure, naming, and code conventions for frontend and backend
-- [ ] **FND-03**: Lint, format and TypeScript strict checks run with one command per app and fail on violations
-- [ ] **FND-04**: Contributor can start the full stack locally (database, API, web) by following the README
-- [ ] **FND-05**: Frontend has a Redux Toolkit store with typed `useAppDispatch` / `useAppSelector` hooks and a documented pattern for slices and API calls
-- [ ] **FND-06**: Backend has a documented layered structure (routes, controllers, services, Prisma data access) with central error handling and request validation
-- [ ] **FND-07**: API is versioned and documented (OpenAPI) so web and mobile clients share one contract
-- [ ] **FND-08**: Environment configuration is validated at startup and documented in `.env.example` files
+- [x] **FND-01**: Repository has separate top-level `frontend/`, `backend/` and `mobile/` folders, each with the conventional structure for its stack
+- [x] **FND-02**: Contributor can read a written standards document covering folder structure, naming, and code conventions for frontend and backend
+- [x] **FND-03**: Lint, format and TypeScript strict checks run with one command per app and fail on violations
+- [x] **FND-04**: Contributor can start the full stack locally (database, API, web) by following the README
+- [x] **FND-05**: Frontend has a Redux Toolkit store with typed `useAppDispatch` / `useAppSelector` hooks and a documented pattern for slices and API calls
+- [x] **FND-06**: Backend has a documented layered structure (routes, controllers, services, Prisma data access) with central error handling and request validation
+- [x] **FND-07**: API is versioned and documented (OpenAPI) so web and mobile clients share one contract
+- [x] **FND-08**: Environment configuration is validated at startup and documented in `.env.example` files
 
 ### Contribution & Commits
 
-- [ ] **CTB-01**: Repository has CONTRIBUTING, CODE_OF_CONDUCT and Apache-2.0 LICENSE files
-- [ ] **CTB-02**: Repository has pull request and issue templates
-- [ ] **CTB-03**: Commit message standard is documented (short conventional messages, no AI attribution trailers)
-- [ ] **CTB-04**: Commits that break the message standard are rejected by a local commit hook
-- [ ] **CTB-05**: Branch and pull request rules are documented (branch naming, review, required checks)
+- [x] **CTB-01**: Repository has CONTRIBUTING, CODE_OF_CONDUCT and Apache-2.0 LICENSE files
+- [x] **CTB-02**: Repository has pull request and issue templates
+- [x] **CTB-03**: Commit message standard is documented (short conventional messages, no AI attribution trailers)
+- [x] **CTB-04**: Commits that break the message standard are rejected by a local commit hook
+- [x] **CTB-05**: Branch and pull request rules are documented (branch naming, review, required checks)
 
 ### CI & Security
 
-- [ ] **CI-01**: GitHub Actions run lint, type-check, test and build for frontend and backend on every push and pull request
-- [ ] **CI-02**: Pull request titles/commits are checked against the commit standard in CI
-- [ ] **SEC-01**: Dependency vulnerabilities are reported automatically (Dependabot alerts and update PRs)
-- [ ] **SEC-02**: Code scanning (CodeQL) runs on pull requests and on a schedule
-- [ ] **SEC-03**: Secret scanning blocks committed credentials
-- [ ] **SEC-04**: Repository has a SECURITY.md describing how to report a vulnerability
+- [x] **CI-01**: GitHub Actions run lint, type-check, test and build for frontend and backend on every push and pull request
+- [x] **CI-02**: Pull request titles/commits are checked against the commit standard in CI
+- [x] **SEC-01**: Dependency vulnerabilities are reported automatically (Dependabot alerts and update PRs)
+- [x] **SEC-02**: Code scanning (CodeQL) runs on pull requests and on a schedule
+- [x] **SEC-03**: Secret scanning blocks committed credentials
+- [x] **SEC-04**: Repository has a SECURITY.md describing how to report a vulnerability
 - [ ] **SEC-05**: API applies baseline hardening: security headers, CORS allow-list, rate limiting on auth routes, and input validation on every endpoint
 
 ### Authentication
@@ -176,25 +176,25 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FND-01 | Phase 1 | Pending |
-| FND-02 | Phase 1 | Pending |
-| FND-03 | Phase 1 | Pending |
-| FND-04 | Phase 1 | Pending |
-| FND-05 | Phase 1 | Pending |
-| FND-06 | Phase 1 | Pending |
-| FND-07 | Phase 1 | Pending |
-| FND-08 | Phase 1 | Pending |
-| CTB-01 | Phase 1 | Pending |
-| CTB-02 | Phase 1 | Pending |
-| CTB-03 | Phase 1 | Pending |
-| CTB-04 | Phase 1 | Pending |
-| CTB-05 | Phase 1 | Pending |
-| CI-01 | Phase 1 | Pending |
-| CI-02 | Phase 1 | Pending |
-| SEC-01 | Phase 1 | Pending |
-| SEC-02 | Phase 1 | Pending |
-| SEC-03 | Phase 1 | Pending |
-| SEC-04 | Phase 1 | Pending |
+| FND-01 | Phase 1 | Complete |
+| FND-02 | Phase 1 | Complete |
+| FND-03 | Phase 1 | Complete |
+| FND-04 | Phase 1 | Complete |
+| FND-05 | Phase 1 | Complete |
+| FND-06 | Phase 1 | Complete |
+| FND-07 | Phase 1 | Complete |
+| FND-08 | Phase 1 | Complete |
+| CTB-01 | Phase 1 | Complete |
+| CTB-02 | Phase 1 | Complete |
+| CTB-03 | Phase 1 | Complete |
+| CTB-04 | Phase 1 | Complete |
+| CTB-05 | Phase 1 | Complete |
+| CI-01 | Phase 1 | Complete |
+| CI-02 | Phase 1 | Complete |
+| SEC-01 | Phase 1 | Complete |
+| SEC-02 | Phase 1 | Complete |
+| SEC-03 | Phase 1 | Complete |
+| SEC-04 | Phase 1 | Complete |
 | SEC-05 | Phase 2 | Pending |
 | AUTH-01 | Phase 2 | Pending |
 | AUTH-02 | Phase 2 | Pending |

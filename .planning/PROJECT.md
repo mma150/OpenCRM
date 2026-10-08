@@ -12,7 +12,11 @@ A sales person can log every lead and every conversation against it, and an admi
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Separate top-level folders per app (`frontend/`, `backend/`, `mobile/`), each following the conventional structure for its stack — Phase 1
+- ✓ Written code standards and folder conventions, enforced by lint/format/type checks — Phase 1
+- ✓ Redux Toolkit store with typed hooks as the single state pattern on the frontend — Phase 1
+- ✓ Contributor rules: CONTRIBUTING, code of conduct, PR and issue templates — Phase 1 (owner contact placeholders still to fill before the repo is public)
+- ✓ Commit message standard (short conventional messages), enforced on commit — Phase 1
 
 ### Active
 
@@ -36,13 +40,8 @@ A sales person can log every lead and every conversation against it, and an admi
 
 **Project foundation**
 
-- [ ] Separate top-level folders per app (`frontend/`, `backend/`, `mobile/`), each following the conventional structure for its stack
-- [ ] Written code standards and folder conventions, defined in the first phase and enforced by lint/format/type checks
-- [ ] Redux Toolkit store with typed hooks as the single state pattern on the frontend
-- [ ] Contributor rules: CONTRIBUTING, code of conduct, PR and issue templates
-- [ ] Commit message standard (short conventional messages), enforced on commit
-- [ ] GitHub Actions running lint, type-check, test and build on every push and pull request
-- [ ] Security tracking: dependency vulnerability alerts, code scanning, secret scanning, and a SECURITY.md disclosure policy
+- [ ] GitHub Actions running lint, type-check, test and build on every push and pull request — workflows written in Phase 1; not yet observed running because there is no GitHub repository
+- [ ] Security tracking: dependency vulnerability alerts, code scanning, secret scanning, and a SECURITY.md disclosure policy — configured in Phase 1; not yet observed running because there is no GitHub repository
 
 ### Out of Scope
 
@@ -54,7 +53,8 @@ A sales person can log every lead and every conversation against it, and an admi
 
 ## Context
 
-- Greenfield project in an empty repository; nothing exists yet.
+- Phase 1 delivered the repository foundation: a Compose stack (PostgreSQL, API, web) whose home page shows live API and database status, plus the standards, hooks and CI configuration. No auth or CRM features exist yet.
+- The repository is local only; the owner decided no GitHub repository is needed for now, so the GitHub-side checks from Phase 1 are deferred until the first push.
 - The owner wants admins to have real visibility into sales activity. The conversation log and per-rep isolation are the features called out most specifically, so they outrank the generic CRM modules when trade-offs arise.
 - It is open source and expected to take outside contributors, which is why "easy to understand, easy to maintain" is a design goal and not just a preference: conventions must be written down, predictable and machine-enforced.
 - Standards set in the first phase are meant to be followed unchanged in every later phase.
@@ -84,6 +84,12 @@ A sales person can log every lead and every conversation against it, and an admi
 | Reminders in-app and by email | Follow-ups must reach reps outside the app | — Pending |
 | Apache-2.0 license | Permissive with a patent grant | — Pending |
 | "Ponytail" indexing idea dropped | Owner said to ignore it | — Pending |
+| Three independent pnpm projects (root tooling, `backend/`, `frontend/`), each with its own lockfile | Each app installs and builds on its own; no workspace coupling | ✓ Phase 1 |
+| Backend layering routes → controllers → services, with services calling Prisma directly | One obvious place for each kind of code; enforced by lint | ✓ Phase 1 |
+| Frontend data access through thunks and one axios instance, no RTK Query | One state pattern, as the owner asked | ✓ Phase 1 |
+| Frontend API types generated from the committed OpenAPI document | Web and (later) mobile share one documented contract | ✓ Phase 1 |
+| Geist font fetched from Google at build time; Vite `type: module` warning left in test output | Owner accepted both as they are (Phase 1 UAT) | ✓ Phase 1 |
+| No GitHub repository for now | Owner decision during Phase 1 UAT; GitHub-side checks deferred to the first push | — Pending |
 
 ## Evolution
 
@@ -103,4 +109,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-08 after initialization*
+*Last updated: 2026-10-08 after Phase 1*

@@ -13,7 +13,7 @@ OpenCRM is built as vertical slices on top of one enforced foundation. Phase 1 l
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Repository Foundation & Standards** - Monorepo layout, written standards, enforced checks, commit hook, CI, security tracking, and a walking skeleton that proves the stack
+- [x] **Phase 1: Repository Foundation & Standards** - Monorepo layout, written standards, enforced checks, commit hook, CI, security tracking, and a walking skeleton that proves the stack (completed 2026-10-08)
 - [ ] **Phase 2: Authentication, Users & App Shell** - Sign-in, password reset, profile, admin user and role management, API hardening, and the shared responsive UI
 - [ ] **Phase 3: Leads & Record Access** - Lead capture and assignment with per-role record isolation enforced by the API
 - [ ] **Phase 4: Conversation Log & Activity Timeline** - Dated conversations and notes on leads, a tamper-evident timeline, and the admin/manager activity feed
@@ -38,7 +38,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. A commit whose message breaks the documented standard is rejected locally by a commit hook, a pull request that breaks it fails CI, and GitHub Actions run lint, type-check, test and build for both apps on every push and pull request.
   5. The repository ships LICENSE (Apache-2.0), CONTRIBUTING, CODE_OF_CONDUCT, PR and issue templates, documented branch/PR rules, and SECURITY.md, with Dependabot, CodeQL (on pull requests and on a schedule) and secret scanning configured so that a committed credential is caught.
 
-**Plans:** 10/10 plans executed
+**Plans:** 10/10 plans complete
 
 Plans:
 **Wave 1**
@@ -199,7 +199,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 (de
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Repository Foundation & Standards | 10/10 | In Progress|  |
+| 1. Repository Foundation & Standards | 10/10 | Complete    | 2026-10-08 |
 | 2. Authentication, Users & App Shell | 0/TBD | Not started | - |
 | 3. Leads & Record Access | 0/TBD | Not started | - |
 | 4. Conversation Log & Activity Timeline | 0/TBD | Not started | - |
