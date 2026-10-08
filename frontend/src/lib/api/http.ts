@@ -1,5 +1,7 @@
 import axios, { AxiosError } from "axios";
 
+import { env } from "@/env";
+
 // Every rejected request is an ApiError, so slices never inspect axios errors.
 export type ApiError = {
   code: string;
@@ -24,7 +26,7 @@ function toApiError(error: unknown): ApiError {
     return { code: "NETWORK_ERROR", message: "Could not reach the server", details: null };
   }
 
-  const requestId = error.response.headers["x-request-id"];
+  const requestId: unknown = error.response.headers["x-request-id"];
   const body = error.response.data as ErrorEnvelope | undefined;
   const apiError: ApiError = {
     code: typeof body?.error?.code === "string" ? body.error.code : "UNKNOWN_ERROR",
@@ -38,10 +40,9 @@ function toApiError(error: unknown): ApiError {
   return apiError;
 }
 
-// The only axios instance in the app. process.env.NEXT_PUBLIC_API_URL must be
-// written literally: Next only inlines literal reads into browser code.
+// The only axios instance in the app. The base URL comes from the validated env object.
 export const http = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: env.NEXT_PUBLIC_API_URL,
   timeout: 10000,
 });
 

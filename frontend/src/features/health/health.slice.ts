@@ -18,7 +18,7 @@ export const fetchHealth = createAsyncThunk.withTypes<{
   rejectValue: ApiError;
 }>()(
   "health/fetch",
-  async (_arg: void, { rejectWithValue }) => {
+  async (_arg: undefined, { rejectWithValue }) => {
     try {
       return await getHealth();
     } catch (error) {
