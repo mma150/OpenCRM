@@ -1,5 +1,5 @@
-import { env } from "./env"; // must stay first: invalid configuration exits before anything else starts
 import { createApp } from "./app";
+import { env } from "./env"; // validated on first import (app.ts imports it too): bad config exits before listen
 
 const app = createApp();
 
