@@ -9,7 +9,7 @@ minimumReleaseAgeExclude:
   - "@shadcn/registry@0.1.3"
   - shadcn@4.21.4
 
-# Accepted advisory, dated 2026-10-08 (D-24, owner decision pending at plan 01-01 Task 3).
+# Accepted advisory, dated 2026-10-08 (D-24, owner-approved at plan 01-01 Task 3).
 # GHSA-vfj7-8cjw-p6xm: braces <=3.0.3 stack exhaustion on deeply nested glob patterns.
 # No patched version is published (braces 3.0.3 and micromatch 4.0.8 are the latest).
 # Reached only through build-time tooling (eslint-config-next, shadcn CLI) that globs
