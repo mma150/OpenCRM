@@ -24,7 +24,7 @@ function toApiError(error: unknown): ApiError {
     return { code: "NETWORK_ERROR", message: "Could not reach the server", details: null };
   }
 
-  const requestId = error.response.headers["x-request-id"];
+  const requestId: unknown = error.response.headers["x-request-id"];
   const body = error.response.data as ErrorEnvelope | undefined;
   const apiError: ApiError = {
     code: typeof body?.error?.code === "string" ? body.error.code : "UNKNOWN_ERROR",
