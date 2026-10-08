@@ -1,0 +1,4 @@
+dist
+src/generated
+pnpm-lock.yaml
+openapi
