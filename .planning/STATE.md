@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 01
 current_phase_name: Repository Foundation & Standards
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-10-08T10:13:43.894Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-10-08T10:38:25.246Z"
 last_activity: 2026-10-08
 last_activity_desc: Phase 01 execution started
-state_head: b0bc489130c77f64dff3a1d0194c50e5690f04a7
+state_head: ba82b9659bfe5bd03a5801880092f2dff6dcad6a
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 10
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-08)
 ## Current Position
 
 Phase: 01 (Repository Foundation & Standards) — EXECUTING
-Plan: 2 of 10
+Plan: 3 of 10
 Status: Ready to execute
 Last activity: 2026-10-08 — Phase 01 execution started
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 01 P01 | n/a (3 owner checkpoints) | 4 tasks | 12 files |
+| Phase 01 P02 | 15 min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,8 @@ Recent decisions affecting current work:
 - [Phase 01]: [01-01] Node stays at 24 (.nvmrc 24, engines >=24 <25); owner decision 2026-10-08, assumption A2 settled — Single-sourced; bump to 26 later is one line
 - [Phase 01]: [01-01] Tooling-only root package.json with own lockfile, not an app workspace, is consistent with D-02; owner accepted A1 2026-10-08 — husky needs a package.json at git root; root typescript 7.0.2 and @types/node 26.6.4 peers accepted as-is
 - [Phase 01]: [01-01] Owner-accepted risk: frontend audit ignore GHSA-vfj7-8cjw-p6xm (braces <=3.0.3, no patch exists) plus minimumReleaseAgeExclude for shadcn@4.21.4 and @shadcn/registry@0.1.3; 2026-10-08 — Build-time tooling only; remove ignore when a patched braces is published
+- [Phase 01]: Compose api uses pnpm_config_store_dir to keep the pnpm store in the node_modules volume (npm_config_ spelling ignored by pnpm 11) — Avoids a 469 MB store in the host working tree and allows hard links
+- [Phase 01]: Dev image installs OpenSSL so Prisma 7 stops warning about libssl detection — node:24-slim ships no OpenSSL; apt package, no npm dependency change
 
 ### Pending Todos
 
@@ -96,6 +99,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-08T10:13:43.875Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-10-08T10:38:25.221Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
