@@ -1,0 +1,66 @@
+# Local development stack. Not a production deployment.
+# Host ports are overridable when a default is taken: DB_PORT, API_PORT, WEB_PORT.
+name: opencrm
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      # DEVELOPMENT-ONLY credentials. Never reuse them outside local development.
+      POSTGRES_USER: opencrm
+      POSTGRES_PASSWORD: opencrm
+      POSTGRES_DB: opencrm
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql # PostgreSQL 18 data directory layout
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opencrm -d opencrm"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: ./backend
+      args:
+        NODE_VERSION: "24"
+    env_file:
+      - path: backend/.env.example
+        required: true
+      - path: backend/.env
+        required: false
+    environment:
+      # Wins over env_file: inside Compose the database host is "db".
+      DATABASE_URL: postgresql://opencrm:opencrm@db:5432/opencrm
+      CORS_ORIGINS: http://localhost:${WEB_PORT:-3000}
+      # tsx watch does not see edits made through a Windows bind mount without polling.
+      CHOKIDAR_USEPOLLING: "1"
+      # Keep the pnpm store on the same volume as node_modules (hard links, and no store on the host).
+      pnpm_config_store_dir: /app/node_modules/.pnpm-store
+      PRISMA_HIDE_UPDATE_MESSAGE: "1"
+      CHECKPOINT_DISABLE: "1"
+    ports:
+      - "${API_PORT:-4000}:4000"
+    volumes:
+      - ./backend:/app
+      - api-node-modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # The slim Node image has neither curl nor wget, so use Node itself.
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:4000/api/v1/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      # The first start installs dependencies through the bind mount (over a minute).
+      start_period: 180s
+
+volumes:
+  db-data:
+  api-node-modules:
