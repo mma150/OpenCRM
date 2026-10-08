@@ -176,13 +176,91 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (filled by roadmap) | | |
+| FND-01 | Phase 1 | Pending |
+| FND-02 | Phase 1 | Pending |
+| FND-03 | Phase 1 | Pending |
+| FND-04 | Phase 1 | Pending |
+| FND-05 | Phase 1 | Pending |
+| FND-06 | Phase 1 | Pending |
+| FND-07 | Phase 1 | Pending |
+| FND-08 | Phase 1 | Pending |
+| CTB-01 | Phase 1 | Pending |
+| CTB-02 | Phase 1 | Pending |
+| CTB-03 | Phase 1 | Pending |
+| CTB-04 | Phase 1 | Pending |
+| CTB-05 | Phase 1 | Pending |
+| CI-01 | Phase 1 | Pending |
+| CI-02 | Phase 1 | Pending |
+| SEC-01 | Phase 1 | Pending |
+| SEC-02 | Phase 1 | Pending |
+| SEC-03 | Phase 1 | Pending |
+| SEC-04 | Phase 1 | Pending |
+| SEC-05 | Phase 2 | Pending |
+| AUTH-01 | Phase 2 | Pending |
+| AUTH-02 | Phase 2 | Pending |
+| AUTH-03 | Phase 2 | Pending |
+| AUTH-04 | Phase 2 | Pending |
+| AUTH-05 | Phase 2 | Pending |
+| ROLE-01 | Phase 2 | Pending |
+| ROLE-02 | Phase 2 | Pending |
+| ROLE-03 | Phase 2 | Pending |
+| ROLE-04 | Phase 3 | Pending |
+| ROLE-05 | Phase 3 | Pending |
+| ROLE-06 | Phase 3 | Pending |
+| ROLE-07 | Phase 3 | Pending |
+| ROLE-08 | Phase 3 | Pending |
+| CONT-01 | Phase 5 | Pending |
+| CONT-02 | Phase 5 | Pending |
+| CONT-03 | Phase 5 | Pending |
+| CONT-04 | Phase 5 | Pending |
+| LEAD-01 | Phase 3 | Pending |
+| LEAD-02 | Phase 3 | Pending |
+| LEAD-03 | Phase 3 | Pending |
+| LEAD-04 | Phase 5 | Pending |
+| LEAD-05 | Phase 3 | Pending |
+| OPP-01 | Phase 5 | Pending |
+| OPP-02 | Phase 5 | Pending |
+| OPP-03 | Phase 5 | Pending |
+| OPP-04 | Phase 5 | Pending |
+| OPP-05 | Phase 5 | Pending |
+| CONV-01 | Phase 4 | Pending |
+| CONV-02 | Phase 4 | Pending |
+| CONV-03 | Phase 4 | Pending |
+| CONV-04 | Phase 4 | Pending |
+| CONV-05 | Phase 4 | Pending |
+| TASK-01 | Phase 6 | Pending |
+| TASK-02 | Phase 6 | Pending |
+| TASK-03 | Phase 6 | Pending |
+| TASK-04 | Phase 6 | Pending |
+| TASK-05 | Phase 6 | Pending |
+| TASK-06 | Phase 6 | Pending |
+| DASH-01 | Phase 6 | Pending |
+| DASH-02 | Phase 6 | Pending |
+| DASH-03 | Phase 6 | Pending |
+| DATA-01 | Phase 7 | Pending |
+| DATA-02 | Phase 7 | Pending |
+| DATA-03 | Phase 7 | Pending |
+| CF-01 | Phase 7 | Pending |
+| CF-02 | Phase 7 | Pending |
+| CF-03 | Phase 7 | Pending |
+| MAIL-01 | Phase 8 | Pending |
+| MAIL-02 | Phase 8 | Pending |
+| MAIL-03 | Phase 8 | Pending |
+| MAIL-04 | Phase 8 | Pending |
+| QUOT-01 | Phase 8 | Pending |
+| QUOT-02 | Phase 8 | Pending |
+| QUOT-03 | Phase 8 | Pending |
+| QUOT-04 | Phase 8 | Pending |
+| QUOT-05 | Phase 8 | Pending |
+| UI-01 | Phase 2 | Pending |
+| UI-02 | Phase 2 | Pending |
+| UI-03 | Phase 2 | Pending |
 
 **Coverage:**
 - v1 requirements: 79 total
-- Mapped to phases: 0
-- Unmapped: 79 ⚠️
+- Mapped to phases: 79
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-10-08*
-*Last updated: 2026-10-08 after initial definition*
+*Last updated: 2026-10-08 after roadmap creation*
