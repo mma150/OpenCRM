@@ -72,3 +72,8 @@ Do not make direct repo edits outside a GSD workflow unless the user explicitly 
 > Profile not yet configured. Run `/gsd-profile-user` to generate your developer profile.
 > This section is managed by `generate-claude-profile` -- do not edit manually.
 <!-- GSD:profile-end -->
+
+## Commit Rules
+
+- Keep commit messages short: one conventional subject line (`feat: add lead list`), no long bodies.
+- Never add `Co-Authored-By` or any other AI attribution trailer to commits or pull requests.
