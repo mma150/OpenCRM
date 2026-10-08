@@ -3,9 +3,23 @@
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
+import type { ApiError } from "@/lib/api/http";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 import { fetchHealth, selectHealth } from "./health.slice";
+
+// The message is chosen by the error code, never by parsing the server's text (D-12).
+// Known codes get a fixed client string; any other code shows the code and server message.
+function describeError(error: ApiError): string {
+  switch (error.code) {
+    case "SERVICE_UNAVAILABLE":
+      return "The API is running but the database is unavailable";
+    case "NETWORK_ERROR":
+      return "The API cannot be reached";
+    default:
+      return `${error.code}: ${error.message}`;
+  }
+}
 
 export function HealthStatus() {
   const dispatch = useAppDispatch();
@@ -23,9 +37,12 @@ export function HealthStatus() {
     >
       <h1 className="text-2xl font-semibold tracking-tight">OpenCRM</h1>
       {status === "failed" && error ? (
-        <p role="alert" className="text-destructive text-sm">
-          {error.code}: {error.message}
-        </p>
+        <div role="alert" className="flex flex-col gap-1 text-sm">
+          <p className="text-destructive">{describeError(error)}</p>
+          {error.requestId ? (
+            <p className="text-muted-foreground text-xs">Request id: {error.requestId}</p>
+          ) : null}
+        </div>
       ) : data ? (
         <dl className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
           <dt className="text-muted-foreground">API status</dt>

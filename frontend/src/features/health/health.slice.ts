@@ -3,7 +3,8 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { ApiError } from "@/lib/api/http";
 import type { RootState } from "@/store";
 
-import { getHealth, type Health } from "./health.api";
+import { getHealth } from "./health.api";
+import type { Health } from "./health.types";
 
 type HealthState = {
   data: Health | null;
