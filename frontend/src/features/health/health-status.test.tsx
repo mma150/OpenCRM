@@ -3,9 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ApiError } from "@/lib/api/http";
 import { makeStore } from "@/store";
 
-import { getHealth, type Health } from "./health.api";
+import { getHealth } from "./health.api";
+import type { Health } from "./health.types";
 import { HealthStatus } from "./health-status";
 
 vi.mock("./health.api");
@@ -46,17 +48,78 @@ describe("HealthStatus", () => {
     expect(screen.queryByText("Loading status...")).not.toBeInTheDocument();
   });
 
-  it("shows the error code and message when the request fails", async () => {
-    vi.mocked(getHealth).mockRejectedValue({
-      code: "NETWORK_ERROR",
-      message: "Could not reach the server",
+  it("explains that the database is down for SERVICE_UNAVAILABLE", async () => {
+    const apiError: ApiError = {
+      code: "SERVICE_UNAVAILABLE",
+      message: "Database is unavailable",
       details: null,
-    });
+    };
+    vi.mocked(getHealth).mockRejectedValue(apiError);
 
     renderStatus();
 
     const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("NETWORK_ERROR: Could not reach the server");
+    expect(alert).toHaveTextContent("The API is running but the database is unavailable");
+    // The message is chosen by the code, so the server text is not shown (D-12).
+    expect(alert).not.toHaveTextContent("Database is unavailable");
+  });
+
+  it("explains that the API cannot be reached for NETWORK_ERROR", async () => {
+    const apiError: ApiError = {
+      code: "NETWORK_ERROR",
+      message: "Could not reach the server",
+      details: null,
+    };
+    vi.mocked(getHealth).mockRejectedValue(apiError);
+
+    renderStatus();
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("The API cannot be reached");
+    expect(alert).not.toHaveTextContent("Could not reach the server");
+  });
+
+  it("shows the code and the server message for any other code", async () => {
+    const apiError: ApiError = {
+      code: "INTERNAL_ERROR",
+      message: "Internal server error",
+      details: null,
+    };
+    vi.mocked(getHealth).mockRejectedValue(apiError);
+
+    renderStatus();
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("INTERNAL_ERROR: Internal server error");
+  });
+
+  it("shows the request id when the error carries one", async () => {
+    const apiError: ApiError = {
+      code: "SERVICE_UNAVAILABLE",
+      message: "Database is unavailable",
+      details: null,
+      requestId: "req-1234-abcd",
+    };
+    vi.mocked(getHealth).mockRejectedValue(apiError);
+
+    renderStatus();
+
+    await screen.findByRole("alert");
+    expect(screen.getByText("Request id: req-1234-abcd")).toBeInTheDocument();
+  });
+
+  it("shows no request id line when the error has none", async () => {
+    const apiError: ApiError = {
+      code: "NETWORK_ERROR",
+      message: "Could not reach the server",
+      details: null,
+    };
+    vi.mocked(getHealth).mockRejectedValue(apiError);
+
+    renderStatus();
+
+    await screen.findByRole("alert");
+    expect(screen.queryByText(/Request id/)).not.toBeInTheDocument();
   });
 
   it("asks for the status again when Refresh is clicked", async () => {

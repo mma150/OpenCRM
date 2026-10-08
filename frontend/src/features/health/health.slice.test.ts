@@ -3,8 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiError } from "@/lib/api/http";
 import { makeStore } from "@/store";
 
-import { getHealth, type Health } from "./health.api";
+import { getHealth } from "./health.api";
 import { fetchHealth } from "./health.slice";
+import type { Health } from "./health.types";
 
 vi.mock("./health.api");
 
