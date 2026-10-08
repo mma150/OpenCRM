@@ -34,7 +34,19 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. One command per app runs lint, format check and strict TypeScript check and fails on any violation; starting the API with a missing or invalid environment variable fails immediately with a clear message, and each app documents its variables in `.env.example`; the API serves a versioned OpenAPI document.
   4. A commit whose message breaks the documented standard is rejected locally by a commit hook, a pull request that breaks it fails CI, and GitHub Actions run lint, type-check, test and build for both apps on every push and pull request.
   5. The repository ships LICENSE (Apache-2.0), CONTRIBUTING, CODE_OF_CONDUCT, PR and issue templates, documented branch/PR rules, and SECURITY.md, with Dependabot, CodeQL (on pull requests and on a schedule) and secret scanning configured so that a committed credential is caught.
-**Plans**: TBD
+**Plans:** 10 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Pin the three dependency manifests and get owner approval before any install
+- [ ] 01-02-PLAN.md — Tracer part 1: API health reads PostgreSQL in Compose; apply the Prisma schema
+- [ ] 01-03-PLAN.md — Tracer part 2: home page shows live status through the Redux store; README quick start
+- [ ] 01-04-PLAN.md — Backend check command, build, and test harness on a real test database
+- [ ] 01-05-PLAN.md — API contract: error codes, validation path, request logging, OpenAPI document
+- [ ] 01-06-PLAN.md — Frontend check command, env validation, slice and component tests
+- [ ] 01-07-PLAN.md — Status page complete: Tailwind and shadcn, OpenAPI-derived types, error-code state
+- [ ] 01-08-PLAN.md — Commit standard, commitlint, lint-staged, husky hooks, staged secret scan
+- [ ] 01-09-PLAN.md — Standards documents, decision records, LICENSE, CONTRIBUTING, CODE_OF_CONDUCT
+- [ ] 01-10-PLAN.md — CI, PR title check, CodeQL, Dependabot, audit, SECURITY.md, foundation verifier
 
 ### Phase 2: Authentication, Users & App Shell
 **Goal:** As a team admin, I want to sign in, invite my team and give each person a role, so that my sales team can use OpenCRM securely from any device.
@@ -139,7 +151,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 (de
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Repository Foundation & Standards | 0/TBD | Not started | - |
+| 1. Repository Foundation & Standards | 0/10 | Not started | - |
 | 2. Authentication, Users & App Shell | 0/TBD | Not started | - |
 | 3. Leads & Record Access | 0/TBD | Not started | - |
 | 4. Conversation Log & Activity Timeline | 0/TBD | Not started | - |

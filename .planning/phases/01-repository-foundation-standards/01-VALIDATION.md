@@ -38,29 +38,29 @@ created: 2026-10-08
 
 ## Per-Task Verification Map
 
-Task IDs are assigned by the planner; rows are keyed by requirement until plans exist.
+Task IDs are `{plan}-T{task}` (for example `01-02-T1` is plan 01-02, task 1). A requirement delivered by several tasks lists each one. "File Exists" names the task that creates the test or script the command needs (the Wave 0 dependency).
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| TBD | TBD | TBD | FND-01 | — | N/A | repo check | `node scripts/verify-foundation.mjs` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | FND-02 | — | N/A | repo check | `node scripts/verify-foundation.mjs` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | FND-03 | — | N/A | script | `pnpm --dir backend check` and `pnpm --dir frontend check` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | FND-04 | — | N/A | smoke | `docker compose up -d --wait && curl -fsS localhost:4000/api/v1/health && curl -fsS localhost:3000` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | FND-05 | — | N/A | unit/component | `pnpm --dir frontend test -- health` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | FND-06 | — | Error responses carry no stack trace | integration | `pnpm --dir backend test -- health` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | FND-07 | — | N/A | integration + drift | `pnpm --dir backend test -- openapi` and `pnpm --dir backend openapi:generate && git diff --exit-code` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | FND-08 | — | Missing or invalid env stops startup and names the variable | unit + repo check | `pnpm --dir backend test -- env` and `node scripts/verify-foundation.mjs` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | CTB-01 | — | N/A | repo check | `node scripts/verify-foundation.mjs` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | CTB-02 | — | N/A | repo check | `node scripts/verify-foundation.mjs` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | CTB-03 | — | N/A | repo check | `node scripts/verify-foundation.mjs` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | CTB-04 | — | Bad commit message is rejected | script | `pnpm test:commitlint` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | CTB-05 | — | N/A | repo check | `node scripts/verify-foundation.mjs` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | CI-01 | — | N/A | static + post-push | `docker run --rm -v "$(pwd -W):/repo" -w /repo rhysd/actionlint:latest` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | CI-02 | — | PR title is passed through `env:`, never inlined in a script | script + post-push | `printf 'Bad title\n' \| pnpm exec commitlint` exits non-zero | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | SEC-01 | — | Dependency updates and alerts are configured | static + post-push | `node scripts/verify-foundation.mjs` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | SEC-02 | — | CodeQL runs on `pull_request` and `schedule` | static + post-push | `node scripts/verify-foundation.mjs` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | SEC-03 | — | Staged secret is blocked locally | script | scripted hook run against a fake token in a temp repo exits non-zero | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | SEC-04 | — | N/A | repo check | `node scripts/verify-foundation.mjs` | ❌ W0 | ⬜ pending |
+| 01-01-T1, 01-09-T1, 01-10-T3 | 01, 09, 10 | 1, 7, 8 | FND-01 | T-01-SC | No package installed before owner approval | repo check | `node scripts/verify-foundation.mjs` | ❌ created by 01-10-T3 | ⬜ pending |
+| 01-08-T1, 01-09-T2, 01-09-T3 | 08, 09 | 7 | FND-02 | T-09-03 | N/A | repo check | `node scripts/verify-foundation.mjs` | ❌ created by 01-10-T3 | ⬜ pending |
+| 01-04-T1, 01-06-T1 | 04, 06 | 4 | FND-03 | T-04-02 | Layering and Redux-pattern violations fail lint | script | `pnpm --dir backend check` and `pnpm --dir frontend check` | ❌ created by 01-04-T1, 01-06-T1 | ⬜ pending |
+| 01-02-T1, 01-03-T1, 01-03-T2 | 02, 03 | 2, 3 | FND-04 | T-02-03 | Database port bound to 127.0.0.1 only | smoke | `docker compose up -d --wait && curl -fsS localhost:${API_PORT:-4000}/api/v1/health && curl -fsS localhost:${WEB_PORT:-3000}` | ❌ created by 01-02-T1, 01-03-T1 | ⬜ pending |
+| 01-03-T1, 01-06-T3, 01-07-T2 | 03, 06, 07 | 3, 4, 6 | FND-05 | T-06-03 | Only one HTTP client; typed hooks only | unit/component | `pnpm --dir frontend test` | ❌ created by 01-06-T3 | ⬜ pending |
+| 01-02-T1, 01-04-T2, 01-05-T1 | 02, 04, 05 | 2, 4, 5 | FND-06 | T-05-01 | Error responses carry no stack trace | integration | `pnpm --dir backend test` | ❌ created by 01-04-T2 | ⬜ pending |
+| 01-05-T2, 01-07-T2 | 05, 07 | 5, 6 | FND-07 | T-07-02 | N/A | integration + drift | `pnpm --dir backend test` and `pnpm --dir backend openapi:generate && git diff --exit-code -- backend/openapi/openapi.json` | ❌ created by 01-05-T2 | ⬜ pending |
+| 01-02-T1, 01-04-T2, 01-06-T2 | 02, 04, 06 | 2, 4 | FND-08 | T-02-06 | Missing or invalid env stops startup and names the variable | unit + repo check | `pnpm --dir backend test` and `node scripts/verify-foundation.mjs` | ❌ created by 01-04-T2 | ⬜ pending |
+| 01-09-T1 | 09 | 7 | CTB-01 | T-09-02 | Licence text unmodified | repo check | `node scripts/verify-foundation.mjs` | ❌ created by 01-10-T3 | ⬜ pending |
+| 01-10-T1 | 10 | 8 | CTB-02 | — | N/A | repo check | `node scripts/verify-foundation.mjs` | ❌ created by 01-10-T3 | ⬜ pending |
+| 01-08-T1 | 08 | 7 | CTB-03 | — | N/A | repo check | `node scripts/verify-foundation.mjs` | ❌ created by 01-10-T3 | ⬜ pending |
+| 01-08-T1, 01-08-T3 | 08 | 7 | CTB-04 | T-08-03 | Bad commit message is rejected | script | `pnpm test:commitlint` | ❌ created by 01-08-T1 | ⬜ pending |
+| 01-09-T1, 01-10-T3 | 09, 10 | 7, 8 | CTB-05 | T-10-07 | N/A | repo check | `node scripts/verify-foundation.mjs` | ❌ created by 01-10-T3 | ⬜ pending |
+| 01-10-T1 | 10 | 8 | CI-01 | T-10-02 | Workflow token is read-only by default | static + post-push | `MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W 2>/dev/null \|\| pwd):/repo:ro" -w /repo rhysd/actionlint:latest` | n/a (container image) | ⬜ pending |
+| 01-10-T1 | 10 | 8 | CI-02 | T-10-01 | PR title is passed through `env:`, never inlined in a script | script + post-push | `printf 'Bad title\n' \| pnpm exec commitlint` exits non-zero | ❌ created by 01-08-T1 | ⬜ pending |
+| 01-10-T2 | 10 | 8 | SEC-01 | T-10-04 | Dependency updates and alerts are configured | static + post-push | `node scripts/verify-foundation.mjs` | ❌ created by 01-10-T3 | ⬜ pending |
+| 01-10-T2 | 10 | 8 | SEC-02 | T-10-03 | CodeQL runs on `pull_request` and `schedule` | static + post-push | `node scripts/verify-foundation.mjs` | ❌ created by 01-10-T3 | ⬜ pending |
+| 01-08-T2, 01-08-T3, 01-10-T2 | 08, 10 | 7, 8 | SEC-03 | T-08-01 | Staged secret is blocked locally | script | `pnpm test:secret-hook` | ❌ created by 01-08-T2 | ⬜ pending |
+| 01-10-T2 | 10 | 8 | SEC-04 | T-10-06 | No personal contact data published | repo check | `node scripts/verify-foundation.mjs` | ❌ created by 01-10-T3 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -68,11 +68,12 @@ Task IDs are assigned by the planner; rows are keyed by requirement until plans 
 
 ## Wave 0 Requirements
 
-- [ ] `backend/vitest.config.ts` + `globalSetup` — creates `opencrm_test` and runs `prisma migrate deploy`
-- [ ] `frontend/vitest.config.ts` + `frontend/vitest.setup.ts`
-- [ ] `scripts/verify-foundation.mjs` — file and heading presence, `.env.example` vs Zod keys drift, `.nvmrc` = Dockerfile `NODE_VERSION` = `engines`, documented commit types = commitlint list
-- [ ] `test:commitlint` fixtures — good: `feat: add lead list`, `fix(api): handle null`; bad: capital subject, missing type, 73 characters, attribution trailer
-- [ ] Framework install — Vitest, supertest, Testing Library, jsdom (no framework exists yet)
+- [ ] `backend/vitest.config.ts` + `globalSetup` — creates `opencrm_test` and runs `prisma migrate deploy` (task 01-04-T2)
+- [ ] `frontend/vitest.config.ts` + `frontend/vitest.setup.ts` (task 01-06-T3)
+- [ ] `scripts/verify-foundation.mjs` — file and heading presence, `.env.example` vs Zod keys drift, `.nvmrc` = Dockerfile `NODE_VERSION` = `engines`, documented commit types = commitlint list (task 01-10-T3)
+- [ ] `test:commitlint` fixtures — good: `feat: add lead list`, `fix(api): handle null`; bad: capital subject, missing type, 73 characters, attribution trailer (task 01-08-T1)
+- [ ] `test:secret-hook` — scripted staged-credential run in a temporary repository (task 01-08-T2)
+- [ ] Framework install — Vitest, supertest, Testing Library, jsdom, pinned in plan 01-01 and installed after the owner approves the manifests (tasks 01-04-T1, 01-06-T1)
 
 ---
 
