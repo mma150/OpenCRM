@@ -1,18 +1,18 @@
 ---
 gsd_state_version: 1.0
 current_phase: 01
-current_phase_name: repository-foundation-standards
+current_phase_name: Repository Foundation & Standards
 status: executing
-stopped_at: Phase 1 context gathered
-last_updated: "2026-10-08T09:58:02.948Z"
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-10-08T10:13:43.894Z"
 last_activity: 2026-10-08
-last_activity_desc: Roadmap created (8 phases, 79/79 v1 requirements mapped)
-state_head: f26e605874b9a7303adc49f7fda046201d1c296e
+last_activity_desc: Phase 01 execution started
+state_head: b0bc489130c77f64dff3a1d0194c50e5690f04a7
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 10
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -23,14 +23,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-08)
 
 **Core value:** A sales person can log every lead and every conversation against it, and an admin can open any lead and see the dated history of what was discussed and what happens next.
-**Current focus:** Phase 1 - Repository Foundation & Standards
+**Current focus:** Phase 01 — Repository Foundation & Standards
 
 ## Current Position
 
-Phase: 01 (repository-foundation-standards) — READY TO EXECUTE
-Plan: 0 of TBD in current phase
+Phase: 01 (Repository Foundation & Standards) — EXECUTING
+Plan: 2 of 10
 Status: Ready to execute
-Last activity: 2026-10-08 — Roadmap created (8 phases, 79/79 v1 requirements mapped)
+Last activity: 2026-10-08 — Phase 01 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -54,6 +54,11 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 01 P01 | n/a (3 owner checkpoints) | 4 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -66,6 +71,9 @@ Recent decisions affecting current work:
 - [Roadmap]: UI-01..03 are all mapped to Phase 2 (first shared component set and app shell); later UI phases carry responsiveness as a success criterion
 - [Roadmap]: Core value (leads, isolation, conversation timeline) is Phases 3-4; quotes, custom fields, CSV and SMTP-in-app are last
 - [Roadmap]: SEC-05 sits in Phase 2 because rate limiting on auth routes is only verifiable once auth routes exist
+- [Phase 01]: [01-01] Node stays at 24 (.nvmrc 24, engines >=24 <25); owner decision 2026-10-08, assumption A2 settled — Single-sourced; bump to 26 later is one line
+- [Phase 01]: [01-01] Tooling-only root package.json with own lockfile, not an app workspace, is consistent with D-02; owner accepted A1 2026-10-08 — husky needs a package.json at git root; root typescript 7.0.2 and @types/node 26.6.4 peers accepted as-is
+- [Phase 01]: [01-01] Owner-accepted risk: frontend audit ignore GHSA-vfj7-8cjw-p6xm (braces <=3.0.3, no patch exists) plus minimumReleaseAgeExclude for shadcn@4.21.4 and @shadcn/registry@0.1.3; 2026-10-08 — Build-time tooling only; remove ignore when a patched braces is published
 
 ### Pending Todos
 
@@ -88,6 +96,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-08T08:26:52.275Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-repository-foundation-standards/01-CONTEXT.md
+Last session: 2026-10-08T10:13:43.875Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: None

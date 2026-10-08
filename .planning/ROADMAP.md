@@ -38,12 +38,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. A commit whose message breaks the documented standard is rejected locally by a commit hook, a pull request that breaks it fails CI, and GitHub Actions run lint, type-check, test and build for both apps on every push and pull request.
   5. The repository ships LICENSE (Apache-2.0), CONTRIBUTING, CODE_OF_CONDUCT, PR and issue templates, documented branch/PR rules, and SECURITY.md, with Dependabot, CodeQL (on pull requests and on a schedule) and secret scanning configured so that a committed credential is caught.
 
-**Plans:** 10 plans
+**Plans:** 1/10 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 01-01-PLAN.md — Pin the three dependency manifests and get owner approval before any install
+- [x] 01-01-PLAN.md — Pin the three dependency manifests and get owner approval before any install
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -199,7 +199,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 (de
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Repository Foundation & Standards | 0/10 | Not started | - |
+| 1. Repository Foundation & Standards | 1/10 | In Progress|  |
 | 2. Authentication, Users & App Shell | 0/TBD | Not started | - |
 | 3. Leads & Record Access | 0/TBD | Not started | - |
 | 4. Conversation Log & Activity Timeline | 0/TBD | Not started | - |
