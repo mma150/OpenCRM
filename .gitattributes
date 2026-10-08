@@ -1,0 +1,6 @@
+# Normalise every text file to LF so shell scripts and hooks run on Linux and macOS
+* text=auto eol=lf
+
+# Explicit rules for files that must never be checked out with CRLF
+*.sh text eol=lf
+.husky/* text eol=lf

@@ -1,0 +1,11 @@
+# Install scripts run only for these packages (pnpm 11 blocks all others)
+allowBuilds:
+  "@prisma/engines": true
+  prisma: true
+  esbuild: true
+
+# Patched transitive versions that arrive through the Prisma CLI (D-24).
+# Remove when Prisma ships fixed transitive pins.
+overrides:
+  deepmerge-ts: ">=8.0.0"
+  mysql2: ">=3.23.1"

@@ -1,0 +1,4 @@
+# Tooling-only root (husky, lint-staged, commitlint). The apps are NOT workspace
+# members: frontend/ and backend/ each have their own pnpm-workspace.yaml and lockfile (D-02).
+packages:
+  - "."

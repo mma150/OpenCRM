@@ -1,0 +1,20 @@
+{
+  "name": "opencrm",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.28.5",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "test:commitlint": "node scripts/test-commitlint.mjs",
+    "test:secret-hook": "node scripts/test-secret-hook.mjs",
+    "verify:foundation": "node scripts/verify-foundation.mjs"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.2.3",
+    "@commitlint/config-conventional": "21.2.3",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0"
+  }
+}

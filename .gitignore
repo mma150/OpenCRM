@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Generated code (recreated by `prisma generate`)
+backend/src/generated/
+
+# Environment files: commit only the .env.example templates
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS noise
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor noise
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
