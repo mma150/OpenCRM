@@ -56,7 +56,23 @@ export default defineConfig([
         "error",
         { paths: [untypedReduxHooks, axiosOutsideHttp], patterns: [rtkQuery] },
       ],
+      // Only src/env.ts reads process.env, so a bad variable is reported once, by name,
+      // and no secret can reach the browser bundle by accident.
+      "no-restricted-properties": [
+        "error",
+        {
+          object: "process",
+          property: "env",
+          message: "Read configuration through `env` from @/env instead of process.env.",
+        },
+      ],
     },
+  },
+
+  // The one place allowed to read process.env.
+  {
+    files: ["src/env.ts"],
+    rules: { "no-restricted-properties": "off" },
   },
 
   // The typed hooks live here, so this is the only file that may import the raw ones.
