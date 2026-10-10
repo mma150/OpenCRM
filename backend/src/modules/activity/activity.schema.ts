@@ -37,6 +37,7 @@ export const activitySummarySchema = z
     conversations: z.number().int(),
     notes: z.number().int(),
     statusChanges: z.number().int(),
+    emails: z.number().int(),
   })
   .openapi("ActivitySummary");
 

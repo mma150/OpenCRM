@@ -93,9 +93,13 @@ describe("OpenAPI document content", () => {
       "delete /companies/{id}",
       "delete /contacts/{id}",
       "delete /custom-fields/{id}",
+      "delete /email-templates/{id}",
       "delete /leads/{id}",
       "delete /opportunities/{id}",
       "delete /pipeline-stages/{id}",
+      "delete /products/{id}",
+      "delete /quotes/{id}",
+      "delete /settings/email",
       "delete /tasks/{id}",
       "get /activity",
       "get /activity/authors",
@@ -113,8 +117,17 @@ describe("OpenAPI document content", () => {
       "get /custom-fields",
       "get /dashboard/me",
       "get /dashboard/team",
+      "get /email-templates",
+      "get /email-templates/placeholders",
+      "get /email-templates/{id}",
+      "get /emails/defaults",
       "get /health",
       "get /imports/fields",
+      "get /invoices",
+      "get /invoices/export",
+      "get /invoices/summary",
+      "get /invoices/{id}",
+      "get /invoices/{id}/document",
       "get /leads",
       "get /leads/export",
       "get /leads/{id}",
@@ -127,6 +140,15 @@ describe("OpenAPI document content", () => {
       "get /opportunities/{id}",
       "get /opportunities/{id}/timeline",
       "get /pipeline-stages",
+      "get /products",
+      "get /products/{id}",
+      "get /quotes",
+      "get /quotes/export",
+      "get /quotes/{id}",
+      "get /quotes/{id}/document",
+      "get /settings/email",
+      "get /settings/email/status",
+      "get /settings/organization",
       "get /tasks",
       "get /tasks/export",
       "get /tasks/summary",
@@ -137,9 +159,13 @@ describe("OpenAPI document content", () => {
       "patch /companies/{id}",
       "patch /contacts/{id}",
       "patch /custom-fields/{id}",
+      "patch /email-templates/{id}",
+      "patch /invoices/{id}",
       "patch /leads/{id}",
       "patch /opportunities/{id}",
       "patch /pipeline-stages/{id}",
+      "patch /products/{id}",
+      "patch /quotes/{id}",
       "patch /tasks/{id}",
       "patch /users/{id}",
       "post /auth/accept-invite",
@@ -161,8 +187,17 @@ describe("OpenAPI document content", () => {
       "post /custom-fields",
       "post /custom-fields/{id}/archive",
       "post /custom-fields/{id}/restore",
+      "post /email-templates",
+      "post /emails",
+      "post /emails/preview",
       "post /imports",
       "post /imports/preview",
+      "post /invoices/{id}/mark-overdue",
+      "post /invoices/{id}/mark-paid",
+      "post /invoices/{id}/mark-sent",
+      "post /invoices/{id}/mark-unpaid",
+      "post /invoices/{id}/restore",
+      "post /invoices/{id}/void",
       "post /leads",
       "post /leads/{id}/assign",
       "post /leads/{id}/conversations",
@@ -179,6 +214,17 @@ describe("OpenAPI document content", () => {
       "post /opportunities/{id}/reopen",
       "post /opportunities/{id}/stage",
       "post /pipeline-stages",
+      "post /products",
+      "post /products/{id}/archive",
+      "post /products/{id}/restore",
+      "post /quotes",
+      "post /quotes/{id}/accept",
+      "post /quotes/{id}/decline",
+      "post /quotes/{id}/duplicate",
+      "post /quotes/{id}/invoice",
+      "post /quotes/{id}/reopen",
+      "post /quotes/{id}/send",
+      "post /settings/email/test",
       "post /tasks",
       "post /tasks/{id}/complete",
       "post /tasks/{id}/reopen",
@@ -191,6 +237,8 @@ describe("OpenAPI document content", () => {
       "put /leads/{id}/follow-up",
       "put /opportunities/{id}/follow-up",
       "put /pipeline-stages/order",
+      "put /settings/email",
+      "put /settings/organization",
     ]);
   });
 
@@ -237,11 +285,32 @@ describe("OpenAPI document content", () => {
     expect(paths["/imports/fields"]?.get.security).toEqual(session);
     expect(paths["/imports/preview"]?.post?.security).toEqual(session);
     expect(paths["/imports"]?.post?.security).toEqual(session);
+    expect(paths["/settings/email"]?.get.security).toEqual(session);
+    expect(paths["/settings/email"]?.put?.security).toEqual(session);
+    expect(paths["/settings/email"]?.delete?.security).toEqual(session);
+    expect(paths["/settings/email/status"]?.get.security).toEqual(session);
+    expect(paths["/settings/email/test"]?.post?.security).toEqual(session);
+    expect(paths["/settings/organization"]?.put?.security).toEqual(session);
+    expect(paths["/email-templates"]?.get.security).toEqual(session);
+    expect(paths["/email-templates/placeholders"]?.get.security).toEqual(session);
+    expect(paths["/emails"]?.post?.security).toEqual(session);
+    expect(paths["/emails/defaults"]?.get.security).toEqual(session);
+    expect(paths["/emails/preview"]?.post?.security).toEqual(session);
+    expect(paths["/products"]?.get.security).toEqual(session);
+    expect(paths["/products/{id}/archive"]?.post?.security).toEqual(session);
+    expect(paths["/quotes"]?.get.security).toEqual(session);
+    expect(paths["/quotes/{id}/send"]?.post?.security).toEqual(session);
+    expect(paths["/quotes/{id}/document"]?.get.security).toEqual(session);
+    expect(paths["/quotes/{id}/invoice"]?.post?.security).toEqual(session);
+    expect(paths["/invoices"]?.get.security).toEqual(session);
+    expect(paths["/invoices/summary"]?.get.security).toEqual(session);
+    expect(paths["/invoices/{id}/mark-paid"]?.post?.security).toEqual(session);
+    expect(paths["/invoices/{id}/document"]?.get.security).toEqual(session);
     expect(paths["/auth/login"]?.post?.security).toBeUndefined();
     expect(paths["/health"]?.get.security).toBeUndefined();
   });
 
-  it.each(["leads", "contacts", "companies", "opportunities", "tasks"])(
+  it.each(["leads", "contacts", "companies", "opportunities", "tasks", "quotes", "invoices"])(
     "describes /%s/export as a CSV download",
     (records) => {
       const ok = generated().paths[`/${records}/export`]?.get.responses["200"];
@@ -294,6 +363,9 @@ describe("OpenAPI document content", () => {
       "CREATED",
       "STATUS_CHANGE",
       "ASSIGNMENT",
+      "EMAIL",
+      "QUOTE_STATUS",
+      "INVOICE_STATUS",
     ]);
     expect(schemas.TimelineKindFilter?.enum).toEqual([
       ...(schemas.TimelineKind?.enum ?? []),
@@ -357,10 +429,86 @@ describe("OpenAPI document content", () => {
     expect(schemas.ImportFieldKind?.enum).toEqual(["TEXT", "EMAIL", "NUMBER", "DATE", "DROPDOWN"]);
     expect(schemas.Role?.enum).toEqual(["ADMIN", "SALES_MANAGER", "SALES_REP", "READ_ONLY"]);
     expect(schemas.UserStatus?.enum).toEqual(["ACTIVE", "INVITED", "DEACTIVATED"]);
-    expect(bodies.length).toBeGreaterThanOrEqual(35);
+    expect(Object.keys(schemas)).toEqual(
+      expect.arrayContaining([
+        "EmailSettings",
+        "UpdateEmailSettingsBody",
+        "TestEmailBody",
+        "TestEmailResult",
+        "EmailStatus",
+        "OrganizationSettings",
+        "UpdateOrganizationBody",
+        "EmailTemplate",
+        "CreateEmailTemplateBody",
+        "UpdateEmailTemplateBody",
+        "EmailPlaceholder",
+        "SendEmailBody",
+        "PreviewEmailBody",
+        "EmailPreview",
+        "EmailDefaults",
+        "Product",
+        "CreateProductBody",
+        "UpdateProductBody",
+        "Quote",
+        "QuoteLineInput",
+        "CreateQuoteBody",
+        "UpdateQuoteBody",
+        "SendQuoteBody",
+        "DocumentLine",
+        "SalesDocument",
+        "Invoice",
+        "InvoiceSummary",
+        "CreateInvoiceBody",
+        "UpdateInvoiceBody",
+        "MarkInvoicePaidBody",
+      ]),
+    );
+    expect(schemas.EmailRecordType?.enum).toEqual(["LEAD", "CONTACT", "COMPANY", "OPPORTUNITY"]);
+    expect(schemas.QuoteStatus?.enum).toEqual(["DRAFT", "SENT", "ACCEPTED", "DECLINED", "EXPIRED"]);
+    expect(schemas.QuoteDiscountType?.enum).toEqual(["NONE", "PERCENT", "AMOUNT"]);
+    expect(schemas.InvoiceStatus?.enum).toEqual(["DRAFT", "SENT", "PAID", "OVERDUE", "VOID"]);
+    // A line of a quote is not named "...Body", but it is part of one and as strict.
+    expect(schemas.QuoteLineInput?.additionalProperties).toBe(false);
+    expect(bodies.length).toBeGreaterThanOrEqual(56);
     for (const name of bodies) {
       expect(schemas[name]?.additionalProperties, name).toBe(false);
     }
+  });
+
+  it("never describes a password in an answer", () => {
+    const schemas = generated().components.schemas as unknown as Record<
+      string,
+      { properties: Record<string, unknown> }
+    >;
+
+    expect(Object.keys(schemas.EmailSettings?.properties ?? {})).toEqual([
+      "source",
+      "host",
+      "port",
+      "secure",
+      "username",
+      "hasPassword",
+      "fromName",
+      "fromAddress",
+      "replyTo",
+      "updatedAt",
+      "canStorePassword",
+      "passwordUnreadable",
+    ]);
+    expect(Object.keys(schemas.UpdateEmailSettingsBody?.properties ?? {})).toContain("password");
+  });
+
+  it("describes a quote and an invoice as one print-ready document type", () => {
+    const { paths } = generated();
+    const documentOf = (path: string) =>
+      (
+        paths[path]?.get.responses["200"]?.content["application/json"].schema as {
+          properties: { data: { $ref: string } };
+        }
+      ).properties.data.$ref;
+
+    expect(documentOf("/quotes/{id}/document")).toBe("#/components/schemas/SalesDocument");
+    expect(documentOf("/invoices/{id}/document")).toBe("#/components/schemas/SalesDocument");
   });
 
   it("requires code, message and details on every error", () => {

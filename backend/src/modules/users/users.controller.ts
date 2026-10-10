@@ -23,7 +23,7 @@ import {
 
 export async function listUsersHandler(_req: Request, res: Response) {
   const data: ApiUser[] = await listUsers();
-  res.json({ data, meta: { mailEnabled: isMailConfigured() } });
+  res.json({ data, meta: { mailEnabled: await isMailConfigured() } });
 }
 
 export async function listAssignableUsersHandler(req: Request, res: Response) {

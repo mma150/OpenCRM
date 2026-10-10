@@ -2,6 +2,7 @@ import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { ipKeyGenerator, type Options, rateLimit } from "express-rate-limit";
 
 import { AppError } from "../lib/app-error";
+import { getAuth } from "./authenticate";
 
 // Defaults for the public auth routes (D-04). Tests pass their own numbers.
 export interface RateLimitOptions {
@@ -11,6 +12,8 @@ export interface RateLimitOptions {
   emailLimit?: number;
   // Requests per window from one address to the cheap first-run check.
   statusLimit?: number;
+  // Emails per window one signed-in user may send (from a record, a quote, a test message).
+  sendLimit?: number;
   windowMs?: number;
 }
 
@@ -20,6 +23,8 @@ export interface AuthLimiters {
   loginIp: RequestHandler;
   loginEmail: RequestHandler;
   forgotEmail: RequestHandler;
+  // Not an auth route: put it after `authenticate` on a route that sends an email for a user.
+  sendEmail: RequestHandler;
 }
 
 // Answers through the error handler, so a refusal has the same envelope as every other
@@ -45,7 +50,13 @@ function emailKey(req: Request): string {
 // Counters live in memory: they reset on restart and are per process. The account lock
 // is in the database, so it does not depend on them.
 export function createAuthLimiters(options: RateLimitOptions = {}): AuthLimiters {
-  const { ipLimit = 30, emailLimit = 8, statusLimit = 300, windowMs = 5 * 60 * 1000 } = options;
+  const {
+    ipLimit = 30,
+    emailLimit = 8,
+    statusLimit = 300,
+    sendLimit = 30,
+    windowMs = 5 * 60 * 1000,
+  } = options;
 
   const build = (extra: Partial<Options>) =>
     rateLimit({
@@ -63,5 +74,8 @@ export function createAuthLimiters(options: RateLimitOptions = {}): AuthLimiters
     loginIp: build({ limit: ipLimit, skipSuccessfulRequests: true }),
     loginEmail: build({ limit: emailLimit, skipSuccessfulRequests: true, keyGenerator: emailKey }),
     forgotEmail: build({ limit: emailLimit, keyGenerator: emailKey }),
+    // One bucket per signed-in user, so a stolen session or a runaway script cannot use the
+    // organisation's mail server to send in bulk.
+    sendEmail: build({ limit: sendLimit, keyGenerator: (req) => `user:${getAuth(req).user.id}` }),
   };
 }

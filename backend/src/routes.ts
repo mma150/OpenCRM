@@ -8,12 +8,19 @@ import { companiesRouter } from "./modules/companies/companies.routes";
 import { contactsRouter } from "./modules/contacts/contacts.routes";
 import { customFieldsRouter } from "./modules/custom-fields/custom-fields.routes";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
+import { createEmailSettingsRouter } from "./modules/email-settings/email-settings.routes";
+import { emailTemplatesRouter } from "./modules/email-templates/email-templates.routes";
+import { createEmailsRouter } from "./modules/emails/emails.routes";
 import { healthRouter } from "./modules/health/health.routes";
 import { importsRouter } from "./modules/imports/imports.routes";
+import { invoicesRouter } from "./modules/invoices/invoices.routes";
 import { leadsRouter } from "./modules/leads/leads.routes";
 import { notificationsRouter } from "./modules/notifications/notifications.routes";
 import { opportunitiesRouter } from "./modules/opportunities/opportunities.routes";
+import { organizationRouter } from "./modules/organization/organization.routes";
 import { pipelineStagesRouter } from "./modules/pipeline-stages/pipeline-stages.routes";
+import { productsRouter } from "./modules/products/products.routes";
+import { createQuotesRouter } from "./modules/quotes/quotes.routes";
 import { tasksRouter } from "./modules/tasks/tasks.routes";
 import { timelineRouter } from "./modules/timeline/timeline.routes";
 import { usersRouter } from "./modules/users/users.routes";
@@ -50,6 +57,13 @@ export function createV1Router(limiters: AuthLimiters) {
   router.use("/dashboard", dashboardRouter);
   router.use("/custom-fields", customFieldsRouter);
   router.use("/imports", importsRouter);
+  router.use("/settings/email", createEmailSettingsRouter(limiters));
+  router.use("/settings/organization", organizationRouter);
+  router.use("/email-templates", emailTemplatesRouter);
+  router.use("/emails", createEmailsRouter(limiters));
+  router.use("/products", productsRouter);
+  router.use("/quotes", createQuotesRouter(limiters));
+  router.use("/invoices", invoicesRouter);
 
   return router;
 }

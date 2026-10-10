@@ -298,7 +298,7 @@ describe("invite", () => {
   });
 
   it("still succeeds and hands over the link when sending the email fails", async () => {
-    vi.spyOn(mailer, "isMailConfigured").mockReturnValue(true);
+    vi.spyOn(mailer, "isMailConfigured").mockResolvedValue(true);
     vi.spyOn(mailer, "sendMail").mockResolvedValue(false);
 
     const response = await invite(newUser);

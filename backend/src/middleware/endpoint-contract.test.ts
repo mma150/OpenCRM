@@ -18,6 +18,7 @@ import { prisma } from "../lib/prisma";
 // Routes that take no body and no path parameter. A new route must either validate
 // something or be added here on purpose.
 const ROUTES_WITHOUT_INPUT = [
+  "delete /settings/email",
   "get /activity",
   "get /activity/authors",
   "get /auth/me",
@@ -30,8 +31,14 @@ const ROUTES_WITHOUT_INPUT = [
   "get /custom-fields",
   "get /dashboard/me",
   "get /dashboard/team",
+  "get /email-templates",
+  "get /email-templates/placeholders",
+  "get /emails/defaults",
   "get /health",
   "get /imports/fields",
+  "get /invoices",
+  "get /invoices/export",
+  "get /invoices/summary",
   "get /leads",
   "get /leads/export",
   "get /notifications",
@@ -40,6 +47,12 @@ const ROUTES_WITHOUT_INPUT = [
   "get /opportunities/board",
   "get /opportunities/export",
   "get /pipeline-stages",
+  "get /products",
+  "get /quotes",
+  "get /quotes/export",
+  "get /settings/email",
+  "get /settings/email/status",
+  "get /settings/organization",
   "get /tasks",
   "get /tasks/export",
   "get /tasks/summary",
@@ -54,6 +67,9 @@ const ROUTES_WITHOUT_INPUT = [
 const ROUTES_WITH_OPTIONAL_BODY = new Set([
   "delete /pipeline-stages/{id}",
   "post /opportunities/{id}/reopen",
+  "post /quotes/{id}/send",
+  "post /quotes/{id}/invoice",
+  "post /invoices/{id}/mark-paid",
 ]);
 
 const SOME_ID = "01920000-0000-7000-8000-000000000000";
@@ -102,9 +118,9 @@ afterAll(async () => {
 });
 
 describe("endpoint contract", () => {
-  it("covers the auth, users, record, pipeline, timeline, activity, task, notification, dashboard, custom field, export and import routes", () => {
-    expect(routes.length).toBeGreaterThanOrEqual(101);
-    expect(signedInRoutes.length).toBeGreaterThanOrEqual(93);
+  it("covers the auth, users, record, pipeline, timeline, activity, task, notification, dashboard, custom field, export, import, settings, email, product, quote and invoice routes", () => {
+    expect(routes.length).toBeGreaterThanOrEqual(149);
+    expect(signedInRoutes.length).toBeGreaterThanOrEqual(141);
     expect(routes.map((route) => route.key)).toEqual(
       expect.arrayContaining([
         "get /leads/{id}/timeline",
@@ -181,6 +197,54 @@ describe("endpoint contract", () => {
         "get /imports/fields",
         "post /imports/preview",
         "post /imports",
+        "delete /email-templates/{id}",
+        "delete /products/{id}",
+        "delete /quotes/{id}",
+        "delete /settings/email",
+        "get /email-templates",
+        "get /email-templates/placeholders",
+        "get /email-templates/{id}",
+        "get /emails/defaults",
+        "get /invoices",
+        "get /invoices/export",
+        "get /invoices/summary",
+        "get /invoices/{id}",
+        "get /invoices/{id}/document",
+        "get /products",
+        "get /products/{id}",
+        "get /quotes",
+        "get /quotes/export",
+        "get /quotes/{id}",
+        "get /quotes/{id}/document",
+        "get /settings/email",
+        "get /settings/email/status",
+        "get /settings/organization",
+        "patch /email-templates/{id}",
+        "patch /invoices/{id}",
+        "patch /products/{id}",
+        "patch /quotes/{id}",
+        "post /email-templates",
+        "post /emails",
+        "post /emails/preview",
+        "post /invoices/{id}/mark-overdue",
+        "post /invoices/{id}/mark-paid",
+        "post /invoices/{id}/mark-sent",
+        "post /invoices/{id}/mark-unpaid",
+        "post /invoices/{id}/restore",
+        "post /invoices/{id}/void",
+        "post /products",
+        "post /products/{id}/archive",
+        "post /products/{id}/restore",
+        "post /quotes",
+        "post /quotes/{id}/accept",
+        "post /quotes/{id}/decline",
+        "post /quotes/{id}/duplicate",
+        "post /quotes/{id}/invoice",
+        "post /quotes/{id}/reopen",
+        "post /quotes/{id}/send",
+        "post /settings/email/test",
+        "put /settings/email",
+        "put /settings/organization",
       ]),
     );
   });

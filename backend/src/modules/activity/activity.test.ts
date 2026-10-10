@@ -28,6 +28,7 @@ interface Summary {
   conversations: number;
   notes: number;
   statusChanges: number;
+  emails: number;
 }
 
 interface ActivityEnvelope {
@@ -215,7 +216,7 @@ describe("GET /activity: who sees what", () => {
       page: 1,
       pageSize: 25,
       total: 10,
-      summary: { conversations: 3, notes: 4, statusChanges: 1 },
+      summary: { conversations: 3, notes: 4, statusChanges: 1, emails: 0 },
     });
   });
 
@@ -245,7 +246,7 @@ describe("GET /activity: who sees what", () => {
       page: 1,
       pageSize: 25,
       total: 6,
-      summary: { conversations: 2, notes: 2, statusChanges: 1 },
+      summary: { conversations: 2, notes: 2, statusChanges: 1, emails: 0 },
     });
   });
 
@@ -277,6 +278,7 @@ describe("GET /activity: who sees what", () => {
         conversations: 0,
         notes: 0,
         statusChanges: 0,
+        emails: 0,
       });
     }
   });
@@ -289,7 +291,12 @@ describe("GET /activity: filters", () => {
 
     expect(labelsOf(taras)).toEqual(["tara call, 4 Mar"]);
     expect(labelsOf(devs)).toEqual(["dev call, 28 Feb"]);
-    expect(feedOf(taras).meta.summary).toEqual({ conversations: 1, notes: 0, statusChanges: 0 });
+    expect(feedOf(taras).meta.summary).toEqual({
+      conversations: 1,
+      notes: 0,
+      statusChanges: 0,
+      emails: 0,
+    });
   });
 
   it("answers an Admin with an empty feed for a person who wrote nothing", async () => {
@@ -397,7 +404,12 @@ describe("GET /activity: filters", () => {
     );
 
     expect(labelsOf(response)).toEqual(["ravi note on tara's lead, 8 Mar", "ravi note, 2 Mar"]);
-    expect(feedOf(response).meta.summary).toEqual({ conversations: 0, notes: 2, statusChanges: 0 });
+    expect(feedOf(response).meta.summary).toEqual({
+      conversations: 0,
+      notes: 2,
+      statusChanges: 0,
+      emails: 0,
+    });
   });
 
   it.each([
@@ -406,7 +418,7 @@ describe("GET /activity: filters", () => {
     ["from", "2026-13-01"],
     ["to", "2026-03-05T10:00:00"],
     ["to", "05/03/2026"],
-    ["kind", "EMAIL"],
+    ["kind", "TASK"],
     ["page", "0"],
     ["pageSize", "101"],
   ])("answers VALIDATION_FAILED for %s=%s", async (key, value) => {
@@ -420,7 +432,7 @@ describe("GET /activity: filters", () => {
 
 describe("GET /activity: paging and the summary", () => {
   it("pages through the feed, and counts the whole filtered range on every page", async () => {
-    const summary = { conversations: 3, notes: 4, statusChanges: 1 };
+    const summary = { conversations: 3, notes: 4, statusChanges: 1, emails: 0 };
 
     const first = await feed({ pageSize: 4 });
     const third = await feed({ pageSize: 4, page: 3 });
@@ -438,9 +450,19 @@ describe("GET /activity: paging and the summary", () => {
     const march = await feed({ from: "2026-03-01", to: "2026-03-31", pageSize: 1 });
     const forMeera = await feed({ from: "2026-03-01", to: "2026-03-31", pageSize: 1 }, asMeera);
 
-    expect(feedOf(march).meta.summary).toEqual({ conversations: 2, notes: 4, statusChanges: 1 });
+    expect(feedOf(march).meta.summary).toEqual({
+      conversations: 2,
+      notes: 4,
+      statusChanges: 1,
+      emails: 0,
+    });
     expect(feedOf(march).meta.total).toBe(8);
-    expect(feedOf(forMeera).meta.summary).toEqual({ conversations: 1, notes: 2, statusChanges: 1 });
+    expect(feedOf(forMeera).meta.summary).toEqual({
+      conversations: 1,
+      notes: 2,
+      statusChanges: 1,
+      emails: 0,
+    });
     expect(feedOf(forMeera).meta.total).toBe(4);
   });
 });
@@ -658,7 +680,7 @@ describe("GET /activity: leads, contacts, companies and opportunities together",
       page: 1,
       pageSize: 25,
       total: 6,
-      summary: { conversations: 2, notes: 2, statusChanges: 1 },
+      summary: { conversations: 2, notes: 2, statusChanges: 1, emails: 0 },
     });
   });
 

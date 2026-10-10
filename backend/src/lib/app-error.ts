@@ -17,6 +17,13 @@ export const ERROR_CODES = [
   "LAST_ADMIN",
   "PAYLOAD_TOO_LARGE",
   "LEAD_CONVERTED",
+  "EMAIL_NOT_CONFIGURED",
+  "EMAIL_SEND_FAILED",
+  "ENCRYPTION_KEY_MISSING",
+  "PRODUCT_IN_USE",
+  "QUOTE_NOT_EDITABLE",
+  "INVALID_STATUS_CHANGE",
+  "INVOICE_EXISTS",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
@@ -48,4 +55,16 @@ export class AppError extends Error {
 // beside the field.
 export function fieldError(path: string, message: string): AppError {
   return new AppError("VALIDATION_FAILED", 400, "Request validation failed", [{ path, message }]);
+}
+
+// For `.catch(...)` on a lookup of something a request names in its body: when it is
+// NOT_FOUND (it does not exist, or the caller may not see it), the failure becomes a
+// validation failure on that field. Anything else is thrown on unchanged.
+export function notFoundAsFieldError(path: string, message: string) {
+  return (error: unknown): never => {
+    if (error instanceof AppError && error.code === "NOT_FOUND") {
+      throw fieldError(path, message);
+    }
+    throw error;
+  };
 }

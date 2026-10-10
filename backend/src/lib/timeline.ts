@@ -8,15 +8,31 @@ import { z } from "./openapi";
 // table, and it only inserts: nothing updates or deletes an entry, and no route offers to.
 
 export const timelineKindSchema = z
-  .enum(["CONVERSATION", "NOTE", "CREATED", "STATUS_CHANGE", "ASSIGNMENT"])
+  .enum([
+    "CONVERSATION",
+    "NOTE",
+    "CREATED",
+    "STATUS_CHANGE",
+    "ASSIGNMENT",
+    "EMAIL",
+    "QUOTE_STATUS",
+    "INVOICE_STATUS",
+  ])
   .openapi("TimelineKind");
 
 export const conversationTypeSchema = z
   .enum(["CALL", "MEETING", "EMAIL", "MESSAGE"])
   .openapi("ConversationType");
 
-// The entries the system writes itself when a record is created or changed.
-export const SYSTEM_KINDS: TimelineKind[] = ["CREATED", "STATUS_CHANGE", "ASSIGNMENT"];
+// The entries the system writes itself when a record is created or changed, or when a quote
+// or an invoice of an opportunity changes its status.
+export const SYSTEM_KINDS: TimelineKind[] = [
+  "CREATED",
+  "STATUS_CHANGE",
+  "ASSIGNMENT",
+  "QUOTE_STATUS",
+  "INVOICE_STATUS",
+];
 
 // The `kind` filter of a timeline or the activity feed: one kind, or SYSTEM for all of the
 // system kinds together.
@@ -41,8 +57,12 @@ export const timelineEntrySchema = z
     // Only a CONVERSATION has one. Written inline, not as a reference to ConversationType:
     // the generator drops "or null" from a reference, and null is the usual value here.
     conversationType: z.enum(conversationTypeSchema.options).nullable(),
-    // What was discussed, or the note. null for system entries.
+    // What was discussed, the note, or the text of an email. null for system entries.
     body: z.string().nullable(),
+    // An EMAIL: { to, cc, subject, status: "SENT", templateId, quote } (quote is { id, number }
+    // when the email carried a quote, otherwise null). A QUOTE_STATUS or INVOICE_STATUS:
+    // { quote | invoice: { id, number }, from, to, total }, where `from` is null when it was
+    // created and `to` is null when a draft quote was deleted.
     // System entries: { from, to } for a lead's status change (plus { reason, note } when it
     // was marked lost, or { contact, company, opportunity } when it was converted);
     // { from, to, fromKind, toKind } for an opportunity's stage change (plus { reason } when

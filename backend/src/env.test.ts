@@ -79,6 +79,23 @@ describe("parseEnv", () => {
     expect(result.ok && result.env.SMTP_PORT).toBe(1025);
   });
 
+  it("takes SETTINGS_ENCRYPTION_KEY when it is long enough, and does without it", () => {
+    const key = "a-secret-of-at-least-32-characters!";
+    const withKey = parseEnv({ ...validSource, SETTINGS_ENCRYPTION_KEY: key });
+    const without = parseEnv({ ...validSource, SETTINGS_ENCRYPTION_KEY: "" });
+
+    expect(withKey.ok && withKey.env.SETTINGS_ENCRYPTION_KEY).toBe(key);
+    expect(without.ok && without.env.SETTINGS_ENCRYPTION_KEY).toBeUndefined();
+  });
+
+  it("names SETTINGS_ENCRYPTION_KEY when it is shorter than 32 characters", () => {
+    const problems = problemsFor({ ...validSource, SETTINGS_ENCRYPTION_KEY: "too-short" });
+
+    expect(problems).toEqual([
+      { name: "SETTINGS_ENCRYPTION_KEY", message: "Use at least 32 characters" },
+    ]);
+  });
+
   it("names MAIL_FROM when SMTP_HOST is set without it", () => {
     const problems = problemsFor({ ...validSource, SMTP_HOST: "smtp.example.com" });
 

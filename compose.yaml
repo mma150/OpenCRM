@@ -52,6 +52,8 @@ services:
       SMTP_HOST: mailpit
       SMTP_PORT: "1025"
       MAIL_FROM: OpenCRM <no-reply@opencrm.local>
+      # DEVELOPMENT-ONLY key for the SMTP password an Admin saves in the app. Never reuse it.
+      SETTINGS_ENCRYPTION_KEY: development-only-key-never-use-elsewhere
       # tsx watch does not see edits made through a Windows bind mount without polling.
       CHOKIDAR_USEPOLLING: "1"
       # Keep the pnpm store on the same volume as node_modules (hard links, and no store on the host).

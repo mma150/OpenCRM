@@ -158,6 +158,7 @@ export async function listActivity(
       conversations: counts.get("CONVERSATION") ?? 0,
       notes: counts.get("NOTE") ?? 0,
       statusChanges: counts.get("STATUS_CHANGE") ?? 0,
+      emails: counts.get("EMAIL") ?? 0,
     },
   };
 }

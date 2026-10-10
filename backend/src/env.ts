@@ -24,6 +24,9 @@ const envSchema = z.object({
   SMTP_USER: optional(z.string()),
   SMTP_PASSWORD: optional(z.string()),
   MAIL_FROM: optional(z.string()),
+  // The secret the SMTP password an Admin saves in the app is encrypted with
+  // (lib/secret-box.ts). Without it such a password cannot be saved.
+  SETTINGS_ENCRYPTION_KEY: optional(z.string().min(32, "Use at least 32 characters")),
 });
 
 const checkedEnvSchema = envSchema

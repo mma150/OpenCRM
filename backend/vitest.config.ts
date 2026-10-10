@@ -21,6 +21,8 @@ export default defineConfig({
       // Tests that need email stand in for the mailer (test/helpers.ts).
       SMTP_HOST: "",
       MAIL_FROM: "OpenCRM Test <test@opencrm.local>",
+      // A test-only key for the secrets the app encrypts (lib/secret-box.ts).
+      SETTINGS_ENCRYPTION_KEY: "test-only-settings-encryption-key-0001",
     },
   },
 });

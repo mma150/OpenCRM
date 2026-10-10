@@ -847,7 +847,7 @@ describe("GET /leads/:id/timeline", () => {
   });
 
   it.each([
-    ["kind", "EMAIL"],
+    ["kind", "TASK"],
     ["kind", "system"],
     ["page", "0"],
     ["pageSize", "101"],

@@ -1,7 +1,9 @@
+import { createTransport } from "nodemailer";
 import request, { type Response } from "supertest";
 import { vi } from "vitest";
 
 import { createApp } from "../src/app";
+import { type Env, env } from "../src/env";
 import type { Role, User } from "../src/generated/prisma/client";
 import * as mailer from "../src/lib/mailer";
 import { hashPassword } from "../src/lib/password";
@@ -27,11 +29,19 @@ export interface ValidationDetail {
 // The public auth routes are rate-limited; ordinary tests sign in far more often than the
 // real limits allow, so they get an app without a practical limit.
 export function createTestApp() {
-  return createApp({ rateLimit: { ipLimit: 100_000, emailLimit: 100_000, statusLimit: 100_000 } });
+  return createApp({
+    rateLimit: {
+      ipLimit: 100_000,
+      emailLimit: 100_000,
+      statusLimit: 100_000,
+      sendLimit: 100_000,
+    },
+  });
 }
 
-// Every record, its timeline, every task, every notification and every custom field, keeping
-// the users and the pipeline stages: for a test file that makes its users once and wants a
+// Every record, its timeline, every task, every notification, every custom field, every
+// quote, invoice, product and email template and the saved settings, keeping the users and
+// the pipeline stages: for a test file that makes its users once and wants a
 // clean slate before each test. Entries and tasks go before the records they belong to, leads before what they
 // were converted into, and opportunities and contacts before the contacts and companies
 // they are linked to.
@@ -39,6 +49,15 @@ export async function resetRecords(): Promise<void> {
   await prisma.notification.deleteMany();
   await prisma.task.deleteMany();
   await prisma.timelineEntry.deleteMany();
+  // Invoices before the quotes they were made from, quotes before the products on their
+  // lines and before the opportunities they belong to.
+  await prisma.invoice.deleteMany();
+  await prisma.quote.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.documentCounter.deleteMany();
+  await prisma.emailTemplate.deleteMany();
+  await prisma.mailSettings.deleteMany();
+  await prisma.organizationSettings.deleteMany();
   await prisma.lead.deleteMany();
   await prisma.opportunity.deleteMany();
   await prisma.contact.deleteMany();
@@ -130,12 +149,48 @@ export async function signInAs(app: ReturnType<typeof createApp>, user: User) {
 // Undone by vi.restoreAllMocks().
 export function captureMail(): mailer.MailMessage[] {
   const messages: mailer.MailMessage[] = [];
-  vi.spyOn(mailer, "isMailConfigured").mockReturnValue(true);
+  vi.spyOn(mailer, "isMailConfigured").mockResolvedValue(true);
   vi.spyOn(mailer, "sendMail").mockImplementation((message) => {
     messages.push(message);
     return Promise.resolve(true);
   });
+  vi.spyOn(mailer, "deliverMail").mockImplementation((message) => {
+    messages.push(message);
+    return Promise.resolve();
+  });
   return messages;
+}
+
+// One step closer to the real thing than captureMail: the settings an Admin would save are
+// in the database, and the mail server itself is nodemailer's in-memory transport, which
+// builds each message and sends nothing. Returns the spy on what that transport was asked to
+// send, so a test can check the From and Reply-To headers too. Undone by
+// vi.restoreAllMocks() and resetRecords().
+export async function useFakeMailServer() {
+  await prisma.mailSettings.create({
+    data: {
+      host: "smtp.test",
+      port: 587,
+      fromName: "OpenCRM Test",
+      fromAddress: "test@opencrm.local",
+    },
+  });
+  const transport = createTransport({ jsonTransport: true });
+  const send = vi.spyOn(transport, "sendMail");
+  vi.spyOn(mailer.mailTransport, "create").mockReturnValue(transport);
+  return send;
+}
+
+// A mail server that fails the way a real one does: an error with nodemailer's code, an SMTP
+// status number, and text of its own that must never reach a response.
+export const MAIL_SERVER_TEXT = "554 banner of mail.internal.example";
+
+export function useFailingMailServer(code = "ECONNECTION") {
+  const transport = createTransport({ jsonTransport: true });
+  vi.spyOn(transport, "sendMail").mockRejectedValue(
+    Object.assign(new Error(MAIL_SERVER_TEXT), { code, responseCode: 554 }),
+  );
+  vi.spyOn(mailer.mailTransport, "create").mockReturnValue(transport);
 }
 
 // The token inside an invite or password-reset link.
@@ -190,4 +245,21 @@ export function zoneOnAnotherDay() {
     inUtc: "overdue",
     inZone: "today",
   } as const;
+}
+
+const originalEnv = { ...env };
+
+// Changes the parsed environment for one test (the mail variables, the encryption key),
+// since it is read once at start-up. Put restoreEnv() in afterEach.
+export function setEnv(values: Partial<Env>): void {
+  Object.assign(env, values);
+}
+
+export function restoreEnv(): void {
+  for (const key of Object.keys(env) as (keyof Env)[]) {
+    if (!(key in originalEnv)) {
+      Reflect.deleteProperty(env, key);
+    }
+  }
+  Object.assign(env, originalEnv);
 }

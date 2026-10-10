@@ -52,11 +52,12 @@ export async function listTimeline(
   return { items: entries.map((entry) => toApiTimelineEntry(entry)), total };
 }
 
+// Exported for the emails service: an email that was sent counts like a conversation.
 // A lead, a contact and an opportunity remember when they were last spoken to; a company
-// does not.
+// does not. Exported for the emails service: an email that was sent counts like a conversation.
 // Raw SQL so the comparison happens in the database (two conversations logged at once
 // cannot move the date backwards) and `updatedAt` is left alone: the record was not edited.
-async function moveLastContactAt(
+export async function moveLastContactAt(
   tx: Prisma.TransactionClient,
   record: RecordRef,
   occurredAt: Date,

@@ -39,7 +39,7 @@ The layering is routes, then controller, then service, then Prisma.
 | Nothing outside `src/env.ts`, `prisma.config.ts` and `test/global-setup.ts` reads `process.env`. | ESLint `no-restricted-properties` |
 | Services never touch `req` or `res`; they take plain arguments and return plain data. | Code review (a service that imports Express types is wrong) |
 | Services call Prisma directly. There is **no repository layer**. | Convention; revisit only if a service becomes untestable |
-| Besides services, only the shared session and link helpers in `src/lib/` (`sessions.ts`, `account-links.ts`), `addTimelineEntry` and `addCreatedEntries` in `lib/timeline.ts`, `assertAssignable` in `lib/record-owner.ts`, `addNotification` in `lib/notifications.ts`, `listActiveCustomFields` in `lib/custom-fields.ts` and the reminder runner in `lib/reminders.ts` call Prisma, because the `authenticate` middleware, several modules and the server's timer need them. | Code review |
+| Besides services, only the shared session and link helpers in `src/lib/` (`sessions.ts`, `account-links.ts`), `addTimelineEntry` and `addCreatedEntries` in `lib/timeline.ts`, `assertAssignable` in `lib/record-owner.ts`, `addNotification` in `lib/notifications.ts`, `listActiveCustomFields` in `lib/custom-fields.ts`, the reminder runner in `lib/reminders.ts`, `getMailServer` in `lib/mailer.ts` (the saved mail settings) and `nextDocumentNumber` in `lib/sales-documents.ts` call Prisma, because the `authenticate` middleware, several modules and the server's timer need them. | Code review |
 | Expected failures are thrown as `AppError`; everything else is allowed to throw. | Code review and `error-handler.test.ts` |
 
 Express 5 specifics: an async handler needs no `try/catch`, because a rejected promise is forwarded to the error handler; and `req.query` is a read-only getter, so never assign to it. Validate by calling `schema.parse(req.query)` at the top of the controller instead of writing middleware that rewrites the request.
@@ -69,9 +69,9 @@ rows = await prisma.$queryRaw<{ now: Date }[]>`SELECT now() AS now`;
 
 Input is validated with Zod in the **controller**: call `schema.parse(...)` on `req.body`, `req.query` or `req.params`. You do not catch the failure. A `ZodError` is mapped centrally by [`backend/src/middleware/error-handler.ts`](../../backend/src/middleware/error-handler.ts) to a `400 VALIDATION_FAILED` response whose `details` lists `{ path, message }` for every problem. A request body that is not valid JSON is also `VALIDATION_FAILED`, with `details: null`.
 
-Every request body schema is **strict** (`z.strictObject({...})`): an unknown key is `VALIDATION_FAILED`, so a request can never set a field the route does not offer (a user cannot send `role` to `PATCH /auth/me`). Every `:id` path parameter is parsed with `z.uuid()`. [`backend/src/middleware/endpoint-contract.test.ts`](../../backend/src/middleware/endpoint-contract.test.ts) walks the OpenAPI registry and fails when a route accepts an unknown key, a missing body or a malformed id, or when a route documented as signed-in answers without a session; a route that takes no input must be added to the list at the top of that test on purpose. A body in which every key is optional may be left out altogether (`DELETE /pipeline-stages/:id`, `POST /opportunities/:id/reopen`): the controller parses `req.body ?? {}`, the route documents the body as not required, and the route is named in `ROUTES_WITH_OPTIONAL_BODY` in the same test. An unknown key is still refused.
+Every request body schema is **strict** (`z.strictObject({...})`): an unknown key is `VALIDATION_FAILED`, so a request can never set a field the route does not offer (a user cannot send `role` to `PATCH /auth/me`). Every `:id` path parameter is parsed with `z.uuid()`. [`backend/src/middleware/endpoint-contract.test.ts`](../../backend/src/middleware/endpoint-contract.test.ts) walks the OpenAPI registry and fails when a route accepts an unknown key, a missing body or a malformed id, or when a route documented as signed-in answers without a session; a route that takes no input must be added to the list at the top of that test on purpose. A body in which every key is optional may be left out altogether (`DELETE /pipeline-stages/:id`, `POST /opportunities/:id/reopen`, `POST /quotes/:id/send`, `POST /quotes/:id/invoice`, `POST /invoices/:id/mark-paid`): the controller parses `req.body ?? {}`, the route documents the body as not required, and the route is named in `ROUTES_WITH_OPTIONAL_BODY` in the same test. An unknown key is still refused.
 
-A rule that Zod cannot express (the password is too common, the manager is not a Sales Manager) is raised by the service in the same shape, so the web form shows it beside the field. For a rule about one field (an owner the caller may not assign to, a company the caller cannot see) use `fieldError(path, message)` from `lib/app-error.ts`.
+A rule that Zod cannot express (the password is too common, the manager is not a Sales Manager) is raised by the service in the same shape, so the web form shows it beside the field. For a rule about one field (an owner the caller may not assign to, a company the caller cannot see) use `fieldError(path, message)` from `lib/app-error.ts`. When the rule is "this id in the body must be something the caller may see" and another service already answers `NOT_FOUND` for it, put `.catch(notFoundAsFieldError(path, message))` on that lookup (a quote's `opportunityId`, an email's `templateId`).
 
 The mapping itself is proven by a test-only route in [`backend/src/middleware/error-handler.test.ts`](../../backend/src/middleware/error-handler.test.ts), which uses the same call a real controller makes:
 
@@ -122,13 +122,20 @@ The complete list lives in one place, `ERROR_CODES` in [`backend/src/lib/app-err
 | `FORBIDDEN` | 403 | Not allowed: wrong role (including a Read-only user changing a record), a state-changing request from an origin that is not allowed, or an Admin deactivating their own account. |
 | `ACCOUNT_DEACTIVATED` | 403 | The password was right, but the account is deactivated. |
 | `ACCOUNT_LOCKED` | 423 | Too many wrong passwords; `details.retryAfterSeconds` says how long the lock lasts. |
-| `RATE_LIMITED` | 429 | Too many requests to a public auth route; `details.retryAfterSeconds` and the `Retry-After` header say when to try again. |
+| `RATE_LIMITED` | 429 | Too many requests to a public auth route, or too many emails sent by one user ([Sending email from a record](#sending-email-from-a-record)); `details.retryAfterSeconds` and the `Retry-After` header say when to try again. |
 | `INVALID_TOKEN` | 400 | An invite or password-reset link that is unknown, used, expired or cancelled. |
 | `SETUP_CLOSED` | 409 | First-run setup was called after a user exists. |
 | `EMAIL_IN_USE` | 409 | Another user already has this email. |
 | `LAST_ADMIN` | 409 | The change would leave no Admin who can sign in. |
 | `PAYLOAD_TOO_LARGE` | 413 | The JSON body is over the 100 kB limit set in `app.ts` (12 MB on the import routes), or the CSV file in an import is over 5 MB. |
 | `LEAD_CONVERTED` | 409 | The lead has been converted, so it cannot be edited, marked lost, deleted or converted again (see [Converting a lead](#converting-a-lead)). |
+| `EMAIL_NOT_CONFIGURED` | 409 | A person asked for an email to be sent (from a record, with a quote, the settings' test message) and no mail server is set up. Nothing was sent or written. |
+| `EMAIL_SEND_FAILED` | 502 | The mail server could not be reached or refused the message. The message says what kind of problem it was and the SMTP status number, never the mail server's own text. Nothing was written. |
+| `ENCRYPTION_KEY_MISSING` | 409 | An SMTP password was sent but the server has no `SETTINGS_ENCRYPTION_KEY`, so it cannot be stored encrypted. Nothing was saved. |
+| `PRODUCT_IN_USE` | 409 | The product is on a quote, so it cannot be deleted; archive it instead. |
+| `QUOTE_NOT_EDITABLE` | 409 | The quote is not a draft, so it cannot be changed or deleted; reopen it first. |
+| `INVALID_STATUS_CHANGE` | 409 | The quote or invoice is not in a status this action starts from (see the tables in [Quotes](#quotes) and [Invoices](#invoices)); `details.status` is the status it is stored as. |
+| `INVOICE_EXISTS` | 409 | The quote already has an invoice, so it cannot get a second one or be reopened; `details.invoice` is `{ id, number }`. |
 
 Expected failures are thrown as `AppError(code, status, message, details?, options?)`; the health service does it like this:
 
@@ -140,7 +147,7 @@ throw new AppError("SERVICE_UNAVAILABLE", 503, "Database is unavailable", null, 
 
 The optional `cause` keeps the original error for the log; it is never sent to the client.
 
-Two HTTP statuses carry more than one code (401 and 403), which is why clients switch on `code` and never on the status: a wrong password must not look like an expired session.
+Several HTTP statuses carry more than one code (401, 403 and 409), which is why clients switch on `code` and never on the status: a wrong password must not look like an expired session.
 
 **Adding a code.** Adding is safe; renaming or removing is a breaking change for every client, including the future mobile app, so avoid it.
 
@@ -173,11 +180,11 @@ The API describes itself from the same Zod schemas it validates with, so documen
 
 ## Environment
 
-[`backend/src/env.ts`](../../backend/src/env.ts) validates the environment with Zod when it is first imported, prints each bad variable by name, and exits with code 1 before the server listens. Import `env` from it; never read `process.env` elsewhere (lint-enforced, with the three exceptions listed above). The variables are `NODE_ENV`, `PORT`, `DATABASE_URL` (required), `CORS_ORIGINS`, `APP_URL`, `TRUST_PROXY`, `SESSION_COOKIE_SECURE` and the mail settings `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` and `MAIL_FROM` (required when `SMTP_HOST` is set); [`backend/.env.example`](../../backend/.env.example) lists them with development values and says what each does. An empty value (`SMTP_HOST=`) counts as not set. Adding a variable means adding it to the Zod schema, to `.env.example`, and (if the container needs a different value) to `compose.yaml`.
+[`backend/src/env.ts`](../../backend/src/env.ts) validates the environment with Zod when it is first imported, prints each bad variable by name, and exits with code 1 before the server listens. Import `env` from it; never read `process.env` elsewhere (lint-enforced, with the three exceptions listed above). The variables are `NODE_ENV`, `PORT`, `DATABASE_URL` (required), `CORS_ORIGINS`, `APP_URL`, `TRUST_PROXY`, `SESSION_COOKIE_SECURE` and the mail settings `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` and `MAIL_FROM` (required when `SMTP_HOST` is set), and `SETTINGS_ENCRYPTION_KEY` (optional, at least 32 characters: the secret the SMTP password an Admin saves in the app is encrypted with, see [Email](#email)); [`backend/.env.example`](../../backend/.env.example) lists them with development values and says what each does. An empty value (`SMTP_HOST=`) counts as not set. Adding a variable means adding it to the Zod schema, to `.env.example`, and (if the container needs a different value) to `compose.yaml`.
 
 ## Prisma and the database
 
-PostgreSQL is reached through Prisma 7 with the `pg` driver adapter ([`backend/src/lib/prisma.ts`](../../backend/src/lib/prisma.ts)). Only services import it. The schema is [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma); its models are `User`, `Session`, `AuthToken` (invite and password-reset links), the owned records `Lead`, `Contact`, `Company` and `Opportunity`, `PipelineStage` (see [The pipeline and opportunities](#the-pipeline-and-opportunities)), `TimelineEntry` (see [The timeline](#the-timeline)), `Task` (see [Tasks](#tasks)), `Notification` (see [Notifications](#notifications)) and `CustomField` (see [Custom fields](#custom-fields)). Ids are UUID version 7 (`@default(uuid(7))`). The generated client goes to `backend/src/generated/prisma/`, which is git-ignored and recreated by `prisma generate`.
+PostgreSQL is reached through Prisma 7 with the `pg` driver adapter ([`backend/src/lib/prisma.ts`](../../backend/src/lib/prisma.ts)). Only services import it. The schema is [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma); its models are `User`, `Session`, `AuthToken` (invite and password-reset links), the owned records `Lead`, `Contact`, `Company` and `Opportunity`, `PipelineStage` (see [The pipeline and opportunities](#the-pipeline-and-opportunities)), `TimelineEntry` (see [The timeline](#the-timeline)), `Task` (see [Tasks](#tasks)), `Notification` (see [Notifications](#notifications)), `CustomField` (see [Custom fields](#custom-fields)), `MailSettings` (see [Email](#email)), `EmailTemplate` (see [Email templates](#email-templates)), `OrganizationSettings`, `Product`, `Quote` with `QuoteLine`, `Invoice` with `InvoiceLine`, and `DocumentCounter` (see [Products, quotes and invoices](#products-quotes-and-invoices)). Ids are UUID version 7 (`@default(uuid(7))`). The generated client goes to `backend/src/generated/prisma/`, which is git-ignored and recreated by `prisma generate`.
 
 Run Prisma inside the API container, where the database host and credentials are already set:
 
@@ -198,7 +205,7 @@ docker compose exec api pnpm exec prisma generate
 
 Commit the new folder under [`backend/prisma/migrations/`](../../backend/prisma/migrations/) together with the schema change. Never edit a migration that has been merged.
 
-**Check-then-write rules.** A rule of the form "check, then write on the strength of the check" (only one first Admin, never zero Admins) is not safe when two requests arrive together. Run it in `prisma.$transaction(async (tx) => { await lockUserAdministration(tx); ... })`; `lockUserAdministration` in `lib/prisma.ts` takes a PostgreSQL advisory lock that makes the second transaction wait for the first. `users.test.ts` proves it with simultaneous requests. `lockPipelineStages` is the same lock for changes to the pipeline stages (never fewer than one open stage, no two stages with one name), and `lockCustomFields` for changes to the custom field definitions (no two fields of a record type with one label, never more than 30 in use). A third guard is a conditional write as the first statement of the transaction: converting a lead starts with `updateMany({ where: { id, status: { not: "CONVERTED" } } })`, so a second request waits on the row and then changes nothing. A unique column is the other guard: catch Prisma error `P2002` and turn it into the right `AppError`, as `users.service.ts` does for `EMAIL_IN_USE`.
+**Check-then-write rules.** A rule of the form "check, then write on the strength of the check" (only one first Admin, never zero Admins) is not safe when two requests arrive together. Run it in `prisma.$transaction(async (tx) => { await lockUserAdministration(tx); ... })`; `lockUserAdministration` in `lib/prisma.ts` takes a PostgreSQL advisory lock that makes the second transaction wait for the first. `users.test.ts` proves it with simultaneous requests. `lockPipelineStages` is the same lock for changes to the pipeline stages (never fewer than one open stage, no two stages with one name), and `lockCustomFields` for changes to the custom field definitions (no two fields of a record type with one label, never more than 30 in use). A third guard is a conditional write as the first statement of the transaction: converting a lead starts with `updateMany({ where: { id, status: { not: "CONVERTED" } } })`, so a second request waits on the row and then changes nothing. A fourth is a lock on one row: every change of a quote's or an invoice's status, and making a quote's invoice, starts with `lockQuote(tx, id)` (`SELECT ... FOR UPDATE`), then reads the row again and decides, so two requests can never both pass the check. A fifth is a counter row updated in the transaction that uses its value: `nextDocumentNumber` gives each quote and invoice the next number of its series, and a create that fails rolls the number back. A unique column is the other guard: catch Prisma error `P2002` and turn it into the right `AppError`, as `users.service.ts` does for `EMAIL_IN_USE`.
 
 Tests use their own `opencrm_test` database, created and migrated automatically; see [testing](testing.md#backend-tests).
 
@@ -212,7 +219,7 @@ Sign-in is a server-side session (D-01): a random 256-bit token whose SHA-256 ha
 | `getAuth(req)` | same file | In a controller, returns `{ user, sessionId }` for the request. Pass plain values (`user.id`) on to the service. |
 | `requireRole(...roles)` | [`middleware/require-role.ts`](../../backend/src/middleware/require-role.ts) | After `authenticate`; anyone else gets `FORBIDDEN`. Hiding a screen in the web app is cosmetic, this is the enforcement. |
 | Origin check | [`middleware/origin-check.ts`](../../backend/src/middleware/origin-check.ts) | The CSRF defence, applied to the whole app: a request that is not GET, HEAD or OPTIONS must carry an `Origin` from `CORS_ORIGINS`, or carry no session cookie at all (a Bearer client). |
-| Rate limiters | [`middleware/rate-limit.ts`](../../backend/src/middleware/rate-limit.ts) | Per address and per email, on the public auth routes only. Counters are in memory. `createApp({ rateLimit })` lets tests change the limits. |
+| Rate limiters | [`middleware/rate-limit.ts`](../../backend/src/middleware/rate-limit.ts) | Per address and per email, on the public auth routes; and `sendEmail`, per signed-in user, on the routes that send an email for a user (put it after `authenticate`). Counters are in memory. `createApp({ rateLimit })` lets tests change the limits. |
 | Sessions | [`lib/sessions.ts`](../../backend/src/lib/sessions.ts), [`lib/session-cookie.ts`](../../backend/src/lib/session-cookie.ts) | Create and resolve sessions; set, clear and read the cookie. |
 | Passwords | [`lib/password.ts`](../../backend/src/lib/password.ts) | Argon2id hashing, and the one password rule: 10 to 128 characters and not on the common-password list (`lib/common-passwords.txt`). |
 | Links | [`lib/account-links.ts`](../../backend/src/lib/account-links.ts) | Single-use invite (7 days) and password-reset (1 hour) links, built from `APP_URL` and stored hashed. |
@@ -228,7 +235,7 @@ usersRouter.use(requireRole("ADMIN")); // everything below
 
 `requireRole` answers "may this role use this route at all". Whether a user may see or change one particular record depends on who owns it, and is decided in the service; see [Record access](#record-access).
 
-Default limits on the public auth routes, per 5 minutes: 30 requests per address (successful sign-ins are not counted), 8 per email address on sign-in and forgot-password, and 300 per address on the first-run check. Ten wrong passwords in a row lock an account for 15 minutes; the lock is stored on the user, clears on its own and is cleared by a password reset.
+Default limits on the public auth routes, per 5 minutes: 30 requests per address (successful sign-ins are not counted), 8 per email address on sign-in and forgot-password, and 300 per address on the first-run check. Ten wrong passwords in a row lock an account for 15 minutes; the lock is stored on the user, clears on its own and is cleared by a password reset. A signed-in user may send 30 emails per 5 minutes (`POST /emails`, `POST /quotes/:id/send` and `POST /settings/email/test` share the count).
 
 Rules that keep sign-in from leaking information, each pinned by a test in `auth.test.ts`: a wrong email and a wrong password get the same answer; forgot-password always answers 200; a deactivated account is named only after the correct password; tokens and links are never logged and never appear in an API URL (they travel in the POST body).
 
@@ -293,7 +300,7 @@ Rules that follow from it, each pinned in `leads.test.ts`, `contacts.test.ts`, `
 
 ## List endpoints
 
-Every list that can grow (leads, contacts, companies, opportunities, tasks) has the same query string and the same `meta`, defined once in [`backend/src/lib/list-query.ts`](../../backend/src/lib/list-query.ts):
+Every list that can grow (leads, contacts, companies, opportunities, tasks, products, quotes, invoices) has the same query string and the same `meta`, defined once in [`backend/src/lib/list-query.ts`](../../backend/src/lib/list-query.ts):
 
 | Query | Meaning | Default |
 | --- | --- | --- |
@@ -339,10 +346,10 @@ Every dated thing that happens to a record is one row in **one table**, `Timelin
 
 | Column | Meaning |
 | --- | --- |
-| `kind` | `CONVERSATION`, `NOTE`, `CREATED`, `STATUS_CHANGE` or `ASSIGNMENT`. |
+| `kind` | `CONVERSATION`, `NOTE`, `EMAIL`, `CREATED`, `STATUS_CHANGE`, `ASSIGNMENT`, `QUOTE_STATUS` or `INVOICE_STATUS`. The last five are the system kinds (the `kind=SYSTEM` filter). |
 | `conversationType` | `CALL`, `MEETING`, `EMAIL` or `MESSAGE`; only for a conversation. |
-| `body` | What was discussed, or the note. `null` for system entries. |
-| `details` | JSON for system entries. A lead's status change: `{ from, to }`, plus `{ reason, note }` when it was marked lost, or `{ contact, company, opportunity }` (each `{ id, name }` or null) when it was converted. An opportunity's stage change: `{ from, to, fromKind, toKind }` with the stages' names as they were and their kinds, plus `{ reason }` when it was closed. An assignment: `{ fromOwner: { id, name }, toOwner: { id, name } }`. The `CREATED` entry of a record made by converting a lead: `{ fromLead: { id, name } }`; of a record made by a CSV import: `{ import: true }`. |
+| `body` | What was discussed, the note, or the text of an email as it was sent. `null` for system entries. |
+| `details` | JSON for system entries. A lead's status change: `{ from, to }`, plus `{ reason, note }` when it was marked lost, or `{ contact, company, opportunity }` (each `{ id, name }` or null) when it was converted. An opportunity's stage change: `{ from, to, fromKind, toKind }` with the stages' names as they were and their kinds, plus `{ reason }` when it was closed. An assignment: `{ fromOwner: { id, name }, toOwner: { id, name } }`. The `CREATED` entry of a record made by converting a lead: `{ fromLead: { id, name } }`; of a record made by a CSV import: `{ import: true }`. An `EMAIL`: `{ to, cc, subject, status: "SENT", templateId, quote }`, where `quote` is `{ id, number }` when the email carried a quote and null otherwise. A `QUOTE_STATUS` or `INVOICE_STATUS` (always on the opportunity): `{ quote \| invoice: { id, number }, from, to, total }`, with `from` null when it was made and `to` null when a draft quote was deleted. |
 | `occurredAt` | When it happened: chosen by the user for a conversation (not more than 5 minutes ahead), the time of writing for everything else. Timelines sort by it, newest first, then by `createdAt`, then by `id`. |
 | `authorId` | Who wrote it: always the signed-in user, from the session. |
 | `leadId`, `contactId`, `companyId`, `opportunityId` | The record: one nullable column per record type, and exactly one of them is set on every entry; the check constraint `TimelineEntry_one_record` makes the database refuse anything else. Code does not name these columns: it passes a `RecordRef`, `{ type, id }` with the type `"lead"`, `"contact"`, `"company"` or `"opportunity"`, and `recordColumn(record)` in `lib/timeline.ts` turns it into the column. |
@@ -370,13 +377,14 @@ The rules, each pinned in `timeline.test.ts`:
   So there is never a change without its entry or an entry without its change: if either write fails, both are undone. A change that is refused, or that changes nothing the timeline records (editing a field other than the status, assigning to the owner the lead already has), writes no entry.
 - **What writes what, for a lead:** creating it writes `CREATED`; a status change through `PATCH`, mark-lost, reopening and converting each write `STATUS_CHANGE`; assigning writes `ASSIGNMENT`; logging a conversation writes `CONVERSATION` and moves the lead's `lastContactAt` forward to it (never back) in the same transaction.
 - **For a contact and a company:** creating writes `CREATED` and assigning writes `ASSIGNMENT`; editing (a contact's company included) and deleting write nothing. A conversation on a contact moves the contact's `lastContactAt` the same way. A company has no `lastContactAt`, and a conversation logged on a company does not touch its contacts.
-- **For an opportunity:** creating writes `CREATED`; a move to another stage, closing, reopening and the deletion of its stage each write `STATUS_CHANGE`; assigning writes `ASSIGNMENT`; editing, deleting, a move to the stage it is already in and a correction of the close reason write nothing. A conversation moves the opportunity's own `lastContactAt`, not its contact's.
+- **For an opportunity:** creating writes `CREATED`; a move to another stage, closing, reopening and the deletion of its stage each write `STATUS_CHANGE`; assigning writes `ASSIGNMENT`; editing, deleting, a move to the stage it is already in and a correction of the close reason write nothing. A conversation moves the opportunity's own `lastContactAt`, not its contact's. Making, deleting and every change of status of one of its quotes writes `QUOTE_STATUS`, and of one of its invoices `INVOICE_STATUS`; editing a draft quote or an invoice's due date writes nothing.
+- **An email sent from a record** writes `EMAIL` on that record and moves its `lastContactAt` like a conversation; an email that carries a quote is written on the quote's opportunity. Only an email the mail server accepted is written (see [Sending email from a record](#sending-email-from-a-record)).
 - **Access follows the record.** Reading a timeline needs a record the caller may see, and writing on one follows its write rule, exactly as in [Record access](#record-access): outside the caller's reach is `NOT_FOUND`, a Read-only user writing is `FORBIDDEN`. The timeline service asks the record's own service (`findLead`, `findContact`, `findCompany`, listed in its `findRecord` table) rather than repeating the rule. An id of another type (`/contacts/<a lead's id>/timeline`) is `NOT_FOUND` like any other unknown id. A converted or lost lead and a closed opportunity still accept conversations and notes.
 - **A soft-deleted record keeps its entries in the table**, but they appear nowhere: its timeline is `NOT_FOUND` and the activity feed leaves them out.
 - **The activity feed names each entry's record** as `{ type, id, name }`, with the type `"LEAD"`, `"CONTACT"`, `"COMPANY"` or `"OPPORTUNITY"` and the name a person's full name, or the name of a company or an opportunity.
-- **The activity feed is scoped by author, not by record owner**: an Admin sees every entry, a Sales Manager the entries written by themselves or by a user whose `managerId` is the manager; Sales Reps and Read-only users get `FORBIDDEN`. `from` and `to` are inclusive and take a day (the whole day, in UTC) or an exact moment. `meta.summary` counts everything the filters match, not only the page.
+- **The activity feed is scoped by author, not by record owner**: an Admin sees every entry, a Sales Manager the entries written by themselves or by a user whose `managerId` is the manager; Sales Reps and Read-only users get `FORBIDDEN`. `from` and `to` are inclusive and take a day (the whole day, in UTC) or an exact moment. `meta.summary` counts everything the filters match, not only the page: `{ conversations, notes, statusChanges, emails }`.
 
-**Adding a kind.** A new kind (`EMAIL`, `TASK`) is a new value in the `TimelineKind` enum and in `timelineKindSchema`, plus an `addTimelineEntry` call in the service that does the thing.
+**Adding a kind.** A new kind is a new value in the `TimelineKind` enum (a migration with `ALTER TYPE ... ADD VALUE`; `20261010093005_email_products_quotes_invoices` added `EMAIL`, `QUOTE_STATUS` and `INVOICE_STATUS`) and in `timelineKindSchema`, plus an `addTimelineEntry` call in the service that does the thing. A kind the system writes itself also goes into `SYSTEM_KINDS`. The check constraint `TimelineEntry_one_record` is about record columns, not kinds, so it stays as it is.
 
 **Adding a record type** (opportunities were the fourth; `20261010064650_opportunities` is the migration to copy). The three routes, their access rules and the feed come from shared code, so a new type is a short list. Steps 2 and 4 are checked by the compiler, because `RecordType` is a closed union: a missing case does not build.
 
@@ -529,7 +537,171 @@ A notification is a message for one user inside the app: `{ id, kind, title, bod
 
 ## Email
 
-[`backend/src/lib/mailer.ts`](../../backend/src/lib/mailer.ts) is the only place that sends email. `sendMail({ to, subject, text })` returns `true` when the message was handed to the SMTP server and `false` when email is off (`SMTP_HOST` not set) or sending failed; it never throws, so a request never fails because of email (D-10). `isMailConfigured()` says whether email is on. Messages are plain text. In the Compose stack the API sends to [Mailpit](http://localhost:8025), a local inbox, so no email leaves your machine. When an invite or reset link cannot be emailed, the API returns the link to the Admin instead (`LinkResult` in the users module).
+[`backend/src/lib/mailer.ts`](../../backend/src/lib/mailer.ts) is the only place that sends email, and it decides which mail server everything uses (invites, password resets, reminders, emails a user sends):
+
+1. the settings an Admin saved in the app (the one row of `MailSettings`), or else
+2. the `SMTP_*` environment variables, or else
+3. email is off.
+
+`getMailServer()` reads that on every use, so a change applies at once and in every API process; `isMailConfigured()` says whether email is on (it is `async`). Messages are plain text.
+
+| Function | For | Behaviour |
+| --- | --- | --- |
+| `sendMail(message)` | email nobody waits for (an invite, a reset link, a reminder) | Returns `true` when the mail server took the message and `false` when email is off or sending failed. It never throws, so a request never fails because of email (D-10): when an invite or reset link cannot be emailed, the API returns the link to the Admin instead (`LinkResult` in the users module). |
+| `deliverMail(message)` | email a person asked for and waits on | Throws a `MailError` with `reason` `NOT_CONFIGURED` or `FAILED`. A route calls it through `deliverEmail` in `emails.service.ts`, which turns the two into `EMAIL_NOT_CONFIGURED` (409) and `EMAIL_SEND_FAILED` (502). |
+
+- **A message** is `{ to, cc?, subject, text, fromName?, replyTo?, attachments? }`. The From **address** always comes from the settings; `fromName` only changes the name in front of it. `attachments` (`{ filename, content: Buffer, contentType }`) is in the type for a later PDF renderer; nothing sends one yet.
+- **A failure never repeats the mail server.** `MailError.message` is one of the mailer's own sentences, chosen by nodemailer's error code (cannot connect, timed out, host not found, login refused, TLS failed, address refused), plus the SMTP status number. The mail server's text goes to the log only.
+- **Limits on the connection:** 10 seconds to connect, 10 for the greeting, 20 per socket operation; the transport is built with `disableFileAccess` and `disableUrlAccess`, so a message can never be made from a path or a URL.
+- In the Compose stack the API sends to [Mailpit](http://localhost:8025), a local inbox, so no email leaves your machine.
+- **In tests** email is off. `captureMail()` stands in for the three functions; `useFakeMailServer()` saves settings and replaces only the transport (`mailTransport.create`), so the real code runs up to the wire; `useFailingMailServer(code)` makes that transport fail like a real one.
+
+### Mail settings
+
+[`modules/email-settings/`](../../backend/src/modules/email-settings/) (MAIL-01), mounted at `/settings/email`:
+
+| Route | Who | Rules |
+| --- | --- | --- |
+| `GET /settings/email/status` | any signed-in user | `{ enabled }`: whether email is on. (`GET /users` still carries `meta.mailEnabled` for the Admin's users page.) |
+| `GET /settings/email` | Admin | `{ source, host, port, secure, username, hasPassword, fromName, fromAddress, replyTo, updatedAt, canStorePassword, passwordUnreadable }`. `source` is `DATABASE`, `ENVIRONMENT` or `NONE`. The password is never returned. |
+| `PUT /settings/email` | Admin | Replaces the saved settings: `{ host, port, secure?, username?, password?, fromName?, fromAddress, replyTo? }`. `password` left out keeps the stored one, `null` removes it, and removing the username removes it too. A password without a username is `VALIDATION_FAILED` on `username`. Nothing is sent. |
+| `DELETE /settings/email` | Admin | Forgets the saved settings: back to the environment variables, or to no email. Answers with the settings then in effect. |
+| `POST /settings/email/test` `{ to }` | Admin | Sends one message with the settings in effect and answers `{ sent: true, to }`, or `EMAIL_NOT_CONFIGURED` / `EMAIL_SEND_FAILED`. |
+
+- **The password is encrypted at rest** with AES-256-GCM ([`lib/secret-box.ts`](../../backend/src/lib/secret-box.ts)); the key is derived (HKDF-SHA-256) from `SETTINGS_ENCRYPTION_KEY`, which lives only in the environment. Without the variable a password is refused with `ENCRYPTION_KEY_MISSING` and nothing is saved; a mail server that needs no login can still be saved, and `canStorePassword` is false so the form can say why. See [security](security.md#secrets-the-app-stores).
+- **When the key changes**, the stored password cannot be read any more: `passwordUnreadable` is true, `hasPassword` stays true, and sending fails with `EMAIL_SEND_FAILED` ("The saved SMTP password cannot be read...") rather than trying without a password. Saving the password again fixes it.
+- `host` is a host name or an IP address without scheme, port or path; `port` is 1 to 65535; `secure` is true for implicit TLS (usually port 465) and false for STARTTLS or plain. `fromName` may not hold `<`, `>`, `"` or a line break.
+- `replyTo` is where an answer to a system email goes. An email a user sends is answered to that user.
+
+## Email templates
+
+[`modules/email-templates/`](../../backend/src/modules/email-templates/) (MAIL-04). A template is `{ id, name, subject, body, shared, owner: { id, name }, editable, createdAt, updatedAt }`: plain text, with `{{placeholders}}` in the subject and the body.
+
+| Route | Rules |
+| --- | --- |
+| `GET /email-templates` | The caller's own templates and every shared one, by name. Not paged (a user owns at most 200). |
+| `GET /email-templates/placeholders` | The supported placeholders: `[{ key, token, label, description }]`. |
+| `POST /email-templates` `{ name, subject, body, shared? }` | Owned by the caller. A name the caller already uses (whatever the case) is `VALIDATION_FAILED` on `name`; the 201st template is `VALIDATION_FAILED` with `details: null`. |
+| `GET` / `PATCH` / `DELETE /email-templates/:id` | See below. Deleting is for real; emails already sent keep their own text. |
+
+| Who | Sees | Changes and deletes | Shares |
+| --- | --- | --- | --- |
+| Admin | own and shared | own, and any shared one | yes |
+| Sales Manager | own and shared | own | yes |
+| Sales Rep | own and shared | own | no (`FORBIDDEN`) |
+| Read-only | shared | nothing (`FORBIDDEN`) | no |
+
+- Another user's **private** template is `NOT_FOUND`, for an Admin too. A **shared** template the caller may not change is `FORBIDDEN` (it is no secret that it exists). `editable` says which it is for the caller.
+- `name` is 1 to 100 characters, `subject` 1 to 200 on one line, `body` 1 to 20,000.
+- **Placeholders** are `{{contact.firstName}}`, `{{contact.lastName}}`, `{{company.name}}`, `{{opportunity.name}}`, `{{sender.name}}`, `{{sender.email}}`, and for an email sent with a quote `{{quote.number}}` and `{{quote.total}}`. Spaces inside the brackets are fine. `renderPlaceholders(text, values)` fills them in **on the server when the email is sent**: a placeholder that is not on the list stays in the text exactly as typed, and a known one the record has no value for is replaced by nothing. `POST /emails/preview` reports both (`unknown`, `empty`) before anything is sent. A value is never filled in twice (a contact named `{{sender.name}}` stays that).
+- What a placeholder means per record: for a **lead**, `contact.*` is the lead's own name and `company.name` the company typed on it; for a **contact**, its own name and its company; for a **company**, only `company.name`; for an **opportunity**, its name, its contact and its company. A linked contact or company the sender may not see counts as none.
+
+## Sending email from a record
+
+[`modules/emails/`](../../backend/src/modules/emails/) (MAIL-02, MAIL-03).
+
+| Route | Rules |
+| --- | --- |
+| `POST /emails` `{ record: { type, id }, to, cc?, subject, body, templateId? }` | Sends and answers with the `EMAIL` timeline entry (201). |
+| `POST /emails/preview` `{ record, subject, body }` | `{ subject, body, unknown, empty }`: the text with its placeholders filled in. Sends and stores nothing; works while email is off. |
+| `GET /emails/defaults?recordType=&recordId=` | `{ recipients: [{ name, email, contactId }] }`: a lead's own address (`contactId` null), a contact's, the contacts of a company that have an address and that the caller may see (by name, at most 50), an opportunity's contact. |
+
+- `record.type` is `LEAD`, `CONTACT`, `COMPANY` or `OPPORTUNITY`. **Access follows the record**, as for a conversation: sending needs a record the caller may see and a role that may write (`NOT_FOUND` outside the caller's reach, `FORBIDDEN` for a Read-only user); the preview and the defaults need only a record the caller may see. A lost lead and a closed opportunity still take email.
+- `to` is 1 to 10 addresses and `cc` up to 10; each is trimmed and lowercased, and an address that appears twice (or in both) is sent once. `subject` is 1 to 200 characters on one line, `body` 1 to 20,000. There is no `from`, `replyTo`, `bcc` or attachment in the request.
+- **From** is the configured address under the **sender's own name**; **Reply-To** is the sender's own email, so an answer reaches the person, not the system mailbox.
+- **The order is: check, send, write.** The record and the template are checked, the message is handed to the mail server, and only when it was accepted is the `EMAIL` entry written and `lastContactAt` moved, in one transaction. So email that is off (`EMAIL_NOT_CONFIGURED`) or a mail server that refuses (`EMAIL_SEND_FAILED`) leaves **no** entry: the timeline never claims an email that did not go out. There is no "failed" entry and no retry; the user sends again.
+- `templateId` only records where the text came from (`details.templateId`); what is sent is the request's own subject and body. A template the caller may not see is `VALIDATION_FAILED` on `templateId`.
+- **Sending is limited** to 30 emails per user per 5 minutes (`limiters.sendEmail`), answered as `RATE_LIMITED`. The count is per API process and shared with sending a quote and the settings' test message.
+- No tracking, no inbound email, no HTML.
+
+## Products, quotes and invoices
+
+The shared pieces are in [`backend/src/lib/sales-documents.ts`](../../backend/src/lib/sales-documents.ts): the arithmetic, the numbering, the shape of a line and the print-ready document. The app counts in one currency (US dollars); amounts are JSON numbers with at most two decimals and nothing stores a currency.
+
+### Organisation settings
+
+[`modules/organization/`](../../backend/src/modules/organization/), mounted at `/settings/organization`: who the quotes and invoices are from, and what a new quote starts with. `GET` is for every signed-in user (the details are printed on every document); `PUT` is for Admins and **replaces** the settings (a text left out is cleared, a number left out goes back to its default).
+
+`{ name, address, email, phone, taxId, defaultQuoteTerms, defaultValidityDays, defaultTaxRate, invoicePaymentTermsDays, updatedAt }`. Until an Admin saves them: an empty name, 30 validity days, a default tax rate of 0 and 30 days of payment terms. `defaultValidityDays` is 1 to 365, `invoicePaymentTermsDays` 0 to 365, `defaultTaxRate` 0 to 100 with two decimals. Changing them never changes a quote or an invoice that exists.
+
+### Products
+
+[`modules/products/`](../../backend/src/modules/products/) (QUOT-01). A product is `{ id, name, sku, description, unitPrice, taxRate, active, createdAt, updatedAt }`. It is configuration, not an owned record: no owner, no soft delete.
+
+| Route | Who | Rules |
+| --- | --- | --- |
+| `GET /products`, `GET /products/:id` | any signed-in user | The list contract; `search` matches the name and the SKU; sorts by `name` (the default, ascending), `sku` (none last), `unitPrice`, `createdAt`; `active=true` or `false` filters, and left out lists both. |
+| `POST /products`, `PATCH /products/:id` | Admin | `name` 1 to 200 characters; `unitPrice` is `moneySchema`; `taxRate` is 0 to 100 with two decimals, or null for "the organisation's default"; a SKU (up to 60 characters) another product has, whatever the case, is `VALIDATION_FAILED` on `sku`. |
+| `POST /products/:id/archive`, `/restore` | Admin | Sets `active`. Either one on a product already in that state answers with it unchanged. |
+| `DELETE /products/:id` | Admin | Only a product no quote line was ever made from; otherwise `PRODUCT_IN_USE`. |
+
+### The arithmetic
+
+`computeTotals(lines, discountType, discountValue)` is the one place money is counted, for quotes, invoices and their documents. It uses exact decimals (Prisma's `Decimal`, widened to 40 significant digits), never JavaScript numbers, and rounds **half up to cents** at exactly these points:
+
+1. **line total** = quantity x unit price x (1 - line discount %), rounded. It is before tax and before the quote's discount.
+2. **subtotal** = the sum of the line totals.
+3. **discount total** = `NONE`: 0; `PERCENT`: subtotal x discount %, rounded; `AMOUNT`: the amount, but never more than the subtotal.
+4. **tax**, per tax rate: (the line totals at that rate, less their share of the discount) x rate, rounded. The discount is shared out in proportion to the line totals. The **tax total** is the sum over the rates.
+5. **total** = subtotal - discount total + tax total.
+
+So tax is rounded once per rate, not once per line, and the rows of a document's tax table add up to its tax total exactly. `sales-documents.test.ts` pins the rule with a table of cases (half cents, repeating shares, a discount above the subtotal, amounts beyond what floating point holds). A client never adds these up itself: it sends lines and reads totals.
+
+### Numbering
+
+A quote is `Q-0001`, `Q-0002`, ...; an invoice `INV-0001`, ...: one series each per installation, padded to four digits and growing past them. `nextDocumentNumber(tx, series)` updates the series' row of `DocumentCounter` inside the transaction that creates the document, so simultaneous requests get different numbers and a create that fails gives its number back. Invoices are never deleted, so their series has no gaps; a deleted draft quote leaves one. Lists sort by the stored `sequence`, not by the text.
+
+### Quotes
+
+[`modules/quotes/`](../../backend/src/modules/quotes/) (QUOT-02, QUOT-03). A quote belongs to one opportunity, and **who may see and change it follows that opportunity**: see the opportunity, see its quotes; change it, change them. Outside the caller's reach is `NOT_FOUND`; a Read-only user reads every quote and changes none (`FORBIDDEN`); a quote of a deleted opportunity appears nowhere.
+
+`{ id, number, opportunity, contact, company, status, issueDate, validUntil, lines, discountType, discountValue, subtotal, discountTotal, taxTotal, total, notes, terms, sentAt, acceptedAt, declinedAt, invoice, createdBy, createdAt, updatedAt }`
+
+- **`contact`** (`{ id, name, email }`) and **`company`** (`{ id, name }`) are who the quote is for. They are taken from the opportunity when the quote is made (only those the creator may see) and can be changed while it is a draft, to a record the caller may see (`VALIDATION_FAILED` on `contactId` or `companyId` otherwise). Whoever may see the quote sees them, because they are printed on it.
+- **A line** is `{ id, productId, description, quantity, unitPrice, discountPercent, taxRate, lineTotal }`. A request sends `{ productId?, description?, quantity, unitPrice?, discountPercent?, taxRate? }`: with a `productId`, whatever is left out of `description`, `unitPrice` and `taxRate` is **copied from the product as it is now** (a product without a tax rate takes the organisation's default); without one, `description` and `unitPrice` are needed. After that the line stands on its own: editing the product never changes it. `quantity` is above 0 with at most three decimals; at most 100 lines. Every problem with the lines is reported at once, on `lines.<index>.<field>`. An archived product cannot be added, but stays on a line that already has it.
+- **`POST /quotes`** `{ opportunityId, ... }` fills in what is left out: the buyer from the opportunity, `issueDate` as the viewer's today, `validUntil` from the organisation's validity days, `terms` from its default terms; an explicit `null` means none. **`PATCH /quotes/:id`** changes only the keys sent, except `lines`, which **replaces the whole list** (the lines get new ids). The totals are counted again either way.
+- **Only a `DRAFT` is changed or deleted** (`QUOTE_NOT_EDITABLE` otherwise). A draft is deleted for real. **`POST /quotes/:id/duplicate`** makes a new draft from a quote in any status: the way to revise one that was sent.
+- **`status`** is `DRAFT`, `SENT`, `ACCEPTED`, `DECLINED` or `EXPIRED`. `EXPIRED` is **not stored**: it is what a `SENT` quote reads as once `validUntil` is before the viewer's today. The `status` filter follows what a quote reads as (`SENT` leaves the expired ones out). An expired quote still takes every action a sent one takes.
+
+| Action | From | To | Also |
+| --- | --- | --- | --- |
+| `POST /quotes/:id/send` | `DRAFT` | `SENT` | Needs at least one line. Sets `sentAt`. With `{ email }` it also emails the quote (below); a quote that is already `SENT` can be emailed again, without `email` that is `INVALID_STATUS_CHANGE`. |
+| `POST /quotes/:id/accept` | `DRAFT`, `SENT` | `ACCEPTED` | Needs at least one line. Sets `acceptedAt`. Does **not** close the opportunity. |
+| `POST /quotes/:id/decline` | `DRAFT`, `SENT` | `DECLINED` | Sets `declinedAt`. |
+| `POST /quotes/:id/reopen` | `SENT`, `ACCEPTED`, `DECLINED` | `DRAFT` | Clears the three timestamps. `INVOICE_EXISTS` once an invoice was made, also a void one. |
+
+- Any other combination is `INVALID_STATUS_CHANGE` with `details.status`. Each change runs under `lockQuote` and writes a `QUOTE_STATUS` entry on the opportunity's timeline in the same transaction; so do making a quote (`from: null`) and deleting a draft (`to: null`).
+- **Emailing a quote** (`POST /quotes/:id/send` with `{ email: { to, cc?, subject, body } }`) goes through the same path as [an email from a record](#sending-email-from-a-record), from the opportunity: the same sender rules, placeholders (with `quote.number` and `quote.total`) and limit. The server adds the quote's lines and totals below the body as text; there is **no attachment yet**. The message is sent first; only then are the status and the `EMAIL` entry (with `details.quote`) written. When sending fails, the quote stays as it was.
+- **`tz`**: every quote route takes the viewer's time zone as a query parameter (UTC when left out), also the `POST` routes, because `status` in the answer depends on the viewer's day.
+- `GET /quotes` is a list ([List endpoints](#list-endpoints)): filters `status`, `opportunityId`, `ownerId` (the opportunity's owner) and `companyId`; `search` over the number, the opportunity's name and the company's name; sorts `number`, `issueDate`, `validUntil` (none last), `total`, `createdAt` (the default, newest first). `GET /quotes/export` is its [CSV export](#csv-export), one row per quote.
+
+### Invoices
+
+[`modules/invoices/`](../../backend/src/modules/invoices/) (QUOT-04, QUOT-05). An invoice is made only from an `ACCEPTED` quote, with `POST /quotes/:id/invoice` `{ issueDate?, dueDate?, notes? }` (the body may be left out), and **one per quote**: a second request is `INVOICE_EXISTS`, a quote in another status `INVALID_STATUS_CHANGE`. It is a **copy**: the buyer's names, email and address, the lines, the totals and the terms are stored on the invoice and never follow the contact, the company, the product, the quote or the settings afterwards. The check and the insert run under `lockQuote`, so simultaneous requests make one invoice and use one number. Access follows the opportunity, exactly as for quotes. The app takes no payments: an invoice is a record a person keeps up to date.
+
+`{ id, number, quote, opportunity, contact, company, status, issueDate, dueDate, lines, subtotal, discountTotal, taxTotal, total, notes, terms, sentAt, paidAt, createdBy, createdAt, updatedAt }`
+
+- `dueDate` defaults to the issue date plus the organisation's payment terms, and may not be before the issue date. `PATCH /invoices/:id` takes only `dueDate` and `notes`, and nothing on a `VOID` invoice.
+- **`status`** is `DRAFT`, `SENT`, `PAID`, `OVERDUE` or `VOID`. `OVERDUE` is stored when a user marks it, and it is **also** what a `SENT` invoice reads as once `dueDate` is before the viewer's today. The `status` filter and the summary follow what an invoice reads as; the actions below go by what is **stored** (a sent invoice that reads as overdue is still paid, voided or marked overdue like a sent one).
+
+| Action | From (stored) | To | Also |
+| --- | --- | --- | --- |
+| `POST /invoices/:id/mark-sent` | `DRAFT` | `SENT` | Sets `sentAt`. Nothing is emailed. |
+| `POST /invoices/:id/mark-paid` `{ paidAt? }` | `DRAFT`, `SENT`, `OVERDUE` | `PAID` | `paidAt` is now, or the moment given (not in the future). |
+| `POST /invoices/:id/mark-overdue` | `SENT` | `OVERDUE` | |
+| `POST /invoices/:id/mark-unpaid` | `PAID`, `OVERDUE` | `SENT` | Clears `paidAt`. The way back from a wrong click. |
+| `POST /invoices/:id/void` | `DRAFT`, `SENT`, `OVERDUE` | `VOID` | The invoice keeps its number, and its quote still cannot be reopened or invoiced again. |
+| `POST /invoices/:id/restore` | `VOID` | `DRAFT` | Clears `sentAt`. The way back from a wrong click. |
+
+- Any other combination is `INVALID_STATUS_CHANGE` with `details.status`. Each change runs under a lock on the invoice's row and writes an `INVOICE_STATUS` entry on the opportunity's timeline; so does making the invoice (`from: null`).
+- **`GET /invoices/summary?tz=`** answers `{ outstandingTotal, overdueTotal, paidThisMonthTotal, counts: { DRAFT, SENT, PAID, OVERDUE, VOID } }` over the invoices the caller may see: outstanding is sent and overdue together, overdue is what reads as `OVERDUE`, paid this month goes by `paidAt` in the viewer's month.
+- `GET /invoices` is a list: filters `status`, `opportunityId` and `companyId`; `search` over the number and the company's name **as the invoice has it**; sorts `number` (the default, newest first), `issueDate`, `dueDate`, `total`. `GET /invoices/export` is its CSV export. Every invoice route takes `tz`, like the quote routes.
+
+### Print-ready documents
+
+`GET /quotes/:id/document` and `GET /invoices/:id/document` answer one shape, `SalesDocument`, with nothing left to look up or to count: `kind`, `number`, `status`, `currency` (always `"USD"`), `issueDate`, `validUntil` (quote), `dueDate` and `paymentTermsDays` (invoice), `quoteNumber` (invoice), `seller` (from the organisation settings as they are now), `buyer` (`contactName`, `contactEmail`, `companyName`, `companyAddress`), `opportunityName`, `preparedBy`, `lines`, `subtotal`, `discountType` and `discountValue` (quote; null on an invoice), `discountTotal`, `taxes` (one row per tax rate above 0: `{ rate, taxableAmount, taxAmount }`), `taxTotal`, `total`, `notes`, `terms`.
+
+The web app renders a print view from it. **There is no PDF yet** (QUOT-03): no PDF library is installed. A renderer added later reads this same document and attaches its output through `MailMessage.attachments`; no stored data has to change.
 
 ## Custom fields
 
@@ -584,7 +756,7 @@ An Admin can add fields to leads, contacts, companies and opportunities (CF-01 t
 
 ## CSV export
 
-Every list a user can see can be downloaded as a CSV file (DATA-03): `GET /leads/export`, `/contacts/export`, `/companies/export`, `/opportunities/export` and `/tasks/export`. The shared pieces are in [`backend/src/lib/csv-export.ts`](../../backend/src/lib/csv-export.ts), on top of the CSV writer in [`lib/csv.ts`](../../backend/src/lib/csv.ts).
+Every list a user can see can be downloaded as a CSV file (DATA-03): `GET /leads/export`, `/contacts/export`, `/companies/export`, `/opportunities/export`, `/tasks/export`, `/quotes/export` and `/invoices/export`. The shared pieces are in [`backend/src/lib/csv-export.ts`](../../backend/src/lib/csv-export.ts), on top of the CSV writer in [`lib/csv.ts`](../../backend/src/lib/csv.ts).
 
 - **An export is the list.** It takes the list's query string (search, filters, custom field filters, `sort`, `order`) and applies the same visibility, through the same private function as the list (`findLeads`), with `exportWindow` instead of the page window. `page` and `pageSize` are accepted and ignored. Whoever can see the list can export it, a Read-only user included.
 - **The response** is the file, not an envelope: `Content-Type: text/csv; charset=utf-8`, `Content-Disposition: attachment; filename="leads-2026-11-15.csv"` (the viewer's today) and `X-Export-Truncated: true|false`. A plain link works, because a GET needs only the session cookie; CORS exposes both headers for a client that fetches the file instead.
@@ -592,7 +764,7 @@ Every list a user can see can be downloaded as a CSV file (DATA-03): `GET /leads
 - **The file** is UTF-8 with a byte order mark (without it Excel garbles every accented letter), one header row, CRLF line ends. Headers are words ("First name", "Expected close date"). An owner, company, contact, stage, assignee and record is written by name, and only when the caller may see it, exactly as the list shows it. An enum is written as people read it (`COLD_CALL` is "Cold call"). Each custom field in use is one more column, headed by its label, after the record's own.
 - **Times** are written as `2026-11-15 14:30` in the time zone `tz` (see [Time zones](#time-zones); UTC when left out); days stay `2026-11-15`.
 - **Formula injection.** A text cell that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading apostrophe (`neutraliseFormula`), so no spreadsheet runs it; a number stays a number. See [security](security.md#csv-export-and-import). Always write a file for people with `writeSpreadsheetCsv`, never with `writeCsv` directly.
-- **Adding an export:** register `GET /export` above `/:id` in the router, parse the list's query schema extended with `tz`, describe the columns as `ExportColumn<ApiRecord>[]`, and answer with `sendCsv(res, name, tz, buildCsvExport(columns, page))`. Document it with `csvResponse(...)`, and add the route to `ROUTES_WITHOUT_INPUT` in `endpoint-contract.test.ts` and to the table in `lib/csv-export.test.ts`.
+- **Adding an export:** register `GET /export` above `/:id` in the router, parse the list's query schema extended with `tz`, describe the columns as `ExportColumn<ApiRecord>[]`, and answer with `sendCsv(res, name, tz, buildCsvExport(columns, page))`. Document it with `csvResponse(...)`, and add the route to `ROUTES_WITHOUT_INPUT` in `endpoint-contract.test.ts` and to the table in `lib/csv-export.test.ts` (the quote and invoice exports are tested in their own module tests instead).
 
 ## CSV import
 

@@ -1,4 +1,3 @@
-import { createTransport } from "nodemailer";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -10,6 +9,8 @@ import {
   resetPipelineStages,
   resetRecords,
   signInAs,
+  useFailingMailServer,
+  useFakeMailServer,
 } from "../../test/helpers";
 import type { Notification, PipelineStage, Prisma, User } from "../generated/prisma/client";
 import * as mailer from "./mailer";
@@ -269,18 +270,15 @@ describe("runDueReminders", () => {
 
   describe("email", () => {
     it("sends the reminder through the mail transport, with a link into the app", async () => {
-      // nodemailer's own in-memory transport: builds the message, sends nothing.
-      const transport = createTransport({ jsonTransport: true });
-      const send = vi.spyOn(transport, "sendMail");
-      const sendMail = mailer.sendMail;
-      vi.spyOn(mailer, "sendMail").mockImplementation((message) => sendMail(message, transport));
+      const send = await useFakeMailServer();
       const task = await makeTask(ravi, { description: "About the renewal" });
 
       const run = await runDueReminders(NOW);
 
       expect(run).toEqual({ fired: 1, emailed: 1 });
       expect(send).toHaveBeenCalledExactlyOnceWith({
-        from: "OpenCRM Test <test@opencrm.local>",
+        from: { name: "OpenCRM Test", address: "test@opencrm.local" },
+        replyTo: undefined,
         to: "ravi@example.com",
         subject: "Reminder: Call Jane",
         text: [
@@ -317,16 +315,14 @@ describe("runDueReminders", () => {
     it("still writes the notification when email is off", async () => {
       await makeTask(ravi);
 
-      expect(mailer.isMailConfigured()).toBe(false);
+      expect(await mailer.isMailConfigured()).toBe(false);
       expect(await runDueReminders(NOW)).toEqual({ fired: 1, emailed: 0 });
       expect(await notifications()).toHaveLength(1);
     });
 
     it("keeps the notification and carries on when the mail server cannot be reached", async () => {
-      // Nothing listens on port 1.
-      const transport = createTransport({ host: "127.0.0.1", port: 1, connectionTimeout: 2000 });
-      const sendMail = mailer.sendMail;
-      vi.spyOn(mailer, "sendMail").mockImplementation((message) => sendMail(message, transport));
+      await useFakeMailServer();
+      useFailingMailServer();
       await makeTask(ravi);
       await makeLead(ravi);
 
