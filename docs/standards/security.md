@@ -82,3 +82,4 @@ Actions are pinned by major version tag; Dependabot's `github-actions` entry kee
 | Dependency review | `actions/dependency-review-action@v5` | Branch and tag `v5.0.0` listed in the remote repository on 2026-10-08 |
 | Secret scan | `ghcr.io/gitleaks/gitleaks:v8.30.1` (Docker image) | Pulled and run locally |
 | CI database | `postgres:18-alpine` (service container) | Same image as `compose.yaml` |
+| Development mail inbox | `axllent/mailpit:v1.31.4` (Docker image, `compose.yaml` only) | Pulled and run locally on 2026-10-09 |

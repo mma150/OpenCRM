@@ -14,7 +14,7 @@ opencrm/
 ├── docs/          standards/ (these documents) and decisions/ (one-page records)
 ├── scripts/       Repository-level helper scripts
 ├── .github/       GitHub Actions workflows, Dependabot config, issue and PR templates
-├── compose.yaml   The whole development stack: db, api, web
+├── compose.yaml   The whole development stack: db, mailpit, api, web
 ├── .nvmrc         The Node.js major version (24)
 ├── package.json   Tooling-only root package (commit tooling), see below
 └── README.md  CONTRIBUTING.md  CODE_OF_CONDUCT.md  SECURITY.md  LICENSE
@@ -33,20 +33,50 @@ backend/
 ├── package.json  pnpm-lock.yaml  pnpm-workspace.yaml  tsconfig.json  tsup.config.ts
 ├── eslint.config.mjs  prettier.config.mjs  vitest.config.ts  prisma.config.ts
 ├── .env.example  Dockerfile  docker/dev-entrypoint.sh
-├── prisma/schema.prisma            Database schema (no models yet; migrations/ appears with the first one)
+├── prisma/schema.prisma            Database schema
+├── prisma/migrations/              One folder per migration; committed, never edited after merge
 ├── openapi/openapi.json            Generated API contract, committed
 ├── scripts/generate-openapi.ts     Writes openapi/openapi.json
 ├── test/global-setup.ts            Creates and migrates the opencrm_test database
+├── test/helpers.ts                 Shared by tests: test app, users, signed-in agent, captured email
 └── src/
     ├── server.ts                   Starts the HTTP listener
     ├── app.ts                      createApp(): middleware order and router mounting
     ├── env.ts                      The only reader of process.env (validated with Zod)
     ├── routes.ts                   Mounts every module router under /api/v1, serves openapi.json
-    ├── lib/                        Shared helpers: prisma.ts, logger.ts, openapi.ts, app-error.ts
-    ├── middleware/                 error-handler.ts, not-found.ts
+    ├── lib/                        Shared helpers: prisma.ts, logger.ts, openapi.ts, app-error.ts,
+    │                               password.ts (+ common-passwords.txt), tokens.ts, sessions.ts,
+    │                               session-cookie.ts, account-links.ts, mailer.ts, user-fields.ts,
+    │                               record-access.ts (who may see and change an owned record),
+    │                               record-owner.ts (a record's owner: the include, and the check
+    │                               that a new owner is allowed), record-fields.ts (field schemas
+    │                               the owned records share),
+    │                               list-query.ts (search, sort and paging shared by every list),
+    │                               timeline.ts (the TimelineEntry shape, the record types that
+    │                               have a timeline, and addTimelineEntry, the one way an entry
+    │                               is written)
+    ├── middleware/                 error-handler.ts, not-found.ts, authenticate.ts, require-role.ts,
+    │                               origin-check.ts, rate-limit.ts
     ├── modules/
-    │   └── health/                 health.routes.ts  health.controller.ts  health.service.ts
-    │                               health.schema.ts  health.test.ts
+    │   ├── health/                 health.routes.ts  health.controller.ts  health.service.ts
+    │   │                           health.schema.ts  health.test.ts
+    │   ├── auth/                   Setup, sign-in, sessions, password reset, invites, own profile
+    │   ├── users/                  Admin user management: invite, edit, deactivate, roles, managers;
+    │   │                           and the list of users a record can be assigned to
+    │   ├── leads/                  Leads: create, edit, list, assign, mark lost, delete, per-role access,
+    │   │                           and converting a lead into a contact, company and opportunity
+    │   ├── contacts/               Contacts: create, edit, list, assign, delete, link to a company
+    │   ├── companies/              Companies: create, edit, list, assign, delete, the industries
+    │   │                           in use, and how many contacts each has
+    │   ├── pipeline-stages/        The stages of the one sales pipeline: list them, and (Admin)
+    │   │                           add, rename, reorder and delete them
+    │   ├── opportunities/          Opportunities: create, edit, list, the pipeline board, move
+    │   │                           between stages, close as won or lost, reopen, assign, delete
+    │   ├── timeline/               A record's timeline, for leads, contacts, companies and
+    │   │                           opportunities: read it, log a conversation, add a note
+    │   │                           (/<records>/:id/timeline, /conversations, /notes)
+    │   └── activity/               The team activity feed for Admins and Sales Managers, and the
+    │                               people it can be filtered by
     └── generated/prisma/           Prisma client; gitignored, recreated by `prisma generate`
 ```
 
@@ -58,16 +88,52 @@ frontend/
 ├── eslint.config.mjs  prettier.config.mjs  postcss.config.mjs
 ├── vitest.config.ts  vitest.setup.ts  components.json  .env.example  Dockerfile
 └── src/
-    ├── app/                        Thin route files only: layout.tsx, page.tsx, globals.css
+    ├── app/                        Thin route files only: layout.tsx, globals.css and two route groups
+    │   ├── (auth)/                 Signed-out pages: login, setup, forgot-password, reset-password, accept-invite
+    │   ├── (app)/                  Signed-in pages inside the app frame: page.tsx (Home), profile, settings/users,
+    │   │                           leads (the list), leads/new, leads/[id], leads/[id]/edit, and the same four
+    │   │                           routes under contacts/ and companies/, activity
+    │   └── status/                 The API status page (no sign-in)
     ├── features/
-    │   └── health/                 health-status.tsx  health.slice.ts  health.api.ts
-    │                               health.types.ts  and their *.test.ts(x) files
-    ├── components/ui/              shadcn/ui output (generated; excluded from strict lint)
+    │   ├── health/                 health-status.tsx  health.slice.ts  health.api.ts
+    │   │                           health.types.ts  and their *.test.ts(x) files
+    │   ├── auth/                   auth.{types,api,slice}.ts, auth-gate.tsx, guest-gate.tsx, the forms, profile-page.tsx
+    │   ├── users/                  users.{types,api,slice}.ts, users-page.tsx and its dialogs,
+    │   │                           assignable-users.slice.ts (who a record may be assigned to),
+    │   │                           use-owner-filter.ts (the Owner filter of a list of owned records)
+    │   ├── leads/                  leads.{types,api,slice}.ts, leads-page.tsx (the list), lead-detail-page.tsx,
+    │   │                           lead-form.tsx and lead-form-pages.tsx (new, edit), lead-dialogs.tsx,
+    │   │                           lead-loader.tsx, lead-labels.ts, lead-status-badge.tsx
+    │   ├── contacts/               contacts.{types,api,slice}.ts, contacts-page.tsx (the list), contact-detail-page.tsx,
+    │   │                           contact-form.tsx and contact-form-pages.tsx (new, edit), contact-dialogs.tsx,
+    │   │                           contact-loader.tsx, company-contacts.tsx (the Contacts card on a company's page)
+    │   ├── companies/              companies.{types,api,slice}.ts, companies-page.tsx (the list), company-detail-page.tsx,
+    │   │                           company-form.tsx and company-form-pages.tsx (new, edit), company-dialogs.tsx,
+    │   │                           company-loader.tsx, company-labels.ts, company-website.tsx (the website as a link),
+    │   │                           company-picker.tsx (the searchable company picker and the Company filter)
+    │   ├── timeline/               A record's history, for any kind of record: record-types.ts (the one table of
+    │   │                           record types: lead, contact, company), timeline.{types,api,slice}.ts,
+    │   │                           timeline.tsx (the card), timeline-composer.tsx (the form), timeline-entry.tsx,
+    │   │                           timeline-entry-icon.tsx, timeline-labels.ts, log-conversation-button.tsx (phones)
+    │   ├── activity/               The team feed at /activity: activity.{types,api,slice}.ts, activity-page.tsx,
+    │   │                           activity-labels.ts
+    │   └── home/                   home-page.tsx
+    ├── components/
+    │   ├── ui/                     shadcn/ui output (generated; excluded from strict lint)
+    │   ├── app-shell/              The app frame: nav-items.ts, sidebar, bottom tab bar, top bar, user menu
+    │   └── shared/                 ResponsiveList, ListToolbar, ListPagination, list-url-state, RecordLayout,
+    │                               SegmentedControl, PageHeader, PageState, FormField, SelectControl,
+    │                               PasswordInput, badges, ... and what every owned record shares:
+    │                               record-list.tsx, record-menus.tsx, record-dialogs.tsx (reassign, delete),
+    │                               record-loader.tsx
     ├── lib/
     │   ├── api/http.ts             The one axios instance and the ApiError type
+    │   ├── api/error-messages.ts   describeApiError: the words for every error code
     │   ├── api/schema.d.ts         Generated from the OpenAPI document, committed, never edited
-    │   └── utils.ts                shadcn helper (cn)
-    ├── store/                      index.ts (makeStore), hooks.ts (typed hooks), store-provider.tsx
+    │   └── utils.ts ...            Small helpers: cn, form-errors, validation, safe-next, return-to, format,
+    │                               user-labels, use-is-phone, record-access (what a role may do with a record)
+    ├── store/                      index.ts (makeStore), hooks.ts (typed hooks), thunk.ts, store-provider.tsx
+    ├── test/                       Test helpers: render-with-store.tsx, navigation-mock.ts
     └── env.ts                      The only reader of process.env (validated with Zod)
 ```
 
@@ -95,7 +161,7 @@ For a feature called `leads`, create these files. Copy the health files and rena
 4. `leads.routes.ts`: the Express router **and** the matching `registry.registerPath(...)` call beside it.
 5. `leads.test.ts`: supertest tests against the real test database.
 
-Then mount the router in `backend/src/routes.ts` (`v1Router.use("/leads", leadsRouter)`), add the Prisma model and create a migration if the feature stores data, and run `pnpm --dir backend openapi:generate` so `backend/openapi/openapi.json` is updated and committed.
+Then mount the router in `backend/src/routes.ts` (`router.use("/leads", leadsRouter)`), add the Prisma model and create a migration if the feature stores data (and delete its rows in `resetRecords()` or `resetDatabase()` in `backend/test/helpers.ts`), and run `pnpm --dir backend openapi:generate` so `backend/openapi/openapi.json` is updated and committed.
 
 **Frontend**, in `frontend/src/features/leads/`:
 
@@ -106,7 +172,9 @@ Then mount the router in `backend/src/routes.ts` (`v1Router.use("/leads", leadsR
 5. One or more components, using only `useAppDispatch` and `useAppSelector`.
 6. Tests for the slice and the components, mocking at `leads.api.ts`.
 
-Then add the reducer to `makeStore` in `frontend/src/store/index.ts`, and add a route file under `frontend/src/app/` that only renders the feature component.
+Then add the reducer to `makeStore` in `frontend/src/store/index.ts`, add a route file under `frontend/src/app/` that only renders the feature component, and add one line to `nav-items.ts` if the feature has a page of its own in the navigation.
+
+A feature of **owned records** (leads, contacts, companies) builds its list, record page and dialogs from the shared record components instead of copying another feature's: see [What owned records share](frontend.md#what-owned-records-share). If the record has a timeline, it adds one line to `RECORD_TYPES` in `frontend/src/features/timeline/record-types.ts` (see [The timeline](frontend.md#the-timeline)).
 
 ## Where configuration lives
 
