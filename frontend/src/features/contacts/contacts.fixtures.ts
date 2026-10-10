@@ -17,6 +17,7 @@ export const marcus: Contact = {
   owner: { id: repUser.id, name: repUser.name },
   convertedFromLead: null,
   lastContactAt: "2026-09-20T08:30:00.000Z",
+  customFields: {},
   createdAt: "2026-10-05T09:00:00.000Z",
   updatedAt: "2026-10-06T09:00:00.000Z",
 };
@@ -35,6 +36,7 @@ export const liam: Contact = {
   owner: { id: adminUser.id, name: adminUser.name },
   convertedFromLead: null,
   lastContactAt: null,
+  customFields: {},
   createdAt: "2026-10-03T09:00:00.000Z",
   updatedAt: "2026-10-03T09:00:00.000Z",
 };

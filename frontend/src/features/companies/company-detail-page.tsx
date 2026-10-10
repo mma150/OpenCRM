@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { CompanyContacts } from "@/features/contacts/company-contacts";
 import { RecordOpportunities } from "@/features/opportunities/record-opportunities";
+import { RecordTasks } from "@/features/tasks/record-tasks";
 import { LogConversationButton } from "@/features/timeline/log-conversation-button";
 import { Timeline } from "@/features/timeline/timeline";
 import type { RecordRef } from "@/features/timeline/timeline.types";
@@ -136,6 +137,7 @@ function CompanyDetail({ company }: { company: Company }) {
         }
         aside={
           <>
+            <RecordTasks record={record} recordName={company.name} canWrite={access.canWrite} />
             <Card>
               <CardHeader>
                 <CardTitle>Details</CardTitle>

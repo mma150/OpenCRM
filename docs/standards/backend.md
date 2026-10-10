@@ -8,7 +8,8 @@ Related: [structure](structure.md), [testing](testing.md), [frontend](frontend.m
 
 ```text
 request -> httpLogger -> helmet -> cors (allow-list, credentials) -> cookieParser
-        -> originCheck -> express.json (100 kB) -> /api/v1 routes (Cache-Control: no-store)
+        -> originCheck -> express.json (100 kB; not for /api/v1/imports, which reads its own
+           body after its sign-in and role checks) -> /api/v1 routes (Cache-Control: no-store)
         -> [rate limiter] -> [authenticate] -> [requireRole] -> controller -> service -> Prisma -> PostgreSQL
 unmatched route -> notFound (NOT_FOUND)   any thrown error -> errorHandler (error envelope)
 ```
@@ -38,7 +39,7 @@ The layering is routes, then controller, then service, then Prisma.
 | Nothing outside `src/env.ts`, `prisma.config.ts` and `test/global-setup.ts` reads `process.env`. | ESLint `no-restricted-properties` |
 | Services never touch `req` or `res`; they take plain arguments and return plain data. | Code review (a service that imports Express types is wrong) |
 | Services call Prisma directly. There is **no repository layer**. | Convention; revisit only if a service becomes untestable |
-| Besides services, only the shared session and link helpers in `src/lib/` (`sessions.ts`, `account-links.ts`), `addTimelineEntry` in `lib/timeline.ts`, `assertAssignable` in `lib/record-owner.ts`, `addNotification` in `lib/notifications.ts` and the reminder runner in `lib/reminders.ts` call Prisma, because the `authenticate` middleware, several modules and the server's timer need them. | Code review |
+| Besides services, only the shared session and link helpers in `src/lib/` (`sessions.ts`, `account-links.ts`), `addTimelineEntry` and `addCreatedEntries` in `lib/timeline.ts`, `assertAssignable` in `lib/record-owner.ts`, `addNotification` in `lib/notifications.ts`, `listActiveCustomFields` in `lib/custom-fields.ts` and the reminder runner in `lib/reminders.ts` call Prisma, because the `authenticate` middleware, several modules and the server's timer need them. | Code review |
 | Expected failures are thrown as `AppError`; everything else is allowed to throw. | Code review and `error-handler.test.ts` |
 
 Express 5 specifics: an async handler needs no `try/catch`, because a rejected promise is forwarded to the error handler; and `req.query` is a read-only getter, so never assign to it. Validate by calling `schema.parse(req.query)` at the top of the controller instead of writing middleware that rewrites the request.
@@ -84,7 +85,7 @@ Define the schemas in `<module>.schema.ts` and import `z` from `backend/src/lib/
 
 ## Response envelope (D-11)
 
-Every response uses an envelope, except the OpenAPI document itself (see below).
+Every response uses an envelope, except the OpenAPI document itself (see below) and a CSV export, which is a file ([CSV export](#csv-export)). An export that fails still answers with the error envelope.
 
 Success is `{ data, meta }`. `data` is the payload; `meta` carries everything else, such as paging information for lists. `meta` is an empty object when there is nothing to say. Real response of `GET /api/v1/health`:
 
@@ -126,7 +127,7 @@ The complete list lives in one place, `ERROR_CODES` in [`backend/src/lib/app-err
 | `SETUP_CLOSED` | 409 | First-run setup was called after a user exists. |
 | `EMAIL_IN_USE` | 409 | Another user already has this email. |
 | `LAST_ADMIN` | 409 | The change would leave no Admin who can sign in. |
-| `PAYLOAD_TOO_LARGE` | 413 | The JSON body is over the 100 kB limit set in `app.ts`. |
+| `PAYLOAD_TOO_LARGE` | 413 | The JSON body is over the 100 kB limit set in `app.ts` (12 MB on the import routes), or the CSV file in an import is over 5 MB. |
 | `LEAD_CONVERTED` | 409 | The lead has been converted, so it cannot be edited, marked lost, deleted or converted again (see [Converting a lead](#converting-a-lead)). |
 
 Expected failures are thrown as `AppError(code, status, message, details?, options?)`; the health service does it like this:
@@ -158,7 +159,8 @@ The API describes itself from the same Zod schemas it validates with, so documen
 - The document is OpenAPI 3.1 and is served at `GET /api/v1/openapi.json`.
 - **Generate and commit it:** `pnpm --dir backend openapi:generate` writes [`backend/openapi/openapi.json`](../../backend/openapi/openapi.json). Commit the result whenever a route or schema changes.
 - **Drift check:** `backend/src/lib/openapi.test.ts` fails when the committed file differs from what the code generates, so `pnpm --dir backend test` (and therefore CI) catches a forgotten regeneration.
-- **The one raw-document exception:** `/api/v1/openapi.json` returns the bare OpenAPI document, not `{ data, meta }`, because OpenAPI tools need the bare document. No other response may skip the envelope.
+- **The one raw-document exception:** `/api/v1/openapi.json` returns the bare OpenAPI document, not `{ data, meta }`, because OpenAPI tools need the bare document. No other JSON response may skip the envelope.
+- **A CSV download** is documented with `csvResponse(description)` from `lib/openapi.ts`: `text/csv` content and the two headers every export sends.
 - The frontend types are generated from this file; see [frontend](frontend.md#generating-api-types).
 
 ## Logging and request ids (D-21)
@@ -175,7 +177,7 @@ The API describes itself from the same Zod schemas it validates with, so documen
 
 ## Prisma and the database
 
-PostgreSQL is reached through Prisma 7 with the `pg` driver adapter ([`backend/src/lib/prisma.ts`](../../backend/src/lib/prisma.ts)). Only services import it. The schema is [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma); its models are `User`, `Session`, `AuthToken` (invite and password-reset links), the owned records `Lead`, `Contact`, `Company` and `Opportunity`, `PipelineStage` (see [The pipeline and opportunities](#the-pipeline-and-opportunities)), `TimelineEntry` (see [The timeline](#the-timeline)), `Task` (see [Tasks](#tasks)) and `Notification` (see [Notifications](#notifications)). Ids are UUID version 7 (`@default(uuid(7))`). The generated client goes to `backend/src/generated/prisma/`, which is git-ignored and recreated by `prisma generate`.
+PostgreSQL is reached through Prisma 7 with the `pg` driver adapter ([`backend/src/lib/prisma.ts`](../../backend/src/lib/prisma.ts)). Only services import it. The schema is [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma); its models are `User`, `Session`, `AuthToken` (invite and password-reset links), the owned records `Lead`, `Contact`, `Company` and `Opportunity`, `PipelineStage` (see [The pipeline and opportunities](#the-pipeline-and-opportunities)), `TimelineEntry` (see [The timeline](#the-timeline)), `Task` (see [Tasks](#tasks)), `Notification` (see [Notifications](#notifications)) and `CustomField` (see [Custom fields](#custom-fields)). Ids are UUID version 7 (`@default(uuid(7))`). The generated client goes to `backend/src/generated/prisma/`, which is git-ignored and recreated by `prisma generate`.
 
 Run Prisma inside the API container, where the database host and credentials are already set:
 
@@ -196,7 +198,7 @@ docker compose exec api pnpm exec prisma generate
 
 Commit the new folder under [`backend/prisma/migrations/`](../../backend/prisma/migrations/) together with the schema change. Never edit a migration that has been merged.
 
-**Check-then-write rules.** A rule of the form "check, then write on the strength of the check" (only one first Admin, never zero Admins) is not safe when two requests arrive together. Run it in `prisma.$transaction(async (tx) => { await lockUserAdministration(tx); ... })`; `lockUserAdministration` in `lib/prisma.ts` takes a PostgreSQL advisory lock that makes the second transaction wait for the first. `users.test.ts` proves it with simultaneous requests. `lockPipelineStages` is the same lock for changes to the pipeline stages (never fewer than one open stage, no two stages with one name). A third guard is a conditional write as the first statement of the transaction: converting a lead starts with `updateMany({ where: { id, status: { not: "CONVERTED" } } })`, so a second request waits on the row and then changes nothing. A unique column is the other guard: catch Prisma error `P2002` and turn it into the right `AppError`, as `users.service.ts` does for `EMAIL_IN_USE`.
+**Check-then-write rules.** A rule of the form "check, then write on the strength of the check" (only one first Admin, never zero Admins) is not safe when two requests arrive together. Run it in `prisma.$transaction(async (tx) => { await lockUserAdministration(tx); ... })`; `lockUserAdministration` in `lib/prisma.ts` takes a PostgreSQL advisory lock that makes the second transaction wait for the first. `users.test.ts` proves it with simultaneous requests. `lockPipelineStages` is the same lock for changes to the pipeline stages (never fewer than one open stage, no two stages with one name), and `lockCustomFields` for changes to the custom field definitions (no two fields of a record type with one label, never more than 30 in use). A third guard is a conditional write as the first statement of the transaction: converting a lead starts with `updateMany({ where: { id, status: { not: "CONVERTED" } } })`, so a second request waits on the row and then changes nothing. A unique column is the other guard: catch Prisma error `P2002` and turn it into the right `AppError`, as `users.service.ts` does for `EMAIL_IN_USE`.
 
 Tests use their own `opencrm_test` database, created and migrated automatically; see [testing](testing.md#backend-tests).
 
@@ -301,6 +303,7 @@ Every list that can grow (leads, contacts, companies, opportunities, tasks) has 
 | `page` | 1 or more. | 1 |
 | `pageSize` | 1 to 100. | 25 |
 | filters | Named after the field (`status`, `source`, `ownerId`, `companyId`, `contactId`, `stageId`, `industry`, `assigneeId`), added by the module. | none |
+| `cf.<field id>...` | Custom field filters, on the four record lists; see [Custom fields](#custom-fields). | none |
 
 The answer is `{ data: [...], meta: { page, pageSize, total } }`, where `total` counts every match the caller may see, not only this page. A page past the end is an empty list, not an error. A bad value (`page=0`, `pageSize=101`, an unknown `sort` or filter value) is `VALIDATION_FAILED` naming the parameter. An unknown query parameter is ignored (only request bodies are strict).
 
@@ -328,6 +331,7 @@ export const leadListResponseSchema = listEnvelope(leadSchema);
 - Add an index for each column the list filters or sorts on.
 - A short list that cannot grow (users, pipeline stages) may stay unpaged, as `GET /users` does.
 - A list with one fixed order (a timeline, the activity feed, a user's notifications) takes only the paging half: start from `pageQuerySchema` instead of `listQuerySchema(...)`.
+- A list that can be exported keeps its query in one private function that takes the page window (`findLeads(actor, query, filters, fields, window)`); the list calls it with `pageWindow(query)` and the export with `exportWindow`, so the two can never disagree. See [CSV export](#csv-export).
 
 ## The timeline
 
@@ -338,14 +342,14 @@ Every dated thing that happens to a record is one row in **one table**, `Timelin
 | `kind` | `CONVERSATION`, `NOTE`, `CREATED`, `STATUS_CHANGE` or `ASSIGNMENT`. |
 | `conversationType` | `CALL`, `MEETING`, `EMAIL` or `MESSAGE`; only for a conversation. |
 | `body` | What was discussed, or the note. `null` for system entries. |
-| `details` | JSON for system entries. A lead's status change: `{ from, to }`, plus `{ reason, note }` when it was marked lost, or `{ contact, company, opportunity }` (each `{ id, name }` or null) when it was converted. An opportunity's stage change: `{ from, to, fromKind, toKind }` with the stages' names as they were and their kinds, plus `{ reason }` when it was closed. An assignment: `{ fromOwner: { id, name }, toOwner: { id, name } }`. The `CREATED` entry of a record made by converting a lead: `{ fromLead: { id, name } }`. |
+| `details` | JSON for system entries. A lead's status change: `{ from, to }`, plus `{ reason, note }` when it was marked lost, or `{ contact, company, opportunity }` (each `{ id, name }` or null) when it was converted. An opportunity's stage change: `{ from, to, fromKind, toKind }` with the stages' names as they were and their kinds, plus `{ reason }` when it was closed. An assignment: `{ fromOwner: { id, name }, toOwner: { id, name } }`. The `CREATED` entry of a record made by converting a lead: `{ fromLead: { id, name } }`; of a record made by a CSV import: `{ import: true }`. |
 | `occurredAt` | When it happened: chosen by the user for a conversation (not more than 5 minutes ahead), the time of writing for everything else. Timelines sort by it, newest first, then by `createdAt`, then by `id`. |
 | `authorId` | Who wrote it: always the signed-in user, from the session. |
 | `leadId`, `contactId`, `companyId`, `opportunityId` | The record: one nullable column per record type, and exactly one of them is set on every entry; the check constraint `TimelineEntry_one_record` makes the database refuse anything else. Code does not name these columns: it passes a `RecordRef`, `{ type, id }` with the type `"lead"`, `"contact"`, `"company"` or `"opportunity"`, and `recordColumn(record)` in `lib/timeline.ts` turns it into the column. |
 
 The rules, each pinned in `timeline.test.ts`:
 
-- **Entries are permanent (CONV-05).** There is no update and no delete route, and no code path changes a row after it is written. `addTimelineEntry(tx, entry)` is the only code that writes the table, and it only inserts. Never add a `PATCH`, `PUT` or `DELETE` for an entry; a correction is a new note.
+- **Entries are permanent (CONV-05).** There is no update and no delete route, and no code path changes a row after it is written. `addTimelineEntry(tx, entry)` is the only code that writes the table, with `addCreatedEntries(tx, ...)` beside it for the `CREATED` entries of an import (one insert for a whole batch), and both only insert. Never add a `PATCH`, `PUT` or `DELETE` for an entry; a correction is a new note.
 - **The author and the time come from the server.** The body schemas are strict, so a request cannot send `authorId` or `createdAt`; `occurredAt` is accepted for a conversation only.
 - **A system entry is written in the same transaction as the change it records**, by the service that makes the change, through the helper:
 
@@ -428,6 +432,7 @@ There is one sales pipeline. Its stages are rows of `PipelineStage` ([`modules/p
 - `company` is `{ mode: "create", name }`, `{ mode: "existing", id }` or `{ mode: "none" }`; `contact` is `{ mode: "create" }` or `{ mode: "existing", id }`. An existing one must be a record the caller may see (`VALIDATION_FAILED` on `company.id` or `contact.id` otherwise) and is linked, never changed.
 - A new contact takes the lead's first and last name, job title, email, phone, notes and `lastContactAt`, and belongs to the company chosen. A new opportunity is linked to the contact and the company; its name defaults to the company's name or else the lead's name, its value to the lead's `estimatedValue` or else 0, its stage to the first open stage. The other `opportunity` keys are ignored when `create` is false.
 - **Everything new belongs to the lead's owner**, whoever converts it; `createdById` is the caller.
+- **Custom field values are not carried over.** A lead's custom fields are its own definitions, not the contact's, the company's or the opportunity's, so the new records start without values, also when one of their fields is required. The lead keeps its own.
 - **The lead keeps its history.** No timeline row is copied or moved. The lead becomes `CONVERTED` with `convertedAt` and the ids of what it became, and stays readable with its timeline. Its `STATUS_CHANGE` entry names the contact, company and opportunity; the `CREATED` entry of each record the conversion made carries `details.fromLead`. An existing contact or company gets no entry.
 - **The link is in the API both ways:** a lead answers with `convertedTo: { contact, company, opportunity }` (null until it is converted), a contact and an opportunity with `convertedFromLead`. Each is `{ id, name }`, or null when there is none or the caller may not see it.
 - **A converted lead is final.** `PATCH`, mark-lost, delete and a second convert answer `409 LEAD_CONVERTED`. It can still be read, reassigned, and written on (conversations and notes). A lost lead must be reopened before it can be converted (`VALIDATION_FAILED`, `details: null`).
@@ -525,3 +530,93 @@ A notification is a message for one user inside the app: `{ id, kind, title, bod
 ## Email
 
 [`backend/src/lib/mailer.ts`](../../backend/src/lib/mailer.ts) is the only place that sends email. `sendMail({ to, subject, text })` returns `true` when the message was handed to the SMTP server and `false` when email is off (`SMTP_HOST` not set) or sending failed; it never throws, so a request never fails because of email (D-10). `isMailConfigured()` says whether email is on. Messages are plain text. In the Compose stack the API sends to [Mailpit](http://localhost:8025), a local inbox, so no email leaves your machine. When an invite or reset link cannot be emailed, the API returns the link to the Admin instead (`LinkResult` in the users module).
+
+## Custom fields
+
+An Admin can add fields to leads, contacts, companies and opportunities (CF-01 to CF-03). The **definitions** are rows of `CustomField` ([`modules/custom-fields/`](../../backend/src/modules/custom-fields/)); the **values** live on the records, in a JSONB column `customFields` on each of the four tables, keyed by the field's id. Everything the four record services need is in [`backend/src/lib/custom-fields.ts`](../../backend/src/lib/custom-fields.ts).
+
+**A field** is `{ id, recordType, label, type, options, required, position, archived, createdAt, updatedAt }`. `recordType` is `LEAD`, `CONTACT`, `COMPANY` or `OPPORTUNITY`; `type` is `TEXT`, `NUMBER`, `DATE` or `DROPDOWN`. Both are fixed when the field is created.
+
+| Route | Who | Rules |
+| --- | --- | --- |
+| `GET /custom-fields?recordType=&includeArchived=` | any signed-in user | In order: by record type, then the Admin's order. `recordType` left out lists every type. Archived fields only with `includeArchived=true`, which is `FORBIDDEN` for anyone but an Admin; they follow the fields in use. |
+| `POST /custom-fields` `{ recordType, label, type, options?, required? }` | Admin | Added last. Answers with the field (201). |
+| `PATCH /custom-fields/:id` `{ label?, options?, required? }` | Admin | Only the keys sent change. `options` replaces the whole list. |
+| `PUT /custom-fields/order` `{ recordType, ids }` | Admin | `ids` is every field **in use** of the record type exactly once. Answers with every field of that record type, archived ones last. |
+| `POST /custom-fields/:id/archive`, `/restore` | Admin | Archiving hides the field everywhere and keeps its values; restoring puts it last among the fields in use. Either one on a field already in that state answers with it unchanged. |
+| `DELETE /custom-fields/:id` | Admin | Only an archived field (`VALIDATION_FAILED`, `details: null` otherwise). Removes the field and its value from every record, in one transaction; the records' `updatedAt` does not move. |
+
+- A label is 1 to 60 characters without control characters, unique among the fields of its record type **archived ones included**, whatever the case (`VALIDATION_FAILED` on `label`). So restoring a field never collides, and an export never has two custom columns with one name.
+- A `DROPDOWN` has 1 to 50 options of 1 to 100 characters, each once whatever the case; any other type has none (`VALIDATION_FAILED` on `options`).
+- A record type has at most 30 fields in use (`MAX_ACTIVE_CUSTOM_FIELDS`); archived fields do not count. The 31st, by create or restore, is `VALIDATION_FAILED` with `details: null`.
+- Every change runs in a transaction that starts with `lockCustomFields(tx)`.
+- `position` orders the fields of a record type. Lists come in that order already; the numbers may have gaps (after an archive), so a client never computes with them.
+
+**Values.** Each of the four records answers with `customFields: { [fieldId]: string | number | null }`: one key for **every field in use** of its record type, and `null` where the record has no value. Create and `PATCH` take the same object.
+
+| Type | Stored and answered as | Refused |
+| --- | --- | --- |
+| `TEXT` | a string, trimmed, up to 500 characters | anything that is not a string |
+| `NUMBER` | a JSON number | a string (`"12"`), anything not finite |
+| `DATE` | a day as a string, `"2026-11-15"` | any other format, a day that does not exist |
+| `DROPDOWN` | one of the options, exactly as spelled | anything else |
+
+- **`PATCH` merges key by key**: keys that are not sent keep their value; `null` or `""` clears one.
+- **Every problem is reported at once** as `VALIDATION_FAILED` with one detail per field, `path: "customFields.<field id>"`. An id that is not a field in use of this record type (unknown, archived, or another record type's) is refused the same way.
+- **`required`** is checked on create (the field must be sent with a value) and on `PATCH` only for the keys that are sent (a required field cannot be cleared). A record from before the field existed, or before it became required, stays editable. The other write routes (assign, mark lost, stage, close, reopen, follow-up, convert) never look at custom fields.
+- **Removing a dropdown option** does not touch the records that hold it. They keep answering with the stored value, which is then not in `options`; it can be sent back unchanged in a `PATCH` (a form that sends every field still saves), but it cannot be chosen for another record, or again once the record moved off it.
+- **An archived field** is left out of every response and refused in every request, but its values stay in the column and come back when it is restored.
+- A service gets its values through three helpers: `customFieldsForCreate(fields, input)`, `customFieldsForUpdate(recordType, column, input)` (undefined when the request sent none, so Prisma leaves the column alone) and `toApiCustomFields(fields, column)`. `checkCustomFieldValues` under them is pure, which is what lets the import check thousands of rows against one read of the fields.
+
+**Filtering (CF-03).** The four lists (`GET /leads`, `/contacts`, `/companies`, `/opportunities`), their exports and the opportunities board take custom field filters in the query string, named after the field's id. All bounds are inclusive.
+
+| Field type | Query | Matches |
+| --- | --- | --- |
+| `TEXT` | `cf.<field id>=north` | the value contains the text, whatever the case |
+| `DROPDOWN` | `cf.<field id>=Gold` | the value is exactly that option |
+| `NUMBER` | `cf.<field id>.min=10`, `cf.<field id>.max=20` | the value is at least / at most the number |
+| `DATE` | `cf.<field id>.from=2026-01-01`, `cf.<field id>.to=2026-12-31` | the day is on or after / on or before |
+
+- A record without a value for the field never matches. Several filters narrow the list together, with the search and the other filters.
+- An id that is not a field in use of this record type, a form that does not fit the field's type (`.min` on a text field), a value that is not a number or a day, a value over 100 characters and a parameter sent twice are `VALIDATION_FAILED` with `path` the parameter itself (`cf.<field id>.min`). A parameter sent **empty** is ignored, like a filter box that was cleared.
+- The controller calls `parseCustomFieldFilters(req.query)` (shape only) and the service `customFieldWhere(fields, filters)`, which returns Prisma JSON filters to spread into the `AND` of the list's `where`. A field id reaches the query only after it matched a real field, and Prisma sends it and the value as parameters; `%` and `_` in a text filter are escaped like in a search. Nothing indexes the JSON values: the filter reads the rows the other conditions leave, which is fine for the tens of thousands of records this product is for.
+- OpenAPI cannot list parameters whose names depend on data, so the filters are described in each list route's `description` (`CUSTOM_FIELD_FILTERS` in `lib/route-docs.ts`).
+
+## CSV export
+
+Every list a user can see can be downloaded as a CSV file (DATA-03): `GET /leads/export`, `/contacts/export`, `/companies/export`, `/opportunities/export` and `/tasks/export`. The shared pieces are in [`backend/src/lib/csv-export.ts`](../../backend/src/lib/csv-export.ts), on top of the CSV writer in [`lib/csv.ts`](../../backend/src/lib/csv.ts).
+
+- **An export is the list.** It takes the list's query string (search, filters, custom field filters, `sort`, `order`) and applies the same visibility, through the same private function as the list (`findLeads`), with `exportWindow` instead of the page window. `page` and `pageSize` are accepted and ignored. Whoever can see the list can export it, a Read-only user included.
+- **The response** is the file, not an envelope: `Content-Type: text/csv; charset=utf-8`, `Content-Disposition: attachment; filename="leads-2026-11-15.csv"` (the viewer's today) and `X-Export-Truncated: true|false`. A plain link works, because a GET needs only the session cookie; CORS exposes both headers for a client that fetches the file instead.
+- **At most 10,000 rows** (`EXPORT_ROW_LIMIT`). A longer list is cut off there, in the sort order asked for, and `X-Export-Truncated` is `true`; the user narrows the list with a filter to get the rest.
+- **The file** is UTF-8 with a byte order mark (without it Excel garbles every accented letter), one header row, CRLF line ends. Headers are words ("First name", "Expected close date"). An owner, company, contact, stage, assignee and record is written by name, and only when the caller may see it, exactly as the list shows it. An enum is written as people read it (`COLD_CALL` is "Cold call"). Each custom field in use is one more column, headed by its label, after the record's own.
+- **Times** are written as `2026-11-15 14:30` in the time zone `tz` (see [Time zones](#time-zones); UTC when left out); days stay `2026-11-15`.
+- **Formula injection.** A text cell that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading apostrophe (`neutraliseFormula`), so no spreadsheet runs it; a number stays a number. See [security](security.md#csv-export-and-import). Always write a file for people with `writeSpreadsheetCsv`, never with `writeCsv` directly.
+- **Adding an export:** register `GET /export` above `/:id` in the router, parse the list's query schema extended with `tz`, describe the columns as `ExportColumn<ApiRecord>[]`, and answer with `sendCsv(res, name, tz, buildCsvExport(columns, page))`. Document it with `csvResponse(...)`, and add the route to `ROUTES_WITHOUT_INPUT` in `endpoint-contract.test.ts` and to the table in `lib/csv-export.test.ts`.
+
+## CSV import
+
+Leads, contacts and companies can be imported from a CSV file (DATA-01, DATA-02), in [`modules/imports/`](../../backend/src/modules/imports/). The browser reads the file and sends its **text** in a JSON body; there is no file upload, so no multipart parser. Every role that may create records may import: a Read-only user gets `FORBIDDEN` on all three routes.
+
+| Route | Answers |
+| --- | --- |
+| `GET /imports/fields?type=LEAD\|CONTACT\|COMPANY` | The fields a column can be mapped to: `[{ key, label, required, kind, options? }]`, the record's own first, then its custom fields in use (`key` is `cf:<field id>`). `kind` is `TEXT`, `EMAIL`, `NUMBER`, `DATE` or `DROPDOWN`. |
+| `POST /imports/preview` `{ type, csv }` | `{ headers, sampleRows, rowCount, suggestedMapping }`: the column names, the first five data rows (one cell per header), the number of data rows, and for each header the key of the field it looks like, or null. Saves nothing. |
+| `POST /imports` `{ type, csv, mapping, ownerId?, skipDuplicates?, createCompanies? }` | `{ total, created, skipped, failed, companiesCreated, errors, errorsTruncated, failedCsv }` (200). |
+
+**The file.** Comma-separated, the column names in the first row, UTF-8 (a byte order mark is fine), any line ends. Empty rows are ignored, and empty columns after the last name too. The limits: the body may be 12 MB (`PAYLOAD_TOO_LARGE` from the body parser), the file 5 MB of UTF-8 text (`PAYLOAD_TOO_LARGE`, "The file is larger than 5 MB") and 5,000 data rows (`VALIDATION_FAILED` on `csv`). Also `VALIDATION_FAILED` on `csv`, each with its own message: an empty file, a first row without names, a column without a name, two columns with one name (whatever the case), no rows below the names, and a quoted cell that is never closed.
+
+**The mapping** is `{ [header]: fieldKey | null }`; a header mapped to null, or left out, is not imported. Every problem is reported together as `VALIDATION_FAILED`: a header the file does not have, a key that is not a field of this record type, a field mapped twice (each on `mapping.<header>`), and a required field no column is mapped to (on `mapping`, one detail per field: `Map a column to "Last name"`). Required are the first and last name of a lead and a contact, the name of a company, and every required custom field.
+
+**The rows.** Each row is checked on its own and saved or reported on its own; the import never fails as a whole because of a row.
+
+- A row is checked with the **create route's own schema** (`createLeadBodySchema` and its siblings) and the custom field rules, so an import can store nothing the form could not. Cells are trimmed. An empty cell is no value.
+- What the file writes differently from JSON: a number is `1200.50` or `1,200.50`; a date is `2026-11-15`; a dropdown option and a lead's source match whatever the case ("cold call", `COLD_CALL`); a lead without a source gets `OTHER`. A leading apostrophe before `=`, `+`, `-` or `@` is removed, so an export, or the failed rows file, imports back unchanged.
+- **Row numbers are a spreadsheet's:** the header row is row 1, the first data row is row 2, and empty rows and rows with line breaks inside a cell count as a spreadsheet counts them.
+- `errors` lists the failed rows in file order: `{ row, values: { [header]: cell }, messages: [{ field, column, message }] }`, where `field` is the label of the field ("Email") and `column` the header it was read from; both are null for a problem with the whole row (more cells than columns, a row that could not be saved). It holds at most 200 rows (`errorsTruncated` says there are more).
+- `failedCsv` is **every** failed row as a file: the file's own columns and the reasons in a last column "Error" (reused when the file has one from an earlier attempt), written like an export (byte order mark, formulas neutralised). It is null when nothing failed. The user corrects it and imports it again.
+- **Saving** runs in batches of 100, one transaction each: the records, their `CREATED` timeline entries (`details: { import: true }`, written with `addCreatedEntries`) and any company they need, all or none. If a batch fails for a reason no check foresaw, its rows are saved one at a time, so only the row at fault is reported ("This row could not be saved").
+- **Ownership.** The records belong to the caller, or to `ownerId` when the caller may assign records to that user (`assertAssignable`, the rule of the create routes; `VALIDATION_FAILED` on `ownerId` otherwise). `createdById` is the caller.
+- **A contact's company** (`companyName`): the contact is linked to the company the caller may see with that name, whatever the case (the oldest, if there are several). When there is none, a company is created, once per name per import, owned like the contacts; `companiesCreated` counts them. With `createCompanies: false` such a row fails instead. A company the caller cannot see is never linked.
+- **`skipDuplicates`** (off unless sent) leaves out a row whose email (leads, contacts) or name (companies, whatever the case) a record the caller may see already has, or an earlier row of the same file; `skipped` counts them. A row without an email is never a duplicate. Without the flag nothing is compared.
+- There is no import history: nothing is stored about an import except the records it made.

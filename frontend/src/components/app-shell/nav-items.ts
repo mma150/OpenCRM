@@ -6,6 +6,7 @@ import {
   History,
   House,
   Kanban,
+  ListChecks,
   type LucideIcon,
   User,
   Users,
@@ -31,9 +32,11 @@ export type NavItem = {
 export const navItems: NavItem[] = [
   { href: "/", label: "Home", icon: House, bottomTab: true },
   { href: "/leads", label: "Leads", icon: Funnel, bottomTab: true },
-  // The pipeline is daily work, so it has a tab on phones. Profile gave up its tab for it:
-  // it is one tap away in the top bar's user menu, and under "More".
-  { href: "/opportunities", label: "Opportunities", icon: CircleDollarSign, bottomTab: true },
+  // On phones the three tabs are the screens a sales person opens many times a day: Home (the
+  // dashboard), Leads and Tasks. Opportunities gave up its tab for Tasks: it is the first
+  // item under "More", and Home links to the pipeline stage by stage.
+  { href: "/opportunities", label: "Opportunities", icon: CircleDollarSign, bottomTab: false },
+  { href: "/tasks", label: "Tasks", icon: ListChecks, bottomTab: true },
   { href: "/contacts", label: "Contacts", icon: Contact, bottomTab: false },
   { href: "/companies", label: "Companies", icon: Building2, bottomTab: false },
   {
@@ -78,7 +81,8 @@ export function isActive(item: NavItem, pathname: string): boolean {
 export function pageTitle(pathname: string): string {
   const item = navItems.find((candidate) => isActive(candidate, pathname));
   if (!item) {
-    return "OpenCRM";
+    // The bell in the top bar leads to this page at every width, so it is not a nav item.
+    return pathname === "/notifications" ? "Notifications" : "OpenCRM";
   }
   return item.group === "settings" ? `Settings / ${item.label}` : item.label;
 }

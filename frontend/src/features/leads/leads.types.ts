@@ -18,6 +18,9 @@ export type MarkLeadLostInput = { reason: LostReason; note?: string };
 // What a lead becomes: a contact, and if asked a company and an opportunity.
 export type ConvertLeadInput = Schemas["ConvertLeadBody"];
 
+// When to remind the owner, and about what; `at: null` clears it.
+export type FollowUpInput = Schemas["FollowUpBody"];
+
 // Search, filters, sort and page of GET /leads.
 export type LeadListQuery = NonNullable<paths["/leads"]["get"]["parameters"]["query"]>;
 export type LeadSort = NonNullable<LeadListQuery["sort"]>;

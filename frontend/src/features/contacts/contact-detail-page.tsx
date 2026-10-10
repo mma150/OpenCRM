@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { RecordOpportunities } from "@/features/opportunities/record-opportunities";
+import { RecordTasks } from "@/features/tasks/record-tasks";
 import { LogConversationButton } from "@/features/timeline/log-conversation-button";
 import { Timeline } from "@/features/timeline/timeline";
 import type { RecordRef } from "@/features/timeline/timeline.types";
@@ -116,6 +117,7 @@ function ContactDetail({ contact }: { contact: Contact }) {
         }
         aside={
           <>
+            <RecordTasks record={record} recordName={contact.name} canWrite={access.canWrite} />
             <Card>
               <CardHeader>
                 <CardTitle>Details</CardTitle>

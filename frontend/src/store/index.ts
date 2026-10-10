@@ -4,10 +4,13 @@ import { activityReducer } from "@/features/activity/activity.slice";
 import { authReducer, logout, sessionExpired } from "@/features/auth/auth.slice";
 import { companiesReducer } from "@/features/companies/companies.slice";
 import { contactsReducer } from "@/features/contacts/contacts.slice";
+import { dashboardReducer } from "@/features/dashboard/dashboard.slice";
 import { healthReducer } from "@/features/health/health.slice";
 import { leadsReducer } from "@/features/leads/leads.slice";
+import { notificationsReducer } from "@/features/notifications/notifications.slice";
 import { opportunitiesReducer } from "@/features/opportunities/opportunities.slice";
 import { pipelineStagesReducer } from "@/features/pipeline-stages/pipeline-stages.slice";
+import { tasksReducer } from "@/features/tasks/tasks.slice";
 import { timelineReducer } from "@/features/timeline/timeline.slice";
 import { assignableUsersReducer } from "@/features/users/assignable-users.slice";
 import { usersReducer } from "@/features/users/users.slice";
@@ -18,10 +21,13 @@ const appReducer = combineReducers({
   auth: authReducer,
   companies: companiesReducer,
   contacts: contactsReducer,
+  dashboard: dashboardReducer,
   health: healthReducer,
   leads: leadsReducer,
+  notifications: notificationsReducer,
   opportunities: opportunitiesReducer,
   pipelineStages: pipelineStagesReducer,
+  tasks: tasksReducer,
   timeline: timelineReducer,
   users: usersReducer,
 });

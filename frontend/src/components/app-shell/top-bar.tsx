@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { NotificationBell } from "@/features/notifications/notification-bell";
+
 import { pageTitle } from "./nav-items";
 import { UserMenu } from "./user-menu";
 import { Wordmark } from "./wordmark";
 
-// Page title on the left, user menu on the right. Phones have no sidebar, so there the
+// Page title on the left; the notification bell and the user menu on the right. Phones have no sidebar, so there the
 // left side carries the OpenCRM name instead.
 export function TopBar({
   name,
@@ -26,7 +28,10 @@ export function TopBar({
         <Wordmark />
       </Link>
       <p className="hidden min-w-0 truncate text-sm font-medium md:block">{pageTitle(pathname)}</p>
-      <UserMenu name={name} email={email} onLogout={onLogout} />
+      <div className="flex min-w-0 items-center gap-1">
+        <NotificationBell />
+        <UserMenu name={name} email={email} onLogout={onLogout} />
+      </div>
     </header>
   );
 }

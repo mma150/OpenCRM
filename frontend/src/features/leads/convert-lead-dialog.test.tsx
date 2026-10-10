@@ -9,6 +9,8 @@ import { listContacts } from "@/features/contacts/contacts.api";
 import { contactList, elena } from "@/features/contacts/contacts.fixtures";
 import { listPipelineStages } from "@/features/pipeline-stages/pipeline-stages.api";
 import { pipeline, proposalStage } from "@/features/pipeline-stages/pipeline-stages.fixtures";
+import { listTasks } from "@/features/tasks/tasks.api";
+import { taskList } from "@/features/tasks/tasks.fixtures";
 import { listTimeline } from "@/features/timeline/timeline.api";
 import { call, created, timelinePage } from "@/features/timeline/timeline.fixtures";
 import { listAssignableUsers } from "@/features/users/users.api";
@@ -22,6 +24,7 @@ import { allLeads, assignableUsers, converted, leadList, liam, marcus } from "./
 import type { Lead } from "./leads.types";
 import { LeadsPage } from "./leads-page";
 
+vi.mock("@/features/tasks/tasks.api");
 vi.mock("./leads.api");
 vi.mock("@/features/companies/companies.api");
 vi.mock("@/features/contacts/contacts.api");
@@ -54,6 +57,7 @@ const convertButton = (dialog: Scope) => dialog.getByRole("button", { name: "Con
 describe("ConvertLeadDialog", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(listTasks).mockResolvedValue(taskList([]));
     vi.mocked(listPipelineStages).mockResolvedValue(pipeline);
     vi.mocked(listAssignableUsers).mockResolvedValue(assignableUsers);
     vi.mocked(listTimeline).mockResolvedValue(timelinePage([call, created]));
@@ -255,6 +259,7 @@ describe("ConvertLeadDialog", () => {
 describe("converting from the lead list", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(listTasks).mockResolvedValue(taskList([]));
     vi.mocked(listPipelineStages).mockResolvedValue(pipeline);
     vi.mocked(listAssignableUsers).mockResolvedValue(assignableUsers);
     setMockLocation("/leads");
@@ -291,6 +296,7 @@ describe("converting from the lead list", () => {
 describe("editing a converted lead", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(listTasks).mockResolvedValue(taskList([]));
     setMockLocation(`/leads/${converted.id}/edit`);
   });
 

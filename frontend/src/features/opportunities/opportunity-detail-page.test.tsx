@@ -12,6 +12,8 @@ import {
   pipeline,
   proposalStage,
 } from "@/features/pipeline-stages/pipeline-stages.fixtures";
+import { listTasks } from "@/features/tasks/tasks.api";
+import { taskList } from "@/features/tasks/tasks.fixtures";
 import { addNote, listTimeline, logConversation } from "@/features/timeline/timeline.api";
 import { call, created, savedEntry, timelinePage } from "@/features/timeline/timeline.fixtures";
 import type { TimelineEntry } from "@/features/timeline/timeline.types";
@@ -34,6 +36,7 @@ import { OpportunityDetailPage } from "./opportunity-detail-page";
 vi.mock("./opportunities.api");
 vi.mock("@/features/pipeline-stages/pipeline-stages.api");
 vi.mock("@/features/users/users.api");
+vi.mock("@/features/tasks/tasks.api");
 vi.mock("@/features/timeline/timeline.api");
 vi.mock("sonner");
 
@@ -63,6 +66,8 @@ function stageChange(details: TimelineEntry["details"]): TimelineEntry {
 describe("OpportunityDetailPage", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    // The Tasks card of the record page loads on its own.
+    vi.mocked(listTasks).mockResolvedValue(taskList([]));
     vi.mocked(listPipelineStages).mockResolvedValue(pipeline);
     vi.mocked(listAssignableUsers).mockResolvedValue(assignableUsers);
     vi.mocked(listTimeline).mockResolvedValue(timelinePage([call, created]));

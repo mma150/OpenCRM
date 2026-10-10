@@ -189,7 +189,7 @@ The slice recipe above is for **loading** data. Anything that **changes** data (
 4. **Errors land in one of two places.** [`applyServerError`](../../frontend/src/lib/form-errors.ts) puts each `VALIDATION_FAILED` detail (`{ path, message }`) on the form field with that name and returns `null`; for any other code, or a detail that names no field on this form, it returns the sentence to show in the [`FormAlert`](../../frontend/src/components/shared/form-alert.tsx) above the form.
 5. **Success is a toast** (`toast.success` from `sonner`) or a visible success state, never silence.
 
-**One mutation is optimistic:** moving an opportunity to another stage of the board shows before the API has answered. It is the only one, and it has its own rules: see [The pipeline board](#the-pipeline-board). Do not make another mutation optimistic without a reason as strong as dragging a card.
+**Two mutations are optimistic:** moving an opportunity to another stage of the board, and ticking a task off, both show before the API has answered. Each has its own rules: see [The pipeline board](#the-pipeline-board) and [Tasks](#tasks). Do not make another mutation optimistic without a reason as strong as dragging a card or ticking a checkbox.
 
 **A form that is a page, not a dialog** (New lead, Edit lead) follows the same five steps. The example is [`lead-form.tsx`](../../frontend/src/features/leads/lead-form.tsx): one component creates when it gets no record and edits when it gets one.
 
@@ -265,7 +265,7 @@ Every signed-in page is rendered inside the same frame, and every later module i
 { href: "/leads", label: "Leads", icon: Funnel, bottomTab: true },
 ```
 
-The phone tabs are Home, Leads and Opportunities, plus "More": the pages a sales person opens every day. A module that is not a phone tab is listed under "More" (Contacts, Companies, Profile), and a page for some roles only adds `roles`. Profile is under "More" because it is also one tap away in the top bar's user menu at every width.
+The phone tabs are Home, Leads and Tasks, plus "More": the pages a sales person opens many times a day. A module that is not a phone tab is listed under "More" (Opportunities first, then Contacts, Companies, Profile), and a page for some roles only adds `roles`. Opportunities gave its tab to Tasks when tasks arrived: Home shows the pipeline stage by stage with a link into each stage, and the board is one tap further under "More". Profile is under "More" because it is also one tap away in the top bar's user menu at every width.
 
 ```ts
 { href: "/contacts", label: "Contacts", icon: Contact, bottomTab: false },
@@ -287,7 +287,7 @@ The phone tabs are Home, Leads and Opportunities, plus "More": the pages a sales
 | Tablet, `md` to `lg` (1024px) | The sidebar collapsed to icons, with tooltips |
 | Desktop, `lg` and up | The full sidebar (240px) with the OpenCRM name |
 
-The top bar shows the page title on the left (the OpenCRM name on phones, which have no sidebar) and the user menu on the right: Profile, Theme (Light, Dark, System) and Log out. Do not add a slide-in drawer or shadcn's `sidebar` or `sheet` components; the owner chose the bottom tab bar instead.
+The top bar shows the page title on the left (the OpenCRM name on phones, which have no sidebar) and, on the right, the notification bell (see [Notifications](#notifications)) and the user menu: Profile, Theme (Light, Dark, System) and Log out. The bell is in the top bar at every width, so `/notifications` is not in `nav-items.ts`; `pageTitle` names that page itself. Do not add a slide-in drawer or shadcn's `sidebar` or `sheet` components; the owner chose the bottom tab bar instead.
 
 **What a page gets from the frame.** Padding, a centred column, and enough bottom padding on phones that the tab bar never covers the last line (including the iPhone safe area). A page therefore starts directly with its `PageHeader` and never sets its own outer padding or `min-h-screen`.
 
@@ -305,7 +305,8 @@ Build screens from these, in [`src/components/shared/`](../../frontend/src/compo
 | `RecordLoader`, `NoWriteAccess` | Loading, "not found" and a failed load for a record page; and what a Read-only user gets instead of a form |
 | `RecordRowMenu`, `RecordMoreMenu` | The actions menu of a list row, and the "More actions" menu in a record page's header |
 | `ReassignRecordDialog`, `DeleteRecordDialog` | The two dialogs every owned record has. See [What owned records share](#what-owned-records-share) |
-| `RecordPicker`, `RecordFilter` | Choosing one record out of thousands by searching for its name, in a form or as a list filter. A feature wraps them: `CompanyPicker`, `ContactPicker`. See [The record pickers](#the-record-pickers) |
+| `RecordPicker`, `RecordFilter` | Choosing one record out of thousands by searching for its name, in a form or as a list filter. A feature wraps them: `CompanyPicker`, `ContactPicker`, `LeadPicker`, `OpportunityPicker`. See [The record pickers](#the-record-pickers) |
+| `FollowUp` | The follow-up reminder of a lead or an opportunity: the strip under the record's header and its dialog. See [Follow-ups](#follow-ups) |
 | `SegmentedControl` | A short row of choices where exactly one is on: the filter above a timeline, the two modes of a form, the Board / List switch, the two columns of a record page on a phone. Each choice is a button with `aria-pressed`; on a narrow screen the choices share the width instead of scrolling |
 | `PageState`, `PageLoading`, `PageError` | Nothing to show, no access, loading, and a failed load with the request id and Retry |
 | `FormField` | Every form row: label, control, hint and error, wired for screen readers |
@@ -315,7 +316,7 @@ Build screens from these, in [`src/components/shared/`](../../frontend/src/compo
 | `RoleBadge`, `StatusBadge` | A role or a user status. Labels come from [`src/lib/user-labels.ts`](../../frontend/src/lib/user-labels.ts); never print the raw enum value |
 | `CopyLinkField` | A link the user has to pass on by hand |
 
-A feature keeps the labels and the badge for its own enums beside its code, in the same style: [`lead-labels.ts`](../../frontend/src/features/leads/lead-labels.ts) and [`lead-status-badge.tsx`](../../frontend/src/features/leads/lead-status-badge.tsx). Dates and money are written with the functions in [`src/lib/format.ts`](../../frontend/src/lib/format.ts), the one place that fixes the locale and the currency: `formatDate`, `formatDateTime`, `formatTime` and `formatCurrency`; `formatDay` for a calendar day without a time (an expected close date, `"2026-11-15"`), which is the same day for every viewer and must not go through `formatDate`; `formatRelativeDate` ("Today", "3 days ago", then the date) and `formatRelativeTime` (the "2 hours ago" hint beside a recent moment); `formatDayHeading` for the days of a feed; and `toDateInputValue` / `toDateTimeInputValue` for native date inputs. Dates are always shown in the viewer's time zone. A date the user picks is a native `<input type="date">` or `datetime-local` in the shared `Input`; there is no calendar component.
+A feature keeps the labels and the badge for its own enums beside its code, in the same style: [`lead-labels.ts`](../../frontend/src/features/leads/lead-labels.ts) and [`lead-status-badge.tsx`](../../frontend/src/features/leads/lead-status-badge.tsx). Dates and money are written with the functions in [`src/lib/format.ts`](../../frontend/src/lib/format.ts), the one place that fixes the locale and the currency: `formatDate`, `formatDateTime`, `formatTime` and `formatCurrency`; `formatDay` for a calendar day without a time (an expected close date, `"2026-11-15"`), which is the same day for every viewer and must not go through `formatDate`; `formatRelativeDate` ("Today", "3 days ago", then the date) and `formatRelativeTime` (the "2 hours ago" hint beside a recent moment); `formatNearDateTime` for a due date or a reminder ("Today, 2:00 PM", "Tomorrow, 10:00 AM", then the date and time) and `isPast` for "is it late"; `formatDayHeading` for the days of a feed; and `toDateInputValue` / `toDateTimeInputValue` for native date inputs. Dates are always shown in the viewer's time zone. A date the user picks is a native `<input type="date">` or `datetime-local` in the shared `Input`; there is no calendar component.
 
 ### ResponsiveList: the one list pattern (D-16)
 
@@ -445,7 +446,8 @@ The page of one record (a lead, a contact, a company, an opportunity) is laid ou
 - **`RecordHeader`** is the record's name as the `h1` with its status badge, one line of facts (`RecordFact`: an icon and a few words), and the actions. Keep the actions to a few compact controls: the main ones as buttons and everything else, including anything destructive, in one "More actions" menu. They wrap under the name on phones, so nothing needs sideways scrolling.
 - **Two columns from `lg`, one at a time below.** The wide column is the record's timeline; the narrow one holds its cards (Details, Notes). On phones and tablets a `SegmentedControl` under the header ("Timeline" / "Details", from `mainLabel` and `asideLabel`) shows one column at a time, timeline first, so the details are one tap away instead of a long scroll past the history. A new section is another card in `aside`; the page itself is not rearranged.
 - **A list of the record's own is `extra`.** A contact's page passes its opportunities as `extra={{ label: "Opportunities", content: <RecordOpportunities ... /> }}`; a company's page passes a list of two, its contacts and its opportunities. From `lg` they sit above the timeline in the wide column; below `lg` each gets a button of its own between the other two ("Timeline" / "Contacts" / "Opportunities" / "Details"). Four buttons are the most a phone holds: a fifth section belongs in `aside`. Keep such a card short: [`company-contacts.tsx`](../../frontend/src/features/contacts/company-contacts.tsx) and [`record-opportunities.tsx`](../../frontend/src/features/opportunities/record-opportunities.tsx) show ten records and link to the list, filtered by this record, for the rest.
-- **What must be seen at every width goes under the header**, not in `aside`, which a phone keeps behind the "Details" button: the outcome of a closed opportunity (won or lost, the reason, the date), the stage stepper, and the "Converted" banner of a lead with its links to the contact, company and opportunity it became.
+- **What must be seen at every width goes under the header**, not in `aside`, which a phone keeps behind the "Details" button: the outcome of a closed opportunity (won or lost, the reason, the date), the stage stepper, the "Converted" banner of a lead with its links to the contact, company and opportunity it became, and the follow-up reminder of a lead or an opportunity (see [Follow-ups](#follow-ups)).
+- **The Tasks card is the first card of `aside` on all four record pages** (`RecordTasks`, see [Tasks](#tasks)). It is in `aside`, not `extra`, so that it sits in the same place on every record: a company already has two `extra` sections, and a fifth button does not fit a phone.
 - **`DetailList` and `DetailItem`** are the label and value pairs inside a card. Show `EmptyValue` (`—`) for a missing value, and use `DetailLink` for another record, an email (`mailto:`) and a phone number (`tel:`). `NotesCard` is the record's own free text. A company's website goes through `WebsiteLink` in [`company-website.tsx`](../../frontend/src/features/companies/company-website.tsx): a value typed without a scheme opens over `https://`, in a new tab, and anything that does not pass the API's website rule is shown as text, never as a link.
 - **Loading, not found and errors** are drawn by `RecordLoader`. Each feature wraps it in a small loader of its own that dispatches the request ([`lead-loader.tsx`](../../frontend/src/features/leads/lead-loader.tsx)), which the detail and edit pages share. A record that does not exist and a record the user may not see get the same "not found" page, because the API does not say which it is.
 - **Only offer what the API will allow.** `recordAccess(role)` in [`src/lib/record-access.ts`](../../frontend/src/lib/record-access.ts) says what the signed-in role may do with an owned record (`canWrite`, `canReassign`); leads, contacts, companies and opportunities follow the same rule. A record can add a rule of its own on top: a converted lead keeps Reassign and its timeline form, and loses Edit, the status control, Convert, Mark as lost and Delete (`isConverted` in `lead-labels.ts`), because the API answers those with `LEAD_CONVERTED`. Hide every other control, in the list's row menu and on the record page alike. This is for clarity; the API is what enforces it.
@@ -470,7 +472,7 @@ These are components with props, not a framework: each slice, form and page is s
 
 [`RecordPicker`](../../frontend/src/components/shared/record-picker.tsx) chooses one record out of any number: a button that shows the current record and opens a dialog with a search box and the matches, twenty at a time by name. It never loads every record, so it is used wherever a company or a contact is chosen; do not build a select of companies or contacts.
 
-It is one component for every kind of record. A feature says what its record is in a `RecordPickerKind` (what it is called, its icon, how to search it and how to find one by id) and exports a thin picker of its own, so nothing is copied: [`CompanyPicker` and `CompanyFilter`](../../frontend/src/features/companies/company-picker.tsx) search `GET /companies?search=`, [`ContactPicker` and `ContactFilter`](../../frontend/src/features/contacts/contact-picker.tsx) search `GET /contacts?search=` and show each contact's company under the name. **A picker for another record is a new `RecordPickerKind`, about thirty lines.**
+It is one component for every kind of record. A feature says what its record is in a `RecordPickerKind` (what it is called, its icon, how to search it and how to find one by id) and exports a thin picker of its own, so nothing is copied: [`CompanyPicker` and `CompanyFilter`](../../frontend/src/features/companies/company-picker.tsx) search `GET /companies?search=`, [`ContactPicker` and `ContactFilter`](../../frontend/src/features/contacts/contact-picker.tsx) search `GET /contacts?search=` and show each contact's company under the name; [`LeadPicker`](../../frontend/src/features/leads/lead-picker.tsx) and [`OpportunityPicker`](../../frontend/src/features/opportunities/opportunity-picker.tsx) do the same for leads and opportunities. **A picker for another record is a new `RecordPickerKind`, about thirty lines.** A form that links to a record of any type (a task) offers a type select and then that type's picker: [`task-record-picker.tsx`](../../frontend/src/features/tasks/task-record-picker.tsx) is the table of the four.
 
 ```tsx
 // In a form: the control of a FormField. The form keeps the id; the name is kept beside it.
@@ -560,6 +562,51 @@ The stages are their own feature, [`src/features/pipeline-stages/`](../../fronte
 
 After it the user lands on the new opportunity, or else on the contact. A lost lead has no Convert: it is reopened first. The lead stays as a read-only record (see [The record page](#the-record-page)); the list marks it with its "Converted" badge and the contact it became.
 
+### Tasks
+
+Tasks are the feature [`src/features/tasks/`](../../frontend/src/features/tasks/), mirroring the API module. A task is not an owned record: who sees it follows who it is assigned to and who made it, and whoever sees it may change it. `taskAccess(role)` in [`task-labels.ts`](../../frontend/src/features/tasks/task-labels.ts) says what the UI offers: a Read-only user sees tasks and changes nothing; an Admin and a Sales Manager get the Assignee filter.
+
+- **The time zone goes with every request.** "Overdue" and "due today" are calendar days of the viewer, so the API functions in `tasks.api.ts` and `dashboard.api.ts` add `tz` themselves, from `browserTimeZone()` in [`src/lib/time-zone.ts`](../../frontend/src/lib/time-zone.ts). A caller never passes it and so cannot forget it.
+- **`/tasks` ([`tasks-page.tsx`](../../frontend/src/features/tasks/tasks-page.tsx))** shows the open tasks in four groups, Overdue, Due today, Upcoming and No due date, each with its count. The groups are the API's (`due=`): `fetchOpenTasks` asks for the four side by side, so the client never decides what is overdue. A group holds its first 50 tasks and says so when there are more. The search text, the Assignee filter ("Me" by default, a team member, or "Everyone") and the Due filter live in the address like any list; `?view=done` shows the completed tasks, paged; `?open=<id>` opens one task's dialog, which is what a notification links to. A Read-only user is never given a task, so they get everyone's tasks without a filter.
+- **`TaskRow`** is one task wherever it is listed: a 24px checkbox in a 44px hit area, the title (a button that opens the task), the linked record as a link with a badge that says what kind it is, the due date, the reminder, and the assignee when it is not the viewer. An overdue date is in the destructive colour **and** starts with the word "Overdue".
+- **Ticking a task off is optimistic**, the second optimistic mutation in the app. `completeTask` puts the id into `tasks.completed` when the request starts and takes it out again when the API refuses. Every list of open tasks (the page, Home, a record's card) leaves those ids out with `stillOpen(tasks, completed)`, so the task disappears at once everywhere and comes back exactly where it was on failure; no list has to be rearranged by hand. The checkbox goes through `useTaskToggle(onChanged)`, which shows the toast ("Task completed." with **Undo**, or the sentence that says the task is back in the list) and calls `onChanged` for a list that keeps its tasks outside the slice. Reopening is an ordinary mutation.
+- **`TaskDialog`** adds a task or opens one: title, description, due date and time, assignee (the people the user may assign to), the linked record (a type select, then that type's picker) and the reminder. It is full-screen on phones. The reminder is a choice (None, At due time, 1 hour before, 1 day before, Custom date and time) that becomes the one moment the API stores, `reminderAt` (`reminderMoment`), and is read back from it when a task is edited (`reminderOf`). A choice that counts back from the due date needs one, which is checked in the form. An edit sends only what changed; clearing a field sends `null`. The API names the linked record `record.id`, which `forFormFields` puts on the form's `recordId`. A Read-only user gets the task's details instead of the form.
+- **`RecordTasks`** is the Tasks card of a record page: its open tasks, soonest first, five at a time with "Show all", and "Add task" with the record filled in. Like `RecordOpportunities`, its answer does not enter the store.
+
+### Follow-ups
+
+A lead and an opportunity have one follow-up reminder: a moment (`followUpAt`) and a note. [`FollowUp`](../../frontend/src/components/shared/follow-up.tsx) is the shared control, mounted under the record's header so that it is in view at every width. With nothing set it is the "Set follow-up" button; with one set it is a strip with the moment, the note, **Change** and **Clear**. A follow-up that has passed says "Follow-up overdue" in words. The feature hands over its own request, like the shared record dialogs:
+
+```tsx
+<FollowUp
+  at={lead.followUpAt}
+  note={lead.followUpNote}
+  canSet={access.canWrite && isOpenLeadStatus(lead.status)}
+  canClear={access.canWrite}
+  onSave={(input) => dispatch(setLeadFollowUp({ id: lead.id, input })).unwrap()}
+/>
+```
+
+`canSet` is false where the API refuses a new follow-up (a converted or lost lead, a closed opportunity); one that is still set there can be cleared. The request replaces the follow-up: the note is sent every time, and `at: null` clears both.
+
+### Notifications
+
+[`src/features/notifications/`](../../frontend/src/features/notifications/) is the bell and the page behind it. The slice holds `unread` (the number on the bell) and `list` (the notifications, newest first, with `more` for "Load more").
+
+- **The bell ([`notification-bell.tsx`](../../frontend/src/features/notifications/notification-bell.tsx))** is in the top bar at every width. It asks for the unread count when it appears, every 60 seconds after that and when the window gets the focus back; **while the tab is hidden it asks nothing**, and it catches up the moment the tab is looked at again. The number is part of the bell's name ("Notifications, 3 unread"). When the count has gone up and the list is loaded, the list is loaded again too.
+- **From `md` the bell opens a panel** with the latest six, built on the dropdown menu so that it works with the arrow keys; **on a phone it is a link to `/notifications`**, where a panel would cover the screen anyway. The page lists everything with "Load more" and "Mark all as read".
+- **Unread is never colour alone**: an unread notification has a bolder title and a "New" badge.
+- **Opening one** marks it as read and goes to its `link`. The link comes from the API, and is still passed through `safeNextPath`: only a path inside this app is ever followed.
+
+### The dashboard
+
+Home is [`src/features/dashboard/`](../../frontend/src/features/dashboard/), mirroring the API module. The slice holds `me` (everyone) and `team` (with the range it was asked for).
+
+- **Everyone gets their own dashboard** (`my-dashboard.tsx`, from `GET /dashboard/me`): five tiles (open leads, pipeline value, tasks due today, overdue tasks, won this month), the tasks that are due with their checkboxes, the follow-ups that are due, the pipeline by stage and the open leads by status. **Every number is a link to the list it counts**, with the filter set (`/tasks?due=overdue`, `/leads?status=NEW`, `/opportunities?view=list&stageId=`). The figures are the user's own, so for a role that also sees other people's records the links add `ownerId=<me>`.
+- **Bars are drawn without a chart library**: one inline SVG `rect` whose width is the share of the largest value (`Bar`). The count and the amount are always written beside the bar, so the bar is hidden from screen readers. Do not add a chart dependency for a bar.
+- **The Team section** (`team-section.tsx`, from `GET /dashboard/team`) is rendered for an Admin and a Sales Manager only, so nobody else ever asks the API for it (`seesTeamDashboard`). It has a date range (This month, Last month, Last 7 days, Last 30 days, or two dates), sent as days in the viewer's time zone, and one row for each person with a totals row. It is a table from `lg` and cards below, because eight figures do not fit a tablet. Sorting is done in the browser, by a column heading (`aria-sort`) or, for the cards, a "Sort by" select. "Open pipeline" and "Overdue tasks" are as of now whatever the range, and the section says so.
+- **The two parts load on their own**: each has its skeleton, and its own error with Retry, and a failure of one leaves the other on screen. A brand-new install shows zeros and a sentence in each empty list.
+
 ## Styling (D-08)
 
 Styling is **Tailwind CSS 4 with shadcn/ui** (`radix` base, `nova` preset, configured in [`frontend/components.json`](../../frontend/components.json)). Use Tailwind classes; do not add inline styles or another styling system.
@@ -583,7 +630,7 @@ Every screen must work at 375px, 768px and 1280px **with no horizontal page scro
 - Use `dvh`, not `vh` or `h-screen` (`min-h-dvh`, `max-h-[90dvh]`).
 - Something that is wider than a screen by nature (the pipeline board, a row of stage buttons) scrolls sideways **inside its own container** (`overflow-x-auto` on a `min-w-0` box); the page never does. Below `md`, prefer showing one part at a time over a sideways scroll.
 - A row of choices whose number an Admin decides (pipeline stages) wraps onto more lines (`flex-wrap`) or scrolls inside itself; it is never laid out for a fixed count.
-- A form that fills a phone screen is a dialog made full-screen with a class on `DialogContent`, with its fields in a scrolling middle and its Save button in a bar at the bottom (see `log-conversation-button.tsx`). It is not a `sheet` or a drawer.
+- A form that fills a phone screen is a dialog made full-screen with a class on `DialogContent`, with its fields in a scrolling middle and its Save button in a bar at the bottom (see `log-conversation-button.tsx` and `task-dialog.tsx`). The class is `FULL_SCREEN_DIALOG` and the hook that keeps the bar above the on-screen keyboard is `useVisibleHeight`, both in [`src/lib/use-visible-height.ts`](../../frontend/src/lib/use-visible-height.ts). It is not a `sheet` or a drawer.
 - A dialog with a search box (the company picker) sits near the top on phones (`max-sm:top-4 max-sm:translate-y-0`), so its results are not hidden by the on-screen keyboard, and gives its results a fixed height so it does not jump while they change.
 - A dialog is capped and scrolls inside: `className="max-h-[90dvh] overflow-y-auto"` on `DialogContent`. A title that can be long (it holds a record's name) gets `pr-8 wrap-anywhere`, so it wraps and clears the close button.
 - A grid of form fields starts with `grid-cols-1`. Without it the single column is as wide as its widest content, and a long value in a textarea pushes the fields out of their card.
@@ -630,7 +677,13 @@ Every screen must work at 375px, 768px and 1280px **with no horizontal page scro
 | Converting a lead: defaults from the lead, every combination of choices, nested field errors on the right fields, where the user lands; a converted lead is read-only but can be reassigned and written to | `convert-lead-dialog.test.tsx`, `lead-detail-page.test.tsx`, `leads-page.test.tsx` |
 | Pipeline settings: Admin only, reorder with buttons, delete with a stage to move to, Won and Lost fixed | `pipeline-settings-page.test.tsx`, `pipeline-stages.slice.test.ts` |
 | A company's and a contact's page list their opportunities | `company-detail-page.test.tsx`, `contact-detail-page.test.tsx` |
+| Tasks: the four groups and their counts, a tick that shows at once and is undone when refused, the dialog and its reminder choices, `?open=`, the Done view, each role's controls | `tasks-page.test.tsx`, `tasks.slice.test.ts`, `task-labels.test.ts` |
+| A record page lists its tasks and adds one with the record filled in | `record-tasks.test.tsx`, `lead-follow-up.test.tsx`, `opportunity-follow-up.test.tsx` |
+| The follow-up control: set, change, clear, overdue in words, nothing offered where the API refuses | `follow-up.test.tsx`, `lead-follow-up.test.tsx`, `opportunity-follow-up.test.tsx` |
+| The bell asks every minute and on focus and not while the tab is hidden; opening marks as read and never leaves the app; mark all; load more | `notification-bell.test.tsx`, `notifications-page.test.tsx`, `notifications.slice.test.ts` |
+| Home: every number links to its list; the Team section is shown to, and asked for by, an Admin and a Sales Manager only; sorting in the browser; each part has its own error | `dashboard-page.test.tsx`, `dashboard.slice.test.ts` |
+| Tasks is in the navigation for every role and a phone tab; the bar keeps to three tabs plus More | `nav-items.test.ts` |
 | `?from=` cannot leave the app | `lead-form.test.tsx` (through `safeNextPath`) |
-| Thin route files, slice shape, error switch, tokens, responsive rules | Code review, with the health, auth, users, leads, contacts, companies and opportunities features as the reference |
+| Thin route files, slice shape, error switch, tokens, responsive rules | Code review, with the health, auth, users, leads, contacts, companies, opportunities and tasks features as the reference |
 
 `pnpm --dir frontend check` runs ESLint (zero warnings allowed), the Prettier check and the strict TypeScript check.

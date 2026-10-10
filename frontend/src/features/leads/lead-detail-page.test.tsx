@@ -2,6 +2,8 @@ import { screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Me } from "@/features/auth/auth.types";
+import { listTasks } from "@/features/tasks/tasks.api";
+import { taskList } from "@/features/tasks/tasks.fixtures";
 import { addNote, listTimeline, logConversation } from "@/features/timeline/timeline.api";
 import {
   call,
@@ -30,6 +32,7 @@ import type { Lead } from "./leads.types";
 
 vi.mock("./leads.api");
 vi.mock("@/features/users/users.api");
+vi.mock("@/features/tasks/tasks.api");
 vi.mock("@/features/timeline/timeline.api");
 vi.mock("sonner");
 
@@ -84,6 +87,8 @@ async function moreActionNames(user: TestUser) {
 describe("LeadDetailPage", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    // The Tasks card of the record page loads on its own.
+    vi.mocked(listTasks).mockResolvedValue(taskList([]));
     vi.mocked(listTimeline).mockResolvedValue(timelinePage([call, created]));
     setMockLocation(`/leads/${marcus.id}`);
   });

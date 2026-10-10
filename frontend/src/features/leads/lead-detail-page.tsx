@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { FollowUp } from "@/components/shared/follow-up";
 import {
   BackLink,
   DetailItem,
@@ -38,11 +39,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { selectAuth } from "@/features/auth/auth.slice";
+import { RecordTasks } from "@/features/tasks/record-tasks";
 import { LogConversationButton } from "@/features/timeline/log-conversation-button";
 import { Timeline } from "@/features/timeline/timeline";
 import type { RecordRef } from "@/features/timeline/timeline.types";
 import { formatCurrency, formatDate, formatRelativeDate } from "@/lib/format";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 import { type LeadDialog, LeadDialogs } from "./lead-dialogs";
 import {
@@ -55,6 +57,7 @@ import {
 } from "./lead-labels";
 import { LeadLoader } from "./lead-loader";
 import { LeadStatusBadge } from "./lead-status-badge";
+import { setLeadFollowUp } from "./leads.slice";
 import type { Lead, OpenLeadStatus } from "./leads.types";
 import { useChangeLeadStatus } from "./use-change-lead-status";
 
@@ -241,6 +244,7 @@ function LostCard({ lead }: { lead: Lead }) {
 
 function LeadDetail({ lead }: { lead: Lead }) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { data: me } = useAppSelector(selectAuth);
   const [dialog, setDialog] = useState<LeadDialog>(null);
 
@@ -277,6 +281,14 @@ function LeadDetail({ lead }: { lead: Lead }) {
               }
             />
             {isConverted(lead) ? <ConvertedBanner lead={lead} /> : null}
+            {/* A converted or lost lead takes no new follow-up; one it still has can be cleared. */}
+            <FollowUp
+              at={lead.followUpAt}
+              note={lead.followUpNote}
+              canSet={access.canWrite && isOpenLeadStatus(lead.status)}
+              canClear={access.canWrite}
+              onSave={(input) => dispatch(setLeadFollowUp({ id: lead.id, input })).unwrap()}
+            />
             {/* Phones only: the timeline shows the same form inline on wider screens. */}
             {access.canWrite ? (
               <LogConversationButton record={record} recordName={lead.name} />
@@ -291,6 +303,7 @@ function LeadDetail({ lead }: { lead: Lead }) {
         aside={
           <>
             {lead.status === "LOST" ? <LostCard lead={lead} /> : null}
+            <RecordTasks record={record} recordName={lead.name} canWrite={access.canWrite} />
             <Card>
               <CardHeader>
                 <CardTitle>Details</CardTitle>

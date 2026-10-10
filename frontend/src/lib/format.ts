@@ -120,6 +120,26 @@ export function formatDayHeading(iso: string, now: Date = new Date()): string {
     : dayWithYearFormat.format(date);
 }
 
+// True when a moment has passed: a follow-up or a reminder that is late.
+export function isPast(iso: string, now: Date = new Date()): boolean {
+  return new Date(iso).getTime() < now.getTime();
+}
+
+// A moment that is near, as a person would say it: "Today, 2:00 PM", "Tomorrow, 10:00 AM",
+// "Yesterday, 4:00 PM", then "Oct 15, 2026, 11:00 AM". For due dates and reminders.
+export function formatNearDateTime(iso: string, now: Date = new Date()): string {
+  switch (daysAgo(iso, now)) {
+    case 0:
+      return `Today, ${formatTime(iso)}`;
+    case 1:
+      return `Yesterday, ${formatTime(iso)}`;
+    case -1:
+      return `Tomorrow, ${formatTime(iso)}`;
+    default:
+      return formatDateTime(iso);
+  }
+}
+
 function pad(value: number): string {
   return String(value).padStart(2, "0");
 }

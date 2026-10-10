@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { FollowUp } from "@/components/shared/follow-up";
 import {
   BackLink,
   DetailItem,
@@ -31,13 +32,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { openStages } from "@/features/pipeline-stages/stage-labels";
 import { usePipelineStages } from "@/features/pipeline-stages/use-pipeline-stages";
+import { RecordTasks } from "@/features/tasks/record-tasks";
 import { LogConversationButton } from "@/features/timeline/log-conversation-button";
 import { Timeline } from "@/features/timeline/timeline";
 import type { RecordRef } from "@/features/timeline/timeline.types";
 import { formatCurrency, formatDate, formatDay, formatRelativeDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
+import { setOpportunityFollowUp } from "./opportunities.slice";
 import type { Opportunity } from "./opportunities.types";
 import { type OpportunityDialog, OpportunityDialogs } from "./opportunity-dialogs";
 import { opportunityAccess } from "./opportunity-labels";
@@ -84,6 +87,7 @@ function ClosedBanner({ opportunity }: { opportunity: Opportunity }) {
 
 function OpportunityDetail({ opportunity }: { opportunity: Opportunity }) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { data: me } = useAppSelector(selectAuth);
   const { data: stages } = usePipelineStages();
   const { move, reopen } = useOpportunityStage();
@@ -201,6 +205,16 @@ function OpportunityDetail({ opportunity }: { opportunity: Opportunity }) {
                 onMove={(stage) => void move(opportunity, stage)}
               />
             ) : null}
+            {/* A closed opportunity takes no new follow-up; one it still has can be cleared. */}
+            <FollowUp
+              at={opportunity.followUpAt}
+              note={opportunity.followUpNote}
+              canSet={access.canWrite && open}
+              canClear={access.canWrite}
+              onSave={(input) =>
+                dispatch(setOpportunityFollowUp({ id: opportunity.id, input })).unwrap()
+              }
+            />
             {/* Phones only: the timeline shows the same form inline on wider screens. */}
             {access.canWrite ? (
               <LogConversationButton record={record} recordName={opportunity.name} />
@@ -214,6 +228,7 @@ function OpportunityDetail({ opportunity }: { opportunity: Opportunity }) {
         }
         aside={
           <>
+            <RecordTasks record={record} recordName={opportunity.name} canWrite={access.canWrite} />
             <Card>
               <CardHeader>
                 <CardTitle>Details</CardTitle>

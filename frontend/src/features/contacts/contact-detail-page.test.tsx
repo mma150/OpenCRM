@@ -7,6 +7,8 @@ import { northwind } from "@/features/companies/companies.fixtures";
 import { assignableUsers, managerUser, readOnlyUser } from "@/features/leads/leads.fixtures";
 import { listOpportunities } from "@/features/opportunities/opportunities.api";
 import { fleet, opportunityList } from "@/features/opportunities/opportunities.fixtures";
+import { listTasks } from "@/features/tasks/tasks.api";
+import { taskList } from "@/features/tasks/tasks.fixtures";
 import { addNote, listTimeline, logConversation } from "@/features/timeline/timeline.api";
 import {
   call,
@@ -28,6 +30,7 @@ import type { Contact } from "./contacts.types";
 vi.mock("./contacts.api");
 vi.mock("@/features/users/users.api");
 vi.mock("@/features/opportunities/opportunities.api");
+vi.mock("@/features/tasks/tasks.api");
 vi.mock("@/features/timeline/timeline.api");
 vi.mock("sonner");
 
@@ -80,6 +83,8 @@ async function moreActionNames(user: TestUser) {
 describe("ContactDetailPage", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    // The Tasks card of the record page loads on its own.
+    vi.mocked(listTasks).mockResolvedValue(taskList([]));
     vi.mocked(listTimeline).mockResolvedValue(timelinePage([call, created]));
     vi.mocked(listOpportunities).mockResolvedValue(opportunityList([fleet]));
     setMockLocation(`/contacts/${marcus.id}`);

@@ -83,3 +83,17 @@ Actions are pinned by major version tag; Dependabot's `github-actions` entry kee
 | Secret scan | `ghcr.io/gitleaks/gitleaks:v8.30.1` (Docker image) | Pulled and run locally |
 | CI database | `postgres:18-alpine` (service container) | Same image as `compose.yaml` |
 | Development mail inbox | `axllent/mailpit:v1.31.4` (Docker image, `compose.yaml` only) | Pulled and run locally on 2026-10-09 |
+
+## CSV export and import
+
+The CRM writes CSV files that people open in a spreadsheet and reads CSV files people give it. The rules, each pinned by a test (`backend/src/lib/csv.test.ts`, `csv-export.test.ts`, `modules/imports/imports.test.ts`, `modules/custom-fields/custom-fields.test.ts`):
+
+- **Formula injection.** Excel, LibreOffice and Google Sheets run a cell that starts with `=`, `+`, `-`, `@`, a tab or a carriage return as a formula, so a lead named `=HYPERLINK(...)` could run on the machine of whoever opens an export. Every text cell the API writes into a CSV file gets a leading apostrophe when it starts with one of those characters (`neutraliseFormula` in `backend/src/lib/csv.ts`); numbers are written as numbers. This covers the five exports and the failed rows file of an import, because both are written with `writeSpreadsheetCsv`, the only function a file for people may be written with. The import removes that apostrophe again, so a round trip does not change the data.
+- **An export shows what the list shows.** It runs the list's own query with the caller's visibility, so it can never hold a record, or the name of a linked record, that the caller may not see.
+- **A download cannot be cached or sniffed.** Exports are served with `Cache-Control: no-store`, `X-Content-Type-Options: nosniff` and `Content-Disposition: attachment`.
+- **An export is a GET**, so the origin check does not apply to it. That is safe because it changes nothing, and another site cannot read the response: CORS allows only the origins in `CORS_ORIGINS`, and the session cookie is `SameSite=Lax`.
+- **No file upload.** An import sends the file's text in a JSON body; there is no multipart parser and nothing is written to disk.
+- **Large bodies only after sign-in.** Every route reads at most 100 kB of JSON, except the import routes, which read up to 12 MB, and only after the session and the role were checked, so an anonymous or Read-only caller cannot make the API read a large body. The file itself is limited to 5 MB and 5,000 rows.
+- **An import can store nothing the forms could not.** Every row goes through the Zod schema of the record's create route and the custom field rules; the mapping accepts only the field keys `GET /imports/fields` lists.
+- **Custom field filters are parameters.** A `cf.<field id>` filter is used only after the id matched a real field in use of that record type; the id and the value reach PostgreSQL as bound parameters through Prisma, never as SQL text. The one raw statement, which removes a deleted field's values, takes its table name from a constant and the field id as a parameter.
+- **Logs.** A row of an import is never logged; a batch that fails is logged by the error's name only.

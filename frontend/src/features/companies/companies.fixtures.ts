@@ -14,6 +14,7 @@ export const northwind: Company = {
   notes: "Renewal comes up in spring.",
   owner: { id: repUser.id, name: repUser.name },
   contactCount: 4,
+  customFields: {},
   createdAt: "2026-10-05T09:00:00.000Z",
   updatedAt: "2026-10-06T09:00:00.000Z",
 };
@@ -29,6 +30,7 @@ export const brightpath: Company = {
   notes: null,
   owner: { id: adminUser.id, name: adminUser.name },
   contactCount: 0,
+  customFields: {},
   createdAt: "2026-10-03T09:00:00.000Z",
   updatedAt: "2026-10-03T09:00:00.000Z",
 };

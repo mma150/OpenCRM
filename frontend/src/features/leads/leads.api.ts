@@ -4,6 +4,7 @@ import type {
   ConvertLeadInput,
   CreateLeadInput,
   CreateLeadResponse,
+  FollowUpInput,
   Lead,
   LeadList,
   LeadListQuery,
@@ -50,6 +51,13 @@ export async function convertLead(id: string, input: ConvertLeadInput): Promise<
 // Admin and Sales Manager only; the API answers FORBIDDEN to everyone else.
 export async function assignLead(id: string, ownerId: string): Promise<Lead> {
   const response = await http.post<LeadResponse>(`/leads/${id}/assign`, { ownerId });
+  return response.data.data;
+}
+
+// Sets, moves or (with `at: null`) clears the follow-up reminder. The API refuses a new one
+// on a converted or lost lead.
+export async function setLeadFollowUp(id: string, input: FollowUpInput): Promise<Lead> {
+  const response = await http.put<LeadResponse>(`/leads/${id}/follow-up`, input);
   return response.data.data;
 }
 

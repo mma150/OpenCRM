@@ -9,6 +9,7 @@ import * as leadsApi from "./leads.api";
 import type {
   ConvertLeadInput,
   CreateLeadInput,
+  FollowUpInput,
   Lead,
   LeadList,
   LeadListQuery,
@@ -171,6 +172,19 @@ export const assignLead = createAppThunk(
   },
 );
 
+export const setLeadFollowUp = createAppThunk(
+  "leads/setFollowUp",
+  async (arg: { id: string; input: FollowUpInput }, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const lead = await leadsApi.setLeadFollowUp(arg.id, arg.input);
+      reloadList({ dispatch, getState });
+      return lead;
+    } catch (error) {
+      return rejectWithValue(error as ApiError);
+    }
+  },
+);
+
 export const deleteLead = createAppThunk(
   "leads/delete",
   async (id: string, { dispatch, getState, rejectWithValue }) => {
@@ -258,6 +272,7 @@ const leadsSlice = createSlice({
           markLeadLost.fulfilled,
           convertLead.fulfilled,
           assignLead.fulfilled,
+          setLeadFollowUp.fulfilled,
         ),
         (state, action) => {
           const lead = action.payload;

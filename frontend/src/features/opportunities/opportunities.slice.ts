@@ -11,6 +11,7 @@ import type {
   BoardQuery,
   CloseOpportunityInput,
   CreateOpportunityInput,
+  FollowUpInput,
   Opportunity,
   OpportunityList,
   OpportunityListQuery,
@@ -284,6 +285,19 @@ export const assignOpportunity = createAppThunk(
   },
 );
 
+export const setOpportunityFollowUp = createAppThunk(
+  "opportunities/setFollowUp",
+  async (arg: { id: string; input: FollowUpInput }, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const opportunity = await opportunitiesApi.setOpportunityFollowUp(arg.id, arg.input);
+      reloadList({ dispatch, getState });
+      return opportunity;
+    } catch (error) {
+      return rejectWithValue(error as ApiError);
+    }
+  },
+);
+
 export const deleteOpportunity = createAppThunk(
   "opportunities/delete",
   async (id: string, { dispatch, getState, rejectWithValue }) => {
@@ -407,6 +421,7 @@ const opportunitiesSlice = createSlice({
           closeOpportunity.fulfilled,
           reopenOpportunity.fulfilled,
           assignOpportunity.fulfilled,
+          setOpportunityFollowUp.fulfilled,
         ),
         (state, action) => {
           const opportunity = action.payload;

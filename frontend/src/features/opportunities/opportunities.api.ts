@@ -7,6 +7,7 @@ import type {
   CloseOpportunityInput,
   CreateOpportunityInput,
   CreateOpportunityResponse,
+  FollowUpInput,
   OpportunitiesResponse,
   Opportunity,
   OpportunityList,
@@ -70,6 +71,16 @@ export async function reopenOpportunity(id: string): Promise<Opportunity> {
 // Admin and Sales Manager only; the API answers FORBIDDEN to everyone else.
 export async function assignOpportunity(id: string, ownerId: string): Promise<Opportunity> {
   const response = await http.post<OpportunityResponse>(`/opportunities/${id}/assign`, { ownerId });
+  return response.data.data;
+}
+
+// Sets, moves or (with `at: null`) clears the follow-up reminder. The API refuses a new one
+// on a closed opportunity.
+export async function setOpportunityFollowUp(
+  id: string,
+  input: FollowUpInput,
+): Promise<Opportunity> {
+  const response = await http.put<OpportunityResponse>(`/opportunities/${id}/follow-up`, input);
   return response.data.data;
 }
 

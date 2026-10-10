@@ -825,7 +825,7 @@ export interface paths {
         };
         /**
          * List the companies the caller may see, with search, filters, sorting and paging
-         * @description search matches the name, website and industry. industry matches the whole value, whatever the case. Sorted by name, A to Z, unless asked otherwise; a company without an industry sorts last.
+         * @description search matches the name, website and industry. industry matches the whole value, whatever the case. Sorted by name, A to Z, unless asked otherwise; a company without an industry sorts last. Custom field filters go in the query string beside the others, named after the field's id: cf.<field id>=text for a TEXT field (contains, whatever the case) or a DROPDOWN field (is exactly that option), cf.<field id>.min and cf.<field id>.max for a NUMBER field, cf.<field id>.from and cf.<field id>.to (days such as 2026-11-15) for a DATE field; all bounds are inclusive. A record without a value never matches. An id that is not a custom field in use of this record type, a form that does not fit the field's type, or a bad value is VALIDATION_FAILED naming the parameter; a parameter sent empty is ignored.
          */
         get: {
             parameters: {
@@ -969,6 +969,76 @@ export interface paths {
                                 [key: string]: unknown;
                             };
                         };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/companies/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the companies the caller may see as a CSV file
+         * @description The list itself as a file: the same search, filters (custom field filters included), sort and visibility, without paging (page and pageSize are ignored). Every role that can see the list can export it. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named after the viewer's today. At most 10,000 rows: a longer list is cut off there, in the sort order asked for, and X-Export-Truncated is true. A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    search?: string;
+                    sort?: "name" | "industry" | "createdAt" | "updatedAt";
+                    order?: "asc" | "desc";
+                    industry?: string;
+                    ownerId?: string;
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The CSV file */
+                200: {
+                    headers: {
+                        /** @description attachment; filename="<list>-<YYYY-MM-DD>.csv" */
+                        "Content-Disposition"?: string;
+                        /** @description true when the list has more rows than the 10,000 an export holds */
+                        "X-Export-Truncated"?: "true" | "false";
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/csv": string;
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
                 /** @description Not signed in (UNAUTHENTICATED) */
@@ -1294,7 +1364,7 @@ export interface paths {
         };
         /**
          * List the contacts the caller may see, with search, filters, sorting and paging
-         * @description search matches the first name, last name, email and company name. Sorted by name, A to Z, unless asked otherwise; a contact without a company, or never contacted, sorts last in both directions.
+         * @description search matches the first name, last name, email and company name. Sorted by name, A to Z, unless asked otherwise; a contact without a company, or never contacted, sorts last in both directions. Custom field filters go in the query string beside the others, named after the field's id: cf.<field id>=text for a TEXT field (contains, whatever the case) or a DROPDOWN field (is exactly that option), cf.<field id>.min and cf.<field id>.max for a NUMBER field, cf.<field id>.from and cf.<field id>.to (days such as 2026-11-15) for a DATE field; all bounds are inclusive. A record without a value never matches. An id that is not a custom field in use of this record type, a form that does not fit the field's type, or a bad value is VALIDATION_FAILED naming the parameter; a parameter sent empty is ignored.
          */
         get: {
             parameters: {
@@ -1403,6 +1473,76 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contacts/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the contacts the caller may see as a CSV file
+         * @description The list itself as a file: the same search, filters (custom field filters included), sort and visibility, without paging (page and pageSize are ignored). Every role that can see the list can export it. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named after the viewer's today. At most 10,000 rows: a longer list is cut off there, in the sort order asked for, and X-Export-Truncated is true. A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    search?: string;
+                    sort?: "name" | "company" | "createdAt" | "updatedAt" | "lastContactAt";
+                    order?: "asc" | "desc";
+                    companyId?: string;
+                    ownerId?: string;
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The CSV file */
+                200: {
+                    headers: {
+                        /** @description attachment; filename="<list>-<YYYY-MM-DD>.csv" */
+                        "Content-Disposition"?: string;
+                        /** @description true when the list has more rows than the 10,000 an export holds */
+                        "X-Export-Truncated"?: "true" | "false";
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/csv": string;
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1698,6 +1838,666 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/custom-fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the custom fields, of one record type or of all
+         * @description In order: by record type, then the order the Admin gave the fields. Archived fields are left out unless includeArchived=true, which only an Admin may send; they then follow the fields in use of their record type.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    recordType?: components["schemas"]["CustomFieldRecordType"];
+                    includeArchived?: "true" | "false";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The fields, in order */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["CustomField"][];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: a recordType or includeArchived that is not a value */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description includeArchived=true from someone who is not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Add a custom field to a record type, last in its order (Admin only)
+         * @description A DROPDOWN needs 1 to 50 options, each once whatever the case; the other types take none. The label is 1 to 60 characters and unique among the fields of the record type, archived ones included, whatever the case. A record type can have 30 fields in use.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateCustomFieldBody"];
+                };
+            };
+            responses: {
+                /** @description The new field */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["CustomField"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, a label another field of the record type has, options that do not fit the type (details name the field), or the record type already has 30 fields in use (details null) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/custom-fields/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put the fields of one record type in a new order (Admin only)
+         * @description ids must hold every field of the record type that is in use (not archived) exactly once. Answers with every field of that record type, archived ones last.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReorderCustomFieldsBody"];
+                };
+            };
+            responses: {
+                /** @description Every field of the record type, in order */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["CustomField"][];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or ids that are not every field in use exactly once */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/custom-fields/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete an archived field for good, with every value records hold for it
+         * @description Admin only. A field that is in use must be archived first.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted; data is null */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: null;
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: the id is not a UUID, or the field is not archived (details null) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No custom field has this id (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Change a field's label, options or whether it is required (Admin only)
+         * @description Only the keys sent are changed; the record type and the type are fixed. options replaces the whole list. A record that holds an option that was removed keeps showing it and can be saved with it unchanged, but the option can no longer be chosen. Making a field required does not touch existing records: it is checked when a record is created and when a request sends the field.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateCustomFieldBody"];
+                };
+            };
+            responses: {
+                /** @description The field */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["CustomField"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, a label another field of the record type has, or options that do not fit the type */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No custom field has this id (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/custom-fields/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive a field: hide it everywhere but keep its values (Admin only)
+         * @description An archived field is left out of records, forms, filters, imports and exports, and a request that names it is refused. Archiving an archived field answers with it as it is.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The field, archived */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["CustomField"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: the id is not a UUID */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No custom field has this id (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/custom-fields/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bring an archived field back, last in its order, with its values (Admin only) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The field, in use again */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["CustomField"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: the id is not a UUID, or the record type already has 30 fields in use (details null) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No custom field has this id (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The caller's own work: open leads, pipeline by stage, tasks and follow-ups due
+         * @description Own means records the caller owns and tasks assigned to them, whatever their role. Today and this month are the caller's, in the time zone tz (UTC when left out).
+         */
+        get: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The figures */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["MyDashboard"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: tz is not a time zone */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard/team": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Figures per person for a range of days (Admin and Sales Manager only)
+         * @description An Admin sees every user who is not Read-only, a Sales Manager themselves and their team. from and to are days in the time zone tz and both are included; left out, they are the first day of the current month and today. The range is at most 366 days. openPipelineValue and overdueTasks are as of now, not of the range. A deactivated person is listed only while one of their figures is not zero.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    from?: string;
+                    to?: string;
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The range, the totals and one row per person */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["TeamDashboard"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, a to before from, or a range of more than 366 days */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin or a Sales Manager (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -1748,6 +2548,247 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/imports/fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The fields a column of a CSV file can be mapped to, for one record type
+         * @description The record's own fields, then its custom fields in use (key cf:<custom field id>). For contacts, companyName links the contact to a company by name.
+         */
+        get: {
+            parameters: {
+                query: {
+                    type: components["schemas"]["ImportType"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The fields, in the order a form would show them */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["ImportField"][];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: type is missing or not LEAD, CONTACT or COMPANY */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot import (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/imports/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Read a CSV file's columns and first rows, and suggest a mapping
+         * @description Nothing is saved. The file is CSV text with commas between cells and the column names in its first row (UTF-8; a byte order mark is fine). It may hold at most 5 MB and 5,000 data rows; empty rows are ignored. An empty file, a first row without names, a column without a name, two columns with one name (whatever the case), a quoted cell that is never closed and more than 5,000 rows are VALIDATION_FAILED on csv. suggestedMapping goes by the column names: a field's own label and common other names for it ("E-mail", "Phone number", "Surname"), whatever the case and punctuation; each field is suggested for one column at most.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ImportPreviewBody"];
+                };
+            };
+            responses: {
+                /** @description The columns, a sample and a suggested mapping */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["ImportPreview"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or a file that cannot be read (see above) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot import (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description The file is over 5 MB, or the request body over 12 MB (PAYLOAD_TOO_LARGE) */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import leads, contacts or companies from a CSV file with a column mapping
+         * @description The file is CSV text with commas between cells and the column names in its first row (UTF-8; a byte order mark is fine). It may hold at most 5 MB and 5,000 data rows; empty rows are ignored. An empty file, a first row without names, a column without a name, two columns with one name (whatever the case), a quoted cell that is never closed and more than 5,000 rows are VALIDATION_FAILED on csv. mapping names, for each column to import, the key of a field from GET /imports/fields; every required field must be mapped, and no field twice. Each row is checked with the rules of the record's create route and saved on its own: the rows that pass are created, each with its CREATED timeline entry (details.import is true), and the rest come back in errors and failedCsv with the reason. A lead without a Source is given OTHER. Numbers are written like 1200.50 or 1,200.50 and dates like 2026-11-15. Records belong to the caller, or to ownerId.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ImportBody"];
+                };
+            };
+            responses: {
+                /** @description What was created, skipped and refused */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["ImportResult"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, a file that cannot be read (csv), a mapping that names an unknown column or field, maps a field twice or leaves a required field out (mapping, mapping.<header>), or an ownerId the caller may not assign records to */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot import (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description The file is over 5 MB, or the request body over 12 MB (PAYLOAD_TOO_LARGE) */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/leads": {
         parameters: {
             query?: never;
@@ -1755,14 +2796,17 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List the leads the caller may see, with search, filters, sorting and paging */
+        /**
+         * List the leads the caller may see, with search, filters, sorting and paging
+         * @description Custom field filters go in the query string beside the others, named after the field's id: cf.<field id>=text for a TEXT field (contains, whatever the case) or a DROPDOWN field (is exactly that option), cf.<field id>.min and cf.<field id>.max for a NUMBER field, cf.<field id>.from and cf.<field id>.to (days such as 2026-11-15) for a DATE field; all bounds are inclusive. A record without a value never matches. An id that is not a custom field in use of this record type, a form that does not fit the field's type, or a bad value is VALIDATION_FAILED naming the parameter; a parameter sent empty is ignored.
+         */
         get: {
             parameters: {
                 query?: {
                     page?: number;
                     pageSize?: number;
                     search?: string;
-                    sort?: "name" | "company" | "status" | "createdAt" | "updatedAt" | "lastContactAt";
+                    sort?: "name" | "company" | "status" | "createdAt" | "updatedAt" | "lastContactAt" | "followUpAt";
                     order?: "asc" | "desc";
                     status?: components["schemas"]["LeadStatus"];
                     source?: components["schemas"]["LeadSource"];
@@ -1864,6 +2908,77 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/leads/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the leads the caller may see as a CSV file
+         * @description The list itself as a file: the same search, filters (custom field filters included), sort and visibility, without paging (page and pageSize are ignored). Every role that can see the list can export it. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named after the viewer's today. At most 10,000 rows: a longer list is cut off there, in the sort order asked for, and X-Export-Truncated is true. A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    search?: string;
+                    sort?: "name" | "company" | "status" | "createdAt" | "updatedAt" | "lastContactAt" | "followUpAt";
+                    order?: "asc" | "desc";
+                    status?: components["schemas"]["LeadStatus"];
+                    source?: components["schemas"]["LeadSource"];
+                    ownerId?: string;
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The CSV file */
+                200: {
+                    headers: {
+                        /** @description attachment; filename="<list>-<YYYY-MM-DD>.csv" */
+                        "Content-Disposition"?: string;
+                        /** @description true when the list has more rows than the 10,000 an export holds */
+                        "X-Export-Truncated"?: "true" | "false";
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/csv": string;
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2361,6 +3476,338 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/leads/{id}/follow-up": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set, move or clear the follow-up reminder on a lead
+         * @description When the time comes the lead's owner gets a LEAD_FOLLOW_UP notification and, if email is on, an email; it fires once, and moving the time arms it again. at: null clears the follow-up and its note. A lost lead must be reopened before a follow-up can be set.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["FollowUpBody"];
+                };
+            };
+            responses: {
+                /** @description The lead with followUpAt and followUpNote as set */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Lead"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or a lost lead (details null) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change records (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No lead has this id, or it is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description The lead has been converted and cannot change (LEAD_CONVERTED) */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the caller's own notifications, newest first
+         * @description unread=true leaves out the ones already read.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    unread?: "true" | "false";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description One page of notifications; meta.total counts every match */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Notification"][];
+                            meta: components["schemas"]["ListMeta"];
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** How many of the caller's notifications are unread */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The count */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["UnreadCount"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark every one of the caller's notifications as read */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description How many were marked */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["MarkedRead"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark one notification as read
+         * @description One that is already read is answered as it is.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The notification with readAt set */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Notification"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No notification of the caller has this id (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/opportunities": {
         parameters: {
             query?: never;
@@ -2370,7 +3817,7 @@ export interface paths {
         };
         /**
          * List the opportunities the caller may see, with search, filters, sorting and paging
-         * @description search matches the opportunity's name, its company's name and its contact's name. Newest first unless asked otherwise; sort=stage follows the pipeline (open stages, Won, Lost), and an opportunity without an expected close date sorts last.
+         * @description search matches the opportunity's name, its company's name and its contact's name. Newest first unless asked otherwise; sort=stage follows the pipeline (open stages, Won, Lost), and an opportunity without an expected close date sorts last. Custom field filters go in the query string beside the others, named after the field's id: cf.<field id>=text for a TEXT field (contains, whatever the case) or a DROPDOWN field (is exactly that option), cf.<field id>.min and cf.<field id>.max for a NUMBER field, cf.<field id>.from and cf.<field id>.to (days such as 2026-11-15) for a DATE field; all bounds are inclusive. A record without a value never matches. An id that is not a custom field in use of this record type, a form that does not fit the field's type, or a bad value is VALIDATION_FAILED naming the parameter; a parameter sent empty is ignored.
          */
         get: {
             parameters: {
@@ -2378,7 +3825,7 @@ export interface paths {
                     page?: number;
                     pageSize?: number;
                     search?: string;
-                    sort?: "name" | "value" | "expectedCloseDate" | "createdAt" | "stage";
+                    sort?: "name" | "value" | "expectedCloseDate" | "createdAt" | "stage" | "followUpAt";
                     order?: "asc" | "desc";
                     stageId?: string;
                     status?: components["schemas"]["StageKind"];
@@ -2500,7 +3947,7 @@ export interface paths {
         };
         /**
          * The pipeline as columns: every stage in order with its opportunities
-         * @description One column for each stage, Won and Lost included, in pipeline order. count and totalValue cover every matching opportunity in the stage; opportunities holds at most 50 of them, the most recently changed first.
+         * @description One column for each stage, Won and Lost included, in pipeline order. count and totalValue cover every matching opportunity in the stage; opportunities holds at most 50 of them, the most recently changed first. Takes the list's search, ownerId and custom field filters (cf.<field id>...).
          */
         get: {
             parameters: {
@@ -2526,6 +3973,79 @@ export interface paths {
                                 [key: string]: unknown;
                             };
                         };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/opportunities/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the opportunities the caller may see as a CSV file
+         * @description The list itself as a file: the same search, filters (custom field filters included), sort and visibility, without paging (page and pageSize are ignored). Every role that can see the list can export it. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named after the viewer's today. At most 10,000 rows: a longer list is cut off there, in the sort order asked for, and X-Export-Truncated is true. A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    search?: string;
+                    sort?: "name" | "value" | "expectedCloseDate" | "createdAt" | "stage" | "followUpAt";
+                    order?: "asc" | "desc";
+                    stageId?: string;
+                    status?: components["schemas"]["StageKind"];
+                    ownerId?: string;
+                    companyId?: string;
+                    contactId?: string;
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The CSV file */
+                200: {
+                    headers: {
+                        /** @description attachment; filename="<list>-<YYYY-MM-DD>.csv" */
+                        "Content-Disposition"?: string;
+                        /** @description true when the list has more rows than the 10,000 an export holds */
+                        "X-Export-Truncated"?: "true" | "false";
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/csv": string;
                     };
                 };
                 /** @description The request is not acceptable (VALIDATION_FAILED) */
@@ -3100,6 +4620,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/opportunities/{id}/follow-up": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set, move or clear the follow-up reminder on an opportunity
+         * @description When the time comes the opportunity's owner gets an OPPORTUNITY_FOLLOW_UP notification and, if email is on, an email; it fires once, and moving the time arms it again. at: null clears the follow-up and its note. A won or lost opportunity must be reopened before a follow-up can be set.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["FollowUpBody"];
+                };
+            };
+            responses: {
+                /** @description The opportunity with followUpAt and followUpNote as set */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Opportunity"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or a closed opportunity (details null) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change records (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No opportunity has this id, or it is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/pipeline-stages": {
         parameters: {
             query?: never;
@@ -3435,6 +5041,641 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the tasks the caller may see, with search, filters, sorting and paging
+         * @description A user sees the tasks assigned to them or made by them; a Sales Manager also those assigned to their team; an Admin and a Read-only user see every task. search matches the title. Sorted by due date, soonest first, unless asked otherwise; a task without a due date sorts last. due filters by the viewer's calendar day in the time zone tz: overdue (due before today), today, upcoming (after today) or none (no due date).
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    search?: string;
+                    sort?: "dueAt" | "createdAt" | "title";
+                    order?: "asc" | "desc";
+                    status?: components["schemas"]["TaskStatus"];
+                    assigneeId?: string;
+                    recordType?: components["schemas"]["TaskRecordType"];
+                    recordId?: string;
+                    due?: components["schemas"]["TaskDue"];
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description One page of tasks; meta.total counts every match */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Task"][];
+                            meta: components["schemas"]["ListMeta"];
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Create a task, assigned to the caller unless assigneeId says otherwise
+         * @description A Sales Rep may assign only to themselves, a Sales Manager to themselves and their team, an Admin to any active user who is not Read-only. An assignee other than the caller gets a TASK_ASSIGNED notification. record links the task to one record the caller may see.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTaskBody"];
+                };
+            };
+            responses: {
+                /** @description The new task */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Task"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, an assigneeId the caller may not assign tasks to, or a record.id that is not a record the caller may see */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change tasks (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tasks/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the tasks the caller may see as a CSV file
+         * @description The list itself as a file: the same search, filters (custom field filters included), sort and visibility, without paging (page and pageSize are ignored). Every role that can see the list can export it. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named after the viewer's today. At most 10,000 rows: a longer list is cut off there, in the sort order asked for, and X-Export-Truncated is true. A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    search?: string;
+                    sort?: "dueAt" | "createdAt" | "title";
+                    order?: "asc" | "desc";
+                    status?: components["schemas"]["TaskStatus"];
+                    assigneeId?: string;
+                    recordType?: components["schemas"]["TaskRecordType"];
+                    recordId?: string;
+                    due?: components["schemas"]["TaskDue"];
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The CSV file */
+                200: {
+                    headers: {
+                        /** @description attachment; filename="<list>-<YYYY-MM-DD>.csv" */
+                        "Content-Disposition"?: string;
+                        /** @description true when the list has more rows than the 10,000 an export holds */
+                        "X-Export-Truncated"?: "true" | "false";
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/csv": string;
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tasks/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Count the caller's own open tasks: overdue, due today, upcoming and without a date
+         * @description Own means assigned to the caller. The days are the caller's, in the time zone tz (UTC when left out).
+         */
+        get: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The four counts */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["TaskSummary"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tasks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one task */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The task */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Task"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No task has this id, or it is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a task (it is kept in the database but never shown again) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted; data is null */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: null;
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change tasks (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No task has this id, or it is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Change a task's details, assignee, record or reminder
+         * @description Only the keys sent are changed; null clears a field that can be empty. Moving reminderAt arms the reminder again. A new assignee other than the caller gets a TASK_ASSIGNED notification. The status is changed with the complete and reopen routes.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateTaskBody"];
+                };
+            };
+            responses: {
+                /** @description The updated task */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Task"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, an assigneeId the caller may not assign tasks to, or a record.id that is not a record the caller may see */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change tasks (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No task has this id, or it is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/tasks/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a task as done
+         * @description A task that is already done is answered as it is.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The task, now DONE with completedAt set */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Task"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change tasks (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No task has this id, or it is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tasks/{id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a done task as open again
+         * @description A task that is already open is answered as it is.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The task, now OPEN with completedAt cleared */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Task"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change tasks (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No task has this id, or it is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/leads/{id}/timeline": {
@@ -5145,8 +7386,12 @@ export interface components {
                 name: string;
             };
             contactCount: number;
+            customFields: components["schemas"]["CustomFieldValues"];
             createdAt: string;
             updatedAt: string;
+        };
+        CustomFieldValues: {
+            [key: string]: string | number | null;
         };
         CreateCompanyBody: {
             name: string;
@@ -5155,6 +7400,9 @@ export interface components {
             phone?: string | null;
             address?: string | null;
             notes?: string | null;
+            customFields?: {
+                [key: string]: string | number | null;
+            };
             /** Format: uuid */
             ownerId?: string;
         };
@@ -5165,6 +7413,9 @@ export interface components {
             phone?: string | null;
             address?: string | null;
             notes?: string | null;
+            customFields?: {
+                [key: string]: string | number | null;
+            };
         };
         AssignCompanyBody: {
             /** Format: uuid */
@@ -5192,6 +7443,7 @@ export interface components {
                 name: string;
             } | null;
             lastContactAt: string | null;
+            customFields: components["schemas"]["CustomFieldValues"];
             createdAt: string;
             updatedAt: string;
         };
@@ -5204,6 +7456,9 @@ export interface components {
             /** Format: uuid */
             companyId?: string | null;
             notes?: string | null;
+            customFields?: {
+                [key: string]: string | number | null;
+            };
             /** Format: uuid */
             ownerId?: string;
         };
@@ -5216,10 +7471,150 @@ export interface components {
             /** Format: uuid */
             companyId?: string | null;
             notes?: string | null;
+            customFields?: {
+                [key: string]: string | number | null;
+            };
         };
         AssignContactBody: {
             /** Format: uuid */
             ownerId: string;
+        };
+        CustomField: {
+            id: string;
+            recordType: components["schemas"]["CustomFieldRecordType"];
+            label: string;
+            type: components["schemas"]["CustomFieldType"];
+            options: string[];
+            required: boolean;
+            position: number;
+            archived: boolean;
+            createdAt: string;
+            updatedAt: string;
+        };
+        /** @enum {string} */
+        CustomFieldRecordType: "LEAD" | "CONTACT" | "COMPANY" | "OPPORTUNITY";
+        /** @enum {string} */
+        CustomFieldType: "TEXT" | "NUMBER" | "DATE" | "DROPDOWN";
+        CreateCustomFieldBody: {
+            recordType: components["schemas"]["CustomFieldRecordType"];
+            label: string;
+            type: components["schemas"]["CustomFieldType"];
+            options?: string[];
+            required?: boolean;
+        };
+        ReorderCustomFieldsBody: {
+            recordType: components["schemas"]["CustomFieldRecordType"];
+            ids: string[];
+        };
+        UpdateCustomFieldBody: {
+            label?: string;
+            options?: string[];
+            required?: boolean;
+        };
+        MyDashboard: {
+            openLeads: {
+                total: number;
+                byStatus: {
+                    status: components["schemas"]["OpenLeadStatus"];
+                    count: number;
+                }[];
+            };
+            pipeline: {
+                totalValue: number;
+                stages: {
+                    stage: {
+                        id: string;
+                        name: string;
+                        kind: components["schemas"]["StageKind"];
+                    };
+                    count: number;
+                    totalValue: number;
+                }[];
+            };
+            tasks: {
+                overdue: number;
+                today: number;
+                upcoming: number;
+            };
+            tasksDue: components["schemas"]["Task"][];
+            followUps: components["schemas"]["DashboardFollowUp"][];
+            wonThisMonth: {
+                count: number;
+                totalValue: number;
+            };
+        };
+        /** @enum {string} */
+        OpenLeadStatus: "NEW" | "CONTACTED" | "QUALIFIED";
+        /** @enum {string} */
+        StageKind: "OPEN" | "WON" | "LOST";
+        Task: {
+            id: string;
+            title: string;
+            description: string | null;
+            dueAt: string | null;
+            status: components["schemas"]["TaskStatus"];
+            completedAt: string | null;
+            assignee: {
+                id: string;
+                name: string;
+            };
+            createdBy: {
+                id: string;
+                name: string;
+            };
+            record: {
+                /** @enum {string} */
+                type: "LEAD" | "CONTACT" | "COMPANY" | "OPPORTUNITY";
+                id: string;
+                name: string;
+            } | null;
+            reminderAt: string | null;
+            createdAt: string;
+            updatedAt: string;
+        };
+        /** @enum {string} */
+        TaskStatus: "OPEN" | "DONE";
+        DashboardFollowUp: {
+            /** @enum {string} */
+            type: "LEAD" | "OPPORTUNITY";
+            id: string;
+            name: string;
+            at: string;
+            note: string | null;
+        };
+        TeamDashboard: {
+            range: {
+                from: string;
+                to: string;
+            };
+            totals: components["schemas"]["TeamFigures"];
+            reps: components["schemas"]["TeamRep"][];
+        };
+        TeamFigures: {
+            leadsCreated: number;
+            leadsHandled: number;
+            conversationsLogged: number;
+            opportunitiesWon: number;
+            opportunitiesLost: number;
+            wonValue: number;
+            openPipelineValue: number;
+            overdueTasks: number;
+        };
+        TeamRep: {
+            user: {
+                id: string;
+                name: string;
+                role: components["schemas"]["Role"];
+                active: boolean;
+            };
+            leadsCreated: number;
+            leadsHandled: number;
+            conversationsLogged: number;
+            opportunitiesWon: number;
+            opportunitiesLost: number;
+            wonValue: number;
+            openPipelineValue: number;
+            overdueTasks: number;
         };
         Health: {
             /** @enum {string} */
@@ -5228,6 +7623,61 @@ export interface components {
                 connected: boolean;
                 serverTime: string;
             };
+        };
+        ImportField: {
+            key: string;
+            label: string;
+            required: boolean;
+            kind: components["schemas"]["ImportFieldKind"];
+            options?: string[];
+        };
+        /** @enum {string} */
+        ImportFieldKind: "TEXT" | "EMAIL" | "NUMBER" | "DATE" | "DROPDOWN";
+        /** @enum {string} */
+        ImportType: "LEAD" | "CONTACT" | "COMPANY";
+        ImportPreview: {
+            headers: string[];
+            sampleRows: string[][];
+            rowCount: number;
+            suggestedMapping: {
+                [key: string]: string | null;
+            };
+        };
+        ImportPreviewBody: {
+            type: components["schemas"]["ImportType"];
+            csv: string;
+        };
+        ImportResult: {
+            total: number;
+            created: number;
+            skipped: number;
+            failed: number;
+            companiesCreated: number;
+            errors: components["schemas"]["ImportRowError"][];
+            errorsTruncated: boolean;
+            failedCsv: string | null;
+        };
+        ImportRowError: {
+            row: number;
+            values: {
+                [key: string]: string;
+            };
+            messages: {
+                field: string | null;
+                column: string | null;
+                message: string;
+            }[];
+        };
+        ImportBody: {
+            type: components["schemas"]["ImportType"];
+            csv: string;
+            mapping: {
+                [key: string]: string | null;
+            };
+            /** Format: uuid */
+            ownerId?: string;
+            skipDuplicates?: boolean;
+            createCompanies?: boolean;
         };
         Lead: {
             id: string;
@@ -5250,6 +7700,8 @@ export interface components {
             lostNote: string | null;
             lostAt: string | null;
             lastContactAt: string | null;
+            followUpAt: string | null;
+            followUpNote: string | null;
             convertedAt: string | null;
             convertedTo: {
                 contact: {
@@ -5265,6 +7717,7 @@ export interface components {
                     name: string;
                 } | null;
             } | null;
+            customFields: components["schemas"]["CustomFieldValues"];
             createdAt: string;
             updatedAt: string;
         };
@@ -5284,6 +7737,9 @@ export interface components {
             phone?: string | null;
             estimatedValue?: number | null;
             notes?: string | null;
+            customFields?: {
+                [key: string]: string | number | null;
+            };
             /** Format: uuid */
             ownerId?: string;
         };
@@ -5297,10 +7753,11 @@ export interface components {
             phone?: string | null;
             estimatedValue?: number | null;
             notes?: string | null;
+            customFields?: {
+                [key: string]: string | number | null;
+            };
             status?: components["schemas"]["OpenLeadStatus"];
         };
-        /** @enum {string} */
-        OpenLeadStatus: "NEW" | "CONTACTED" | "QUALIFIED";
         MarkLeadLostBody: {
             reason: components["schemas"]["LostReason"];
             note?: string | null;
@@ -5342,6 +7799,28 @@ export interface components {
                 stageId?: string;
             };
         };
+        FollowUpBody: {
+            /** Format: date-time */
+            at: string | null;
+            note?: string | null;
+        };
+        Notification: {
+            id: string;
+            kind: components["schemas"]["NotificationKind"];
+            title: string;
+            body: string | null;
+            link: string;
+            readAt: string | null;
+            createdAt: string;
+        };
+        /** @enum {string} */
+        NotificationKind: "TASK_REMINDER" | "LEAD_FOLLOW_UP" | "OPPORTUNITY_FOLLOW_UP" | "TASK_ASSIGNED";
+        UnreadCount: {
+            count: number;
+        };
+        MarkedRead: {
+            marked: number;
+        };
         Opportunity: {
             id: string;
             name: string;
@@ -5373,11 +7852,12 @@ export interface components {
                 name: string;
             } | null;
             lastContactAt: string | null;
+            followUpAt: string | null;
+            followUpNote: string | null;
+            customFields: components["schemas"]["CustomFieldValues"];
             createdAt: string;
             updatedAt: string;
         };
-        /** @enum {string} */
-        StageKind: "OPEN" | "WON" | "LOST";
         PipelineBoardColumn: {
             stage: {
                 id: string;
@@ -5399,6 +7879,9 @@ export interface components {
             /** Format: uuid */
             companyId?: string | null;
             notes?: string | null;
+            customFields?: {
+                [key: string]: string | number | null;
+            };
             /** Format: uuid */
             stageId?: string;
             /** Format: uuid */
@@ -5414,6 +7897,9 @@ export interface components {
             /** Format: uuid */
             companyId?: string | null;
             notes?: string | null;
+            customFields?: {
+                [key: string]: string | number | null;
+            };
         };
         MoveOpportunityBody: {
             /** Format: uuid */
@@ -5451,6 +7937,46 @@ export interface components {
         DeletePipelineStageBody: {
             /** Format: uuid */
             moveToStageId?: string;
+        };
+        /** @enum {string} */
+        TaskRecordType: "LEAD" | "CONTACT" | "COMPANY" | "OPPORTUNITY";
+        /** @enum {string} */
+        TaskDue: "overdue" | "today" | "upcoming" | "none";
+        TaskSummary: {
+            overdue: number;
+            today: number;
+            upcoming: number;
+            noDueDate: number;
+        };
+        CreateTaskBody: {
+            title: string;
+            description?: string | null;
+            /** Format: date-time */
+            dueAt?: string | null;
+            record?: {
+                type: components["schemas"]["TaskRecordType"];
+                /** Format: uuid */
+                id: string;
+            } | null;
+            /** Format: date-time */
+            reminderAt?: string | null;
+            /** Format: uuid */
+            assigneeId?: string;
+        };
+        UpdateTaskBody: {
+            title?: string;
+            description?: string | null;
+            /** Format: date-time */
+            dueAt?: string | null;
+            record?: {
+                type: components["schemas"]["TaskRecordType"];
+                /** Format: uuid */
+                id: string;
+            } | null;
+            /** Format: date-time */
+            reminderAt?: string | null;
+            /** Format: uuid */
+            assigneeId?: string;
         };
         LogConversationBody: {
             type: components["schemas"]["ConversationType"];

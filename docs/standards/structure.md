@@ -40,7 +40,7 @@ backend/
 ├── test/global-setup.ts            Creates and migrates the opencrm_test database
 ├── test/helpers.ts                 Shared by tests: test app, users, signed-in agent, captured email
 └── src/
-    ├── server.ts                   Starts the HTTP listener
+    ├── server.ts                   Starts the HTTP listener and the reminder loop
     ├── app.ts                      createApp(): middleware order and router mounting
     ├── env.ts                      The only reader of process.env (validated with Zod)
     ├── routes.ts                   Mounts every module router under /api/v1, serves openapi.json
@@ -54,7 +54,16 @@ backend/
     │                               list-query.ts (search, sort and paging shared by every list),
     │                               timeline.ts (the TimelineEntry shape, the record types that
     │                               have a timeline, and addTimelineEntry, the one way an entry
-    │                               is written)
+    │                               is written), time-zone.ts (the `tz` parameter: the viewer's
+    │                               day as exact moments), notifications.ts (addNotification, the
+    │                               one way an in-app notification is written), reminders.ts
+    │                               (the runner that fires due task reminders and follow-ups,
+    │                               and the once-a-minute loop server.ts starts),
+    │                               custom-fields.ts (custom field values on a record: checking,
+    │                               storing, showing and filtering them), csv.ts (the CSV reader
+    │                               and writer, and the guard against spreadsheet formulas),
+    │                               csv-export.ts (what the export routes of the lists share),
+    │                               route-docs.ts (OpenAPI sentences several route files share)
     ├── middleware/                 error-handler.ts, not-found.ts, authenticate.ts, require-role.ts,
     │                               origin-check.ts, rate-limit.ts
     ├── modules/
@@ -75,8 +84,21 @@ backend/
     │   ├── timeline/               A record's timeline, for leads, contacts, companies and
     │   │                           opportunities: read it, log a conversation, add a note
     │   │                           (/<records>/:id/timeline, /conversations, /notes)
-    │   └── activity/               The team activity feed for Admins and Sales Managers, and the
-    │                               people it can be filtered by
+    │   ├── activity/               The team activity feed for Admins and Sales Managers, and the
+    │   │                           people it can be filtered by
+    │   ├── tasks/                  Tasks: create, edit, list, complete, reopen, delete, the
+    │   │                           counts by due date, and who may see and be given one
+    │   ├── notifications/          A user's own in-app notifications: list, unread count,
+    │   │                           mark one or all as read
+    │   ├── dashboard/              The figures on the home page: the caller's own work
+    │   │                           (/dashboard/me) and one row per person (/dashboard/team)
+    │   ├── custom-fields/          The custom fields an Admin adds to leads, contacts, companies
+    │   │                           and opportunities: list, add, edit, reorder, archive, restore,
+    │   │                           delete. The values live on the records (lib/custom-fields.ts)
+    │   └── imports/                CSV import of leads, contacts and companies: the fields a
+    │                               column can go to, the preview with a suggested mapping, and
+    │                               the import itself with its per-row errors. (The CSV exports
+    │                               are routes of the lists: /<records>/export and /tasks/export)
     └── generated/prisma/           Prisma client; gitignored, recreated by `prisma generate`
 ```
 
@@ -93,7 +115,7 @@ frontend/
     │   ├── (app)/                  Signed-in pages inside the app frame: page.tsx (Home), profile, settings/users,
     │   │                           settings/pipeline, leads (the list), leads/new, leads/[id], leads/[id]/edit,
     │   │                           and the same four routes under contacts/, companies/ and opportunities/
-    │   │                           (whose first page is the board and the list), activity
+    │   │                           (whose first page is the board and the list), activity, tasks, notifications
     │   └── status/                 The API status page (no sign-in)
     ├── features/
     │   ├── health/                 health-status.tsx  health.slice.ts  health.api.ts
@@ -105,7 +127,7 @@ frontend/
     │   ├── leads/                  leads.{types,api,slice}.ts, leads-page.tsx (the list), lead-detail-page.tsx,
     │   │                           lead-form.tsx and lead-form-pages.tsx (new, edit), lead-dialogs.tsx,
     │   │                           convert-lead-dialog.tsx (a lead becomes a contact, company and opportunity),
-    │   │                           lead-loader.tsx, lead-labels.ts, lead-status-badge.tsx
+    │   │                           lead-loader.tsx, lead-labels.ts, lead-status-badge.tsx, lead-picker.tsx
     │   ├── contacts/               contacts.{types,api,slice}.ts, contacts-page.tsx (the list), contact-detail-page.tsx,
     │   │                           contact-form.tsx and contact-form-pages.tsx (new, edit), contact-dialogs.tsx,
     │   │                           contact-loader.tsx, company-contacts.tsx (the Contacts card on a company's page),
@@ -121,7 +143,8 @@ frontend/
     │   │                           opportunity-dialogs.tsx (close as won or lost, reassign, delete),
     │   │                           use-opportunity-stage.ts (move and reopen), opportunity-loader.tsx,
     │   │                           opportunity-labels.ts, opportunity-stage-badge.tsx, record-opportunities.tsx
-    │   │                           (the Opportunities card on a company's and a contact's page)
+    │   │                           (the Opportunities card on a company's and a contact's page),
+    │   │                           opportunity-picker.tsx
     │   ├── pipeline-stages/        pipeline-stages.{types,api,slice}.ts, use-pipeline-stages.ts, stage-labels.ts,
     │   │                           pipeline-settings-page.tsx (/settings/pipeline) and stage-dialogs.tsx
     │   ├── timeline/               A record's history, for any kind of record: record-types.ts (the one table of
@@ -130,7 +153,17 @@ frontend/
     │   │                           timeline-entry-icon.tsx, timeline-labels.ts, log-conversation-button.tsx (phones)
     │   ├── activity/               The team feed at /activity: activity.{types,api,slice}.ts, activity-page.tsx,
     │   │                           activity-labels.ts
-    │   └── home/                   home-page.tsx
+    │   ├── tasks/                  tasks.{types,api,slice}.ts, tasks-page.tsx (/tasks: the groups, the Done view),
+    │   │                           task-row.tsx (one task with its checkbox), task-dialog.tsx (new, edit, delete),
+    │   │                           task-record-picker.tsx, use-task-toggle.ts (complete and reopen),
+    │   │                           task-labels.ts (groups, reminder choices), record-tasks.tsx (the Tasks card
+    │   │                           on a lead, contact, company and opportunity page)
+    │   ├── notifications/          notifications.{types,api,slice}.ts, notification-bell.tsx (the bell in the top
+    │   │                           bar, its polling and its panel), notifications-page.tsx (/notifications),
+    │   │                           notification-item.tsx (one notification, and what opening it does)
+    │   └── dashboard/              Home: dashboard.{types,api,slice}.ts, dashboard-page.tsx, my-dashboard.tsx
+    │                               (the tiles, lists and bars of the signed-in user), team-section.tsx (the team
+    │                               table, Admin and Sales Manager), dashboard-labels.ts
     ├── components/
     │   ├── ui/                     shadcn/ui output (generated; excluded from strict lint)
     │   ├── app-shell/              The app frame: nav-items.ts, sidebar, bottom tab bar, top bar, user menu
@@ -138,14 +171,16 @@ frontend/
     │                               SegmentedControl, PageHeader, PageState, FormField, SelectControl,
     │                               PasswordInput, badges, ... and what every owned record shares:
     │                               record-list.tsx, record-menus.tsx, record-dialogs.tsx (reassign, delete),
-    │                               record-loader.tsx, record-picker.tsx (search for one record: the company
-    │                               and contact pickers are built on it)
+    │                               record-loader.tsx, record-picker.tsx (search for one record: the company,
+    │                               contact, lead and opportunity pickers are built on it), follow-up.tsx (the
+    │                               follow-up reminder of a lead or an opportunity)
     ├── lib/
     │   ├── api/http.ts             The one axios instance and the ApiError type
     │   ├── api/error-messages.ts   describeApiError: the words for every error code
     │   ├── api/schema.d.ts         Generated from the OpenAPI document, committed, never edited
     │   └── utils.ts ...            Small helpers: cn, form-errors, validation, safe-next, return-to, format,
     │                               user-labels, use-is-phone, record-access (what a role may do with a record),
+    │                               time-zone (the `tz` the API is sent), use-visible-height (full-screen dialogs),
     │                               use-preselected-record (the record a "new" form starts with, from the address)
     ├── store/                      index.ts (makeStore), hooks.ts (typed hooks), thunk.ts, store-provider.tsx
     ├── test/                       Test helpers: render-with-store.tsx, navigation-mock.ts

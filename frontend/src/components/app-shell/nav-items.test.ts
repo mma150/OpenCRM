@@ -8,6 +8,7 @@ describe("nav items", () => {
       "Home",
       "Leads",
       "Opportunities",
+      "Tasks",
       "Contacts",
       "Companies",
       "Activity",
@@ -19,6 +20,7 @@ describe("nav items", () => {
       "Home",
       "Leads",
       "Opportunities",
+      "Tasks",
       "Contacts",
       "Companies",
       "Activity",
@@ -29,6 +31,7 @@ describe("nav items", () => {
         "Home",
         "Leads",
         "Opportunities",
+        "Tasks",
         "Contacts",
         "Companies",
         "Profile",
@@ -72,12 +75,17 @@ describe("nav items", () => {
     expect(profile && isActive(profile, "/profiles")).toBe(false);
   });
 
-  it("puts Home, Leads and Opportunities in the phone tab bar, in that order", () => {
+  it("puts Home, Leads and Tasks in the phone tab bar, in that order", () => {
     expect(navItems.filter((item) => item.bottomTab).map((item) => item.label)).toEqual([
       "Home",
       "Leads",
-      "Opportunities",
+      "Tasks",
     ]);
+  });
+
+  it("shows Tasks to every role, and lists Opportunities first under More on phones", () => {
+    expect(navItems.find((item) => item.href === "/tasks")?.roles).toBeUndefined();
+    expect(navItems.filter((item) => !item.bottomTab)[0]?.href).toBe("/opportunities");
   });
 
   it("lists Profile under More on phones", () => {
@@ -92,6 +100,8 @@ describe("nav items", () => {
     expect(pageTitle("/contacts/123")).toBe("Contacts");
     expect(pageTitle("/companies/123/edit")).toBe("Companies");
     expect(pageTitle("/activity")).toBe("Activity");
+    expect(pageTitle("/tasks")).toBe("Tasks");
+    expect(pageTitle("/notifications")).toBe("Notifications");
     expect(pageTitle("/opportunities/123")).toBe("Opportunities");
     expect(pageTitle("/settings/users")).toBe("Settings / Users");
     expect(pageTitle("/settings/pipeline")).toBe("Settings / Pipeline");

@@ -13,6 +13,9 @@ export type CreateOpportunityInput = Schemas["CreateOpportunityBody"];
 export type UpdateOpportunityInput = Schemas["UpdateOpportunityBody"];
 export type CloseOpportunityInput = { outcome: CloseOutcome; reason?: string };
 
+// When to remind the owner, and about what; `at: null` clears it.
+export type FollowUpInput = Schemas["FollowUpBody"];
+
 // Search, filters, sort and page of GET /opportunities.
 export type OpportunityListQuery = NonNullable<
   paths["/opportunities"]["get"]["parameters"]["query"]
