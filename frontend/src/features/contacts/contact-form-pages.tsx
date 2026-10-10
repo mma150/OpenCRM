@@ -8,6 +8,7 @@ import { BackLink } from "@/components/shared/record-layout";
 import { NoWriteAccess } from "@/components/shared/record-loader";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { getCompany } from "@/features/companies/companies.api";
+import { useCustomFieldsForForm } from "@/features/custom-fields/use-custom-fields";
 import {
   fetchAssignableUsers,
   selectAssignableUsers,
@@ -26,6 +27,7 @@ export function NewContactPage() {
   const { data: me } = useAppSelector(selectAuth);
   const { data: assignable, status: assignableStatus } = useAppSelector(selectAssignableUsers);
   const returnTo = useReturnTo("/contacts");
+  const customFields = useCustomFieldsForForm("CONTACT");
   const canWrite = me ? recordAccess(me.role).canWrite : false;
   // The company named by `?companyId=` (the "Add contact" button on a company's page).
   const preselected = usePreselectedRecord("companyId", canWrite, getCompany);
@@ -55,8 +57,14 @@ export function NewContactPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <BackLink href={returnTo} label={company ? "Back to company" : "Back to contacts"} />
       <PageHeader title="New contact" description="Add a person and the company they work for." />
-      {ownersReady && preselected.ready ? (
-        <ContactForm company={company} myId={me.id} owners={owners} returnTo={returnTo} />
+      {ownersReady && preselected.ready && customFields.ready ? (
+        <ContactForm
+          company={company}
+          myId={me.id}
+          owners={owners}
+          customFields={customFields.fields}
+          returnTo={returnTo}
+        />
       ) : (
         <PageLoading />
       )}
@@ -68,6 +76,7 @@ export function NewContactPage() {
 export function EditContactPage({ id }: { id: string }) {
   const { data: me } = useAppSelector(selectAuth);
   const returnTo = useReturnTo(`/contacts/${id}`);
+  const customFields = useCustomFieldsForForm("CONTACT");
 
   if (!me) {
     return null;
@@ -87,12 +96,17 @@ export function EditContactPage({ id }: { id: string }) {
               description="Change the contact's details."
             />
             {/* The key remounts the form if a fresher copy of the contact arrives. */}
-            <ContactForm
-              key={contact.updatedAt}
-              contact={contact}
-              myId={me.id}
-              returnTo={returnTo}
-            />
+            {customFields.ready ? (
+              <ContactForm
+                key={contact.updatedAt}
+                contact={contact}
+                myId={me.id}
+                customFields={customFields.fields}
+                returnTo={returnTo}
+              />
+            ) : (
+              <PageLoading />
+            )}
           </>
         )}
       </ContactLoader>

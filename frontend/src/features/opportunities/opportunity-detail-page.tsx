@@ -30,6 +30,7 @@ import { RecordMoreMenu } from "@/components/shared/record-menus";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { selectAuth } from "@/features/auth/auth.slice";
+import { RecordCustomFields } from "@/features/custom-fields/record-custom-fields";
 import { openStages } from "@/features/pipeline-stages/stage-labels";
 import { usePipelineStages } from "@/features/pipeline-stages/use-pipeline-stages";
 import { RecordTasks } from "@/features/tasks/record-tasks";
@@ -264,6 +265,7 @@ function OpportunityDetail({ opportunity }: { opportunity: Opportunity }) {
                 </DetailList>
               </CardContent>
             </Card>
+            <RecordCustomFields recordType="OPPORTUNITY" values={opportunity.customFields} />
             <NotesCard notes={opportunity.notes} />
           </>
         }

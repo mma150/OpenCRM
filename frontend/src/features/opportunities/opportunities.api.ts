@@ -1,3 +1,4 @@
+import { type DownloadedFile, downloadExport } from "@/lib/api/download";
 import { http } from "@/lib/api/http";
 
 import type {
@@ -20,6 +21,12 @@ import type {
 export async function listOpportunities(query: OpportunityListQuery): Promise<OpportunityList> {
   const response = await http.get<OpportunitiesResponse>("/opportunities", { params: query });
   return { opportunities: response.data.data, ...response.data.meta };
+}
+
+// The list as a CSV file: every match of the same search, filters and sort order, not one
+// page. Every role that can see the list may export it.
+export function exportOpportunities(query: OpportunityListQuery): Promise<DownloadedFile> {
+  return downloadExport("/opportunities/export", query, "opportunities.csv");
 }
 
 // The pipeline as columns, in order, Won and Lost included.

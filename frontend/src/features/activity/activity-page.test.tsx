@@ -336,7 +336,7 @@ describe("ActivityPage", () => {
   it("says there was no activity in the last 7 days", async () => {
     await renderActivity(
       adminUser,
-      activityList([], { summary: { conversations: 0, notes: 0, statusChanges: 0 } }),
+      activityList([], { summary: { conversations: 0, notes: 0, statusChanges: 0, emails: 0 } }),
     );
 
     expect(screen.getByText("No activity in the last 7 days")).toBeInTheDocument();

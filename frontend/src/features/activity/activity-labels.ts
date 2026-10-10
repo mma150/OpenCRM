@@ -140,6 +140,14 @@ export function activitySentence(entry: ActivityEntry): { before: string; after:
       }
       return { before: "reassigned", after: to ? ` to ${to}` : "" };
     }
+    // Entries of the email, quote and invoice API. These are the plain words the generated
+    // types require; their screens give them their own.
+    case "EMAIL":
+      return { before: "sent an email on", after: "" };
+    case "QUOTE_STATUS":
+      return { before: "updated a quote on", after: "" };
+    case "INVOICE_STATUS":
+      return { before: "updated an invoice on", after: "" };
   }
 }
 
@@ -158,6 +166,12 @@ export function activityBadge(entry: ActivityEntry): string {
       return isMarkedLost(entry) ? "Lost" : "Status";
     case "ASSIGNMENT":
       return "Owner";
+    case "EMAIL":
+      return "Email";
+    case "QUOTE_STATUS":
+      return "Quote";
+    case "INVOICE_STATUS":
+      return "Invoice";
   }
 }
 

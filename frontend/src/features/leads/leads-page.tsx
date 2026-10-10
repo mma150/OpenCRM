@@ -4,6 +4,11 @@ import { ArrowRightLeft, Plus, RotateCcw, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import {
+  CustomFieldFilterButton,
+  CustomFieldFilterChips,
+} from "@/components/shared/custom-fields-filter";
+import { ListActions } from "@/components/shared/list-actions";
 import { type ListFilter, ListToolbar } from "@/components/shared/list-toolbar";
 import {
   type ListUrlConfig,
@@ -17,6 +22,7 @@ import type { ListColumn } from "@/components/shared/responsive-list";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { selectAuth } from "@/features/auth/auth.slice";
+import { useCustomFields } from "@/features/custom-fields/use-custom-fields";
 import { useOwnerFilter } from "@/features/users/use-owner-filter";
 import { formatDate, formatRelativeDate } from "@/lib/format";
 import { useCurrentUrl, withReturnTo } from "@/lib/return-to";
@@ -35,6 +41,7 @@ import {
   LOST_REASON_LABELS,
 } from "./lead-labels";
 import { LeadStatusBadge } from "./lead-status-badge";
+import { exportLeads } from "./leads.api";
 import { fetchLeads, selectLeadList } from "./leads.slice";
 import type { Lead, LeadListQuery, LeadSort, LeadSource, LeadStatus } from "./leads.types";
 import { useChangeLeadStatus } from "./use-change-lead-status";
@@ -49,6 +56,7 @@ const LIST_URL: ListUrlConfig<LeadFilter, LeadSort> = {
   sorts: ["name", "company", "status", "createdAt", "updatedAt", "lastContactAt"],
   defaultSort: "createdAt",
   defaultOrder: "desc",
+  customFilters: true,
 };
 
 const sortOptions = [
@@ -252,8 +260,9 @@ export function LeadsPage() {
   const dispatch = useAppDispatch();
   const { data: me } = useAppSelector(selectAuth);
   const { data, status, error } = useAppSelector(selectLeadList);
-  const { state, isFiltered, setSearch, setFilter, setSort, setPage, clearFilters } =
+  const { state, isFiltered, setSearch, setFilter, setCustom, setSort, setPage, clearFilters } =
     useListUrlState(LIST_URL);
+  const { data: customFields } = useCustomFields("LEAD");
   const currentUrl = useCurrentUrl();
   const [dialog, setDialog] = useState<LeadDialog>(null);
   // For a user who sees more than their own leads.
@@ -267,6 +276,7 @@ export function LeadsPage() {
       ...(state.filters.status ? { status: state.filters.status as LeadStatus } : {}),
       ...(state.filters.source ? { source: state.filters.source as LeadSource } : {}),
       ...(state.filters.ownerId ? { ownerId: state.filters.ownerId } : {}),
+      ...state.custom,
       sort: state.sort,
       order: state.order,
       page: state.page,
@@ -321,7 +331,15 @@ export function LeadsPage() {
       <PageHeader
         title="Leads"
         description="Track every lead and what happens next."
-        action={canWrite ? newLeadButton : undefined}
+        action={
+          <>
+            <ListActions
+              importHref={canWrite ? "/import?type=leads" : undefined}
+              onExport={() => exportLeads(query)}
+            />
+            {canWrite ? newLeadButton : null}
+          </>
+        }
       />
 
       <ListToolbar
@@ -340,6 +358,19 @@ export function LeadsPage() {
             setSort(sort as LeadSort, order as SortOrder);
           },
         }}
+        more={
+          <CustomFieldFilterButton
+            fields={customFields ?? []}
+            values={state.custom}
+            onApply={setCustom}
+          />
+        }
+      />
+      <CustomFieldFilterChips
+        fields={customFields}
+        values={state.custom}
+        onChange={setCustom}
+        error={error}
       />
 
       <RecordList

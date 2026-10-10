@@ -8,6 +8,7 @@ import {
   Kanban,
   ListChecks,
   type LucideIcon,
+  SlidersHorizontal,
   User,
   Users,
 } from "lucide-react";
@@ -63,6 +64,14 @@ export const navItems: NavItem[] = [
     bottomTab: false,
     group: "settings",
   },
+  {
+    href: "/settings/custom-fields",
+    label: "Custom fields",
+    icon: SlidersHorizontal,
+    roles: ["ADMIN"],
+    bottomTab: false,
+    group: "settings",
+  },
 ];
 
 export function navItemsFor(role: Role): NavItem[] {
@@ -81,8 +90,12 @@ export function isActive(item: NavItem, pathname: string): boolean {
 export function pageTitle(pathname: string): string {
   const item = navItems.find((candidate) => isActive(candidate, pathname));
   if (!item) {
-    // The bell in the top bar leads to this page at every width, so it is not a nav item.
-    return pathname === "/notifications" ? "Notifications" : "OpenCRM";
+    // The bell in the top bar leads to Notifications at every width, and the lists lead to
+    // Import, so neither is a nav item.
+    if (pathname === "/notifications") {
+      return "Notifications";
+    }
+    return pathname === "/import" ? "Import" : "OpenCRM";
   }
   return item.group === "settings" ? `Settings / ${item.label}` : item.label;
 }

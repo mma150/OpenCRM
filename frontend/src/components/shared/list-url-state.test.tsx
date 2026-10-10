@@ -21,6 +21,7 @@ const config: ListUrlConfig<"status" | "ownerId", "name" | "createdAt"> = {
 const defaults = {
   search: "",
   filters: { status: "", ownerId: "" },
+  custom: {},
   sort: "createdAt",
   order: "desc",
   page: 1,
@@ -39,6 +40,7 @@ describe("readListState", () => {
     expect(readListState(params, config)).toEqual({
       search: "acme",
       filters: { status: "LOST", ownerId: "u1" },
+      custom: {},
       sort: "name",
       order: "asc",
       page: 3,
@@ -51,6 +53,34 @@ describe("readListState", () => {
     expect(readListState(params, config)).toEqual(defaults);
     expect(readListState(new URLSearchParams("page=abc"), config).page).toBe(1);
     expect(readListState(new URLSearchParams("page=1.5"), config).page).toBe(1);
+  });
+});
+
+describe("custom field filters in the list state", () => {
+  const withCustom = { ...config, customFilters: true };
+
+  it("keeps every cf parameter of a list with custom fields, whatever the field", () => {
+    const params = new URLSearchParams("status=NEW&cf.abc=north&cf.def.min=10&other=1");
+
+    expect(readListState(params, withCustom).custom).toEqual({
+      "cf.abc": "north",
+      "cf.def.min": "10",
+    });
+  });
+
+  it("ignores them on a list without custom fields", () => {
+    const params = new URLSearchParams("cf.abc=north");
+
+    expect(readListState(params, config).custom).toEqual({});
+  });
+
+  it("writes them back to the address", () => {
+    const state = readListState(
+      new URLSearchParams("cf.abc=north&cf.def.max=20&page=2"),
+      withCustom,
+    );
+
+    expect(writeListState(state, withCustom)).toBe("cf.abc=north&cf.def.max=20&page=2");
   });
 });
 

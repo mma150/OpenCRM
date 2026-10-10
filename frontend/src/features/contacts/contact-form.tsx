@@ -3,11 +3,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import {
+  changedCustomFields,
+  customFieldDefaults,
+  type CustomFieldFormValues,
+  customFieldPaths,
+  customFieldsForCreate,
+  customFieldsSchema,
+  CustomFieldsSection,
+} from "@/components/shared/custom-fields-form";
 import { FormAlert } from "@/components/shared/form-alert";
 import { FormField } from "@/components/shared/form-field";
 import { SelectControl, type SelectOption } from "@/components/shared/select-control";
@@ -17,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { CompanyRef } from "@/features/companies/companies.types";
 import { CompanyPicker } from "@/features/companies/company-picker";
+import type { CustomField } from "@/features/custom-fields/custom-fields.types";
 import type { ApiError } from "@/lib/api/http";
 import { applyServerError } from "@/lib/form-errors";
 import { useAppDispatch } from "@/store/hooks";
@@ -43,7 +53,12 @@ const contactFormSchema = z.object({
   notes: optionalText(10_000),
 });
 
-type ContactFormValues = z.infer<typeof contactFormSchema>;
+// The record's own fields, plus its custom fields as text keyed by the field's id.
+type ContactFormValues = z.infer<typeof contactFormSchema> & {
+  customFields: CustomFieldFormValues;
+};
+
+const NO_CUSTOM_FIELDS: CustomField[] = [];
 
 // The form fields the API reports validation problems on.
 const CONTACT_FORM_FIELDS = [
@@ -61,7 +76,11 @@ const CONTACT_FORM_FIELDS = [
 const OPTIONAL_TEXT_FIELDS = ["jobTitle", "email", "phone", "notes"] as const;
 
 // Empty optional fields are left out, and the owner is sent only when it was offered.
-function toCreateInput(values: ContactFormValues, withOwner: boolean): CreateContactInput {
+function toCreateInput(
+  values: ContactFormValues,
+  withOwner: boolean,
+  customFields: CustomField[],
+): CreateContactInput {
   const input: CreateContactInput = { firstName: values.firstName, lastName: values.lastName };
   for (const field of OPTIONAL_TEXT_FIELDS) {
     if (values[field]) {
@@ -71,6 +90,10 @@ function toCreateInput(values: ContactFormValues, withOwner: boolean): CreateCon
   if (values.companyId) {
     input.companyId = values.companyId;
   }
+  const custom = customFieldsForCreate(customFields, values.customFields);
+  if (custom) {
+    input.customFields = custom;
+  }
   if (withOwner) {
     input.ownerId = values.ownerId;
   }
@@ -79,7 +102,11 @@ function toCreateInput(values: ContactFormValues, withOwner: boolean): CreateCon
 
 // Only what the user actually changed is sent. An emptied field is sent as null, which
 // clears it; `companyId: null` takes the contact out of its company.
-function changedFields(contact: Contact, values: ContactFormValues): UpdateContactInput {
+function changedFields(
+  contact: Contact,
+  values: ContactFormValues,
+  customFields: CustomField[],
+): UpdateContactInput {
   const changes: UpdateContactInput = {};
   if (values.firstName !== contact.firstName) {
     changes.firstName = values.firstName;
@@ -97,6 +124,10 @@ function changedFields(contact: Contact, values: ContactFormValues): UpdateConta
   if (companyId !== (contact.company?.id ?? null)) {
     changes.companyId = companyId;
   }
+  const custom = changedCustomFields(customFields, contact.customFields, values.customFields);
+  if (custom) {
+    changes.customFields = custom;
+  }
   return changes;
 }
 
@@ -109,12 +140,15 @@ export function ContactForm({
   contact,
   company,
   myId,
+  customFields = NO_CUSTOM_FIELDS,
   owners = [],
   returnTo,
 }: {
   contact?: Contact;
   company?: CompanyRef;
   myId: string;
+  // The custom fields in use of this record type; the page loads them.
+  customFields?: CustomField[];
   owners?: SelectOption[];
   // Where Cancel goes, and where the user lands after saving an edit.
   returnTo: string;
@@ -125,8 +159,15 @@ export function ContactForm({
   // The form keeps the company's id; its name, for the picker, is kept here beside it.
   const [picked, setPicked] = useState<CompanyRef | null>(contact?.company ?? company ?? null);
   const showOwner = !contact && owners.length > 1;
+  const schema = useMemo(
+    () =>
+      contactFormSchema.extend({
+        customFields: customFieldsSchema(customFields, contact?.customFields),
+      }),
+    [customFields, contact],
+  );
   const form = useForm<ContactFormValues>({
-    resolver: zodResolver(contactFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       firstName: contact?.firstName ?? "",
       lastName: contact?.lastName ?? "",
@@ -136,6 +177,7 @@ export function ContactForm({
       companyId: picked?.id ?? "",
       ownerId: myId,
       notes: contact?.notes ?? "",
+      customFields: customFieldDefaults(customFields, contact?.customFields),
     },
   });
 
@@ -143,19 +185,26 @@ export function ContactForm({
     setFormError(null);
     try {
       if (contact) {
-        const changes = changedFields(contact, values);
+        const changes = changedFields(contact, values, customFields);
         if (Object.keys(changes).length > 0) {
           await dispatch(updateContact({ id: contact.id, changes })).unwrap();
           toast.success("Changes saved.");
         }
         router.replace(returnTo);
       } else {
-        const created = await dispatch(createContact(toCreateInput(values, showOwner))).unwrap();
+        const created = await dispatch(
+          createContact(toCreateInput(values, showOwner, customFields)),
+        ).unwrap();
         toast.success("Contact created.");
         router.replace(`/contacts/${created.id}`);
       }
     } catch (error) {
-      setFormError(applyServerError(error as ApiError, form.setError, CONTACT_FORM_FIELDS));
+      setFormError(
+        applyServerError(error as ApiError, form.setError, [
+          ...CONTACT_FORM_FIELDS,
+          ...customFieldPaths(customFields),
+        ]),
+      );
     }
   }
 
@@ -227,6 +276,11 @@ export function ContactForm({
               </FormField>
             </div>
           </div>
+          <CustomFieldsSection
+            control={control}
+            fields={customFields}
+            stored={contact?.customFields}
+          />
           <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end">
             <Button asChild variant="outline" className="h-10 px-4">
               <Link href={returnTo}>Cancel</Link>

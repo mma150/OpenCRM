@@ -1,3 +1,4 @@
+import { type DownloadedFile, downloadExport } from "@/lib/api/download";
 import { http } from "@/lib/api/http";
 
 import type {
@@ -22,6 +23,12 @@ export async function listCompanies(query: CompanyListQuery): Promise<CompanyLis
 export async function listIndustries(): Promise<string[]> {
   const response = await http.get<IndustriesResponse>("/companies/industries");
   return response.data.data;
+}
+
+// The list as a CSV file: every match of the same search, filters and sort order, not one
+// page. Every role that can see the list may export it.
+export function exportCompanies(query: CompanyListQuery): Promise<DownloadedFile> {
+  return downloadExport("/companies/export", query, "companies.csv");
 }
 
 export async function getCompany(id: string): Promise<Company> {

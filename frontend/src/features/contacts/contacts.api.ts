@@ -1,3 +1,4 @@
+import { type DownloadedFile, downloadExport } from "@/lib/api/download";
 import { http } from "@/lib/api/http";
 
 import type {
@@ -16,6 +17,12 @@ import type {
 export async function listContacts(query: ContactListQuery): Promise<ContactList> {
   const response = await http.get<ContactsResponse>("/contacts", { params: query });
   return { contacts: response.data.data, ...response.data.meta };
+}
+
+// The list as a CSV file: every match of the same search, filters and sort order, not one
+// page. Every role that can see the list may export it.
+export function exportContacts(query: ContactListQuery): Promise<DownloadedFile> {
+  return downloadExport("/contacts/export", query, "contacts.csv");
 }
 
 export async function getContact(id: string): Promise<Contact> {

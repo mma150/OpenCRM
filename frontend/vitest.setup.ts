@@ -8,6 +8,20 @@ import { resetMockNavigation } from "./src/test/navigation-mock";
 // Components never talk to the real Next.js router in tests: see src/test/navigation-mock.ts.
 vi.mock("next/navigation", () => import("./src/test/navigation-mock"));
 
+// Record forms, record pages and lists all read the custom fields of their record type.
+// A test that is not about them gets "no custom fields" instead of a network call; one that
+// is mocks the same file itself (`vi.mock("./custom-fields.api")`) or sets these functions.
+vi.mock("@/features/custom-fields/custom-fields.api", () => ({
+  listCustomFields: vi.fn(() => Promise.resolve([])),
+  listAllCustomFields: vi.fn(() => Promise.resolve([])),
+  createCustomField: vi.fn(),
+  updateCustomField: vi.fn(),
+  reorderCustomFields: vi.fn(),
+  archiveCustomField: vi.fn(),
+  restoreCustomField: vi.fn(),
+  deleteCustomField: vi.fn(),
+}));
+
 // jsdom lacks these browser APIs, which the Radix menus, selects and tooltips call.
 class ResizeObserverStub {
   observe(): void {

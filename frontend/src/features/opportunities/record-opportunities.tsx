@@ -43,7 +43,7 @@ export function RecordOpportunities({ of, addHref }: { of: Of; addHref?: string 
   useEffect(() => {
     let current = true;
     listOpportunities({
-      [param]: id,
+      ...(param === "companyId" ? { companyId: id } : { contactId: id }),
       sort: "createdAt",
       order: "desc",
       page: 1,

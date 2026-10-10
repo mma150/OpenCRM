@@ -20,6 +20,7 @@ import { RecordMoreMenu } from "@/components/shared/record-menus";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { selectAuth } from "@/features/auth/auth.slice";
+import { RecordCustomFields } from "@/features/custom-fields/record-custom-fields";
 import { RecordOpportunities } from "@/features/opportunities/record-opportunities";
 import { RecordTasks } from "@/features/tasks/record-tasks";
 import { LogConversationButton } from "@/features/timeline/log-conversation-button";
@@ -155,6 +156,7 @@ function ContactDetail({ contact }: { contact: Contact }) {
                 </DetailList>
               </CardContent>
             </Card>
+            <RecordCustomFields recordType="CONTACT" values={contact.customFields} />
             <NotesCard notes={contact.notes} />
           </>
         }

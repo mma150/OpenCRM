@@ -4,6 +4,11 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import {
+  CustomFieldFilterButton,
+  CustomFieldFilterChips,
+} from "@/components/shared/custom-fields-filter";
+import { ListActions } from "@/components/shared/list-actions";
 import { type ListFilter, ListToolbar } from "@/components/shared/list-toolbar";
 import {
   type ListUrlConfig,
@@ -17,11 +22,13 @@ import type { ListColumn } from "@/components/shared/responsive-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { selectAuth } from "@/features/auth/auth.slice";
+import { useCustomFields } from "@/features/custom-fields/use-custom-fields";
 import { useOwnerFilter } from "@/features/users/use-owner-filter";
 import { recordAccess } from "@/lib/record-access";
 import { useCurrentUrl, withReturnTo } from "@/lib/return-to";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
+import { exportCompanies } from "./companies.api";
 import {
   fetchCompanies,
   fetchIndustries,
@@ -44,6 +51,7 @@ const LIST_URL: ListUrlConfig<CompanyFilter, CompanySort> = {
   sorts: ["name", "industry", "createdAt", "updatedAt"],
   defaultSort: "name",
   defaultOrder: "asc",
+  customFilters: true,
 };
 
 const sortOptions = [
@@ -143,8 +151,9 @@ export function CompaniesPage() {
   const { data: me } = useAppSelector(selectAuth);
   const { data, status, error } = useAppSelector(selectCompanyList);
   const { data: industries } = useAppSelector(selectIndustries);
-  const { state, isFiltered, setSearch, setFilter, setSort, setPage, clearFilters } =
+  const { state, isFiltered, setSearch, setFilter, setCustom, setSort, setPage, clearFilters } =
     useListUrlState(LIST_URL);
+  const { data: customFields } = useCustomFields("COMPANY");
   const currentUrl = useCurrentUrl();
   const [dialog, setDialog] = useState<CompanyDialog>(null);
   // For a user who sees more than their own companies.
@@ -157,6 +166,7 @@ export function CompaniesPage() {
       ...(state.search ? { search: state.search } : {}),
       ...(state.filters.industry ? { industry: state.filters.industry } : {}),
       ...(state.filters.ownerId ? { ownerId: state.filters.ownerId } : {}),
+      ...state.custom,
       sort: state.sort,
       order: state.order,
       page: state.page,
@@ -218,7 +228,15 @@ export function CompaniesPage() {
       <PageHeader
         title="Companies"
         description="The organisations you sell to, and who works there."
-        action={canWrite ? newCompanyButton : undefined}
+        action={
+          <>
+            <ListActions
+              importHref={canWrite ? "/import?type=companies" : undefined}
+              onExport={() => exportCompanies(query)}
+            />
+            {canWrite ? newCompanyButton : null}
+          </>
+        }
       />
 
       <ListToolbar
@@ -237,6 +255,19 @@ export function CompaniesPage() {
             setSort(sort as CompanySort, order as SortOrder);
           },
         }}
+        more={
+          <CustomFieldFilterButton
+            fields={customFields ?? []}
+            values={state.custom}
+            onApply={setCustom}
+          />
+        }
+      />
+      <CustomFieldFilterChips
+        fields={customFields}
+        values={state.custom}
+        onChange={setCustom}
+        error={error}
       />
 
       <RecordList

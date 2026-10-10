@@ -9,6 +9,7 @@ import { NoWriteAccess } from "@/components/shared/record-loader";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { getCompany } from "@/features/companies/companies.api";
 import { getContact } from "@/features/contacts/contacts.api";
+import { useCustomFieldsForForm } from "@/features/custom-fields/use-custom-fields";
 import { openStages, stageOptions } from "@/features/pipeline-stages/stage-labels";
 import { usePipelineStages } from "@/features/pipeline-stages/use-pipeline-stages";
 import {
@@ -31,6 +32,7 @@ export function NewOpportunityPage() {
   const { data: assignable, status: assignableStatus } = useAppSelector(selectAssignableUsers);
   const { data: stages, status: stagesStatus } = usePipelineStages();
   const returnTo = useReturnTo("/opportunities");
+  const customFields = useCustomFieldsForForm("OPPORTUNITY");
   const canWrite = me ? opportunityAccess(me.role).canWrite : false;
   const fromCompany = usePreselectedRecord("companyId", canWrite, getCompany);
   const fromContact = usePreselectedRecord("contactId", canWrite, getContact);
@@ -74,13 +76,18 @@ export function NewOpportunityPage() {
         title="New opportunity"
         description="Add a deal, what it is worth and who it is with."
       />
-      {ownersReady && stagesReady && fromCompany.ready && fromContact.ready ? (
+      {ownersReady &&
+      stagesReady &&
+      fromCompany.ready &&
+      fromContact.ready &&
+      customFields.ready ? (
         <OpportunityForm
           company={company ? { id: company.id, name: company.name } : undefined}
           contact={contact ? { id: contact.id, name: contact.name } : undefined}
           myId={me.id}
           stages={stageOptions(openStages(stages))}
           owners={owners}
+          customFields={customFields.fields}
           returnTo={returnTo}
         />
       ) : (
@@ -94,6 +101,7 @@ export function NewOpportunityPage() {
 export function EditOpportunityPage({ id }: { id: string }) {
   const { data: me } = useAppSelector(selectAuth);
   const returnTo = useReturnTo(`/opportunities/${id}`);
+  const customFields = useCustomFieldsForForm("OPPORTUNITY");
 
   if (!me) {
     return null;
@@ -113,12 +121,17 @@ export function EditOpportunityPage({ id }: { id: string }) {
               description="Change the opportunity's details. Its stage is changed on its page or on the board."
             />
             {/* The key remounts the form if a fresher copy of the opportunity arrives. */}
-            <OpportunityForm
-              key={opportunity.updatedAt}
-              opportunity={opportunity}
-              myId={me.id}
-              returnTo={returnTo}
-            />
+            {customFields.ready ? (
+              <OpportunityForm
+                key={opportunity.updatedAt}
+                opportunity={opportunity}
+                myId={me.id}
+                customFields={customFields.fields}
+                returnTo={returnTo}
+              />
+            ) : (
+              <PageLoading />
+            )}
           </>
         )}
       </OpportunityLoader>

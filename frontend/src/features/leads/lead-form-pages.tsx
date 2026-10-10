@@ -10,6 +10,7 @@ import { BackLink } from "@/components/shared/record-layout";
 import { NoWriteAccess } from "@/components/shared/record-loader";
 import { Button } from "@/components/ui/button";
 import { selectAuth } from "@/features/auth/auth.slice";
+import { useCustomFieldsForForm } from "@/features/custom-fields/use-custom-fields";
 import {
   fetchAssignableUsers,
   selectAssignableUsers,
@@ -27,6 +28,7 @@ export function NewLeadPage() {
   const { data: me } = useAppSelector(selectAuth);
   const { data: assignable, status: assignableStatus } = useAppSelector(selectAssignableUsers);
   const returnTo = useReturnTo("/leads");
+  const customFields = useCustomFieldsForForm("LEAD");
   const canWrite = me ? leadAccess(me.role).canWrite : false;
 
   useEffect(() => {
@@ -51,8 +53,13 @@ export function NewLeadPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <BackLink href={returnTo} label="Back to leads" />
       <PageHeader title="New lead" description="Add a prospect and who looks after them." />
-      {ownersReady ? (
-        <LeadForm myId={me.id} owners={owners} returnTo={returnTo} />
+      {ownersReady && customFields.ready ? (
+        <LeadForm
+          myId={me.id}
+          owners={owners}
+          customFields={customFields.fields}
+          returnTo={returnTo}
+        />
       ) : (
         <PageLoading />
       )}
@@ -64,6 +71,7 @@ export function NewLeadPage() {
 export function EditLeadPage({ id }: { id: string }) {
   const { data: me } = useAppSelector(selectAuth);
   const returnTo = useReturnTo(`/leads/${id}`);
+  const customFields = useCustomFieldsForForm("LEAD");
 
   if (!me) {
     return null;
@@ -93,7 +101,17 @@ export function EditLeadPage({ id }: { id: string }) {
               <BackLink href={returnTo} label="Back" />
               <PageHeader title={`Edit ${lead.name}`} description="Change the lead's details." />
               {/* The key remounts the form if a fresher copy of the lead arrives. */}
-              <LeadForm key={lead.updatedAt} lead={lead} myId={me.id} returnTo={returnTo} />
+              {customFields.ready ? (
+                <LeadForm
+                  key={lead.updatedAt}
+                  lead={lead}
+                  myId={me.id}
+                  customFields={customFields.fields}
+                  returnTo={returnTo}
+                />
+              ) : (
+                <PageLoading />
+              )}
             </>
           )
         }

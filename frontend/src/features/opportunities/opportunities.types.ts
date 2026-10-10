@@ -1,3 +1,4 @@
+import type { CustomFilterParams } from "@/components/shared/list-url-state";
 import type { components, paths } from "@/lib/api/schema";
 
 // Every type comes from the generated schema, so a change to the API contract
@@ -16,14 +17,17 @@ export type CloseOpportunityInput = { outcome: CloseOutcome; reason?: string };
 // When to remind the owner, and about what; `at: null` clears it.
 export type FollowUpInput = Schemas["FollowUpBody"];
 
-// Search, filters, sort and page of GET /opportunities.
+// Search, filters, sort and page of GET /opportunities, and the custom field filters
+// (`cf.<field id>`), which the schema cannot list because their names depend on data.
 export type OpportunityListQuery = NonNullable<
   paths["/opportunities"]["get"]["parameters"]["query"]
->;
+> &
+  CustomFilterParams;
 export type OpportunitySort = NonNullable<OpportunityListQuery["sort"]>;
 
-// The search text and the owner of GET /opportunities/board.
-export type BoardQuery = NonNullable<paths["/opportunities/board"]["get"]["parameters"]["query"]>;
+// The search text, the owner and the custom field filters of GET /opportunities/board.
+export type BoardQuery = NonNullable<paths["/opportunities/board"]["get"]["parameters"]["query"]> &
+  CustomFilterParams;
 // One stage of the board: its count and total value (of every opportunity in it) and its
 // cards (the 50 changed most recently).
 export type BoardColumn = Schemas["PipelineBoardColumn"];

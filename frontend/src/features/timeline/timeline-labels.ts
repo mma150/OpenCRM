@@ -131,6 +131,14 @@ export function entryTitle(entry: TimelineEntry, recordLabel: string): string {
       }
       return to ? `Assigned to ${to}` : "Reassigned";
     }
+    // Entries of the email, quote and invoice API. These are the plain words the generated
+    // types require; their screens give them their own.
+    case "EMAIL":
+      return "Email sent";
+    case "QUOTE_STATUS":
+      return "Quote updated";
+    case "INVOICE_STATUS":
+      return "Invoice updated";
   }
 }
 

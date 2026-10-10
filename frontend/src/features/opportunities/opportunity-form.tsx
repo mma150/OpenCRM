@@ -3,11 +3,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import {
+  changedCustomFields,
+  customFieldDefaults,
+  type CustomFieldFormValues,
+  customFieldPaths,
+  customFieldsForCreate,
+  customFieldsSchema,
+  CustomFieldsSection,
+} from "@/components/shared/custom-fields-form";
 import { FormAlert } from "@/components/shared/form-alert";
 import { FormField } from "@/components/shared/form-field";
 import { SelectControl, type SelectOption } from "@/components/shared/select-control";
@@ -18,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { CompanyRef } from "@/features/companies/companies.types";
 import { CompanyPicker } from "@/features/companies/company-picker";
 import { ContactPicker, type ContactRef } from "@/features/contacts/contact-picker";
+import type { CustomField } from "@/features/custom-fields/custom-fields.types";
 import type { ApiError } from "@/lib/api/http";
 import { applyServerError } from "@/lib/form-errors";
 import { useAppDispatch } from "@/store/hooks";
@@ -49,7 +59,12 @@ const opportunityFormSchema = z.object({
   notes: z.string().trim().max(10_000, tooLong(10_000)),
 });
 
-type OpportunityFormValues = z.infer<typeof opportunityFormSchema>;
+// The record's own fields, plus its custom fields as text keyed by the field's id.
+type OpportunityFormValues = z.infer<typeof opportunityFormSchema> & {
+  customFields: CustomFieldFormValues;
+};
+
+const NO_CUSTOM_FIELDS: CustomField[] = [];
 
 // The form fields the API reports validation problems on.
 const OPPORTUNITY_FORM_FIELDS = [
@@ -64,7 +79,11 @@ const OPPORTUNITY_FORM_FIELDS = [
 ] as const;
 
 // Empty optional fields are left out; the stage and the owner are sent only when offered.
-function toCreateInput(values: OpportunityFormValues, withOwner: boolean): CreateOpportunityInput {
+function toCreateInput(
+  values: OpportunityFormValues,
+  withOwner: boolean,
+  customFields: CustomField[],
+): CreateOpportunityInput {
   const input: CreateOpportunityInput = { name: values.name };
   if (values.value) {
     input.value = Number(values.value);
@@ -84,6 +103,10 @@ function toCreateInput(values: OpportunityFormValues, withOwner: boolean): Creat
   if (values.notes) {
     input.notes = values.notes;
   }
+  const custom = customFieldsForCreate(customFields, values.customFields);
+  if (custom) {
+    input.customFields = custom;
+  }
   if (withOwner) {
     input.ownerId = values.ownerId;
   }
@@ -95,6 +118,7 @@ function toCreateInput(values: OpportunityFormValues, withOwner: boolean): Creat
 function changedFields(
   opportunity: Opportunity,
   values: OpportunityFormValues,
+  customFields: CustomField[],
 ): UpdateOpportunityInput {
   const changes: UpdateOpportunityInput = {};
   if (values.name !== opportunity.name) {
@@ -119,6 +143,10 @@ function changedFields(
   if (notes !== opportunity.notes) {
     changes.notes = notes;
   }
+  const custom = changedCustomFields(customFields, opportunity.customFields, values.customFields);
+  if (custom) {
+    changes.customFields = custom;
+  }
   return changes;
 }
 
@@ -134,6 +162,7 @@ export function OpportunityForm({
   company,
   contact,
   myId,
+  customFields = NO_CUSTOM_FIELDS,
   stages = [],
   owners = [],
   returnTo,
@@ -142,6 +171,8 @@ export function OpportunityForm({
   company?: CompanyRef;
   contact?: ContactRef;
   myId: string;
+  // The custom fields in use of this record type; the page loads them.
+  customFields?: CustomField[];
   stages?: SelectOption[];
   owners?: SelectOption[];
   // Where Cancel goes, and where the user lands after saving an edit.
@@ -159,8 +190,15 @@ export function OpportunityForm({
   );
   const showStage = !opportunity && stages.length > 0;
   const showOwner = !opportunity && owners.length > 1;
+  const schema = useMemo(
+    () =>
+      opportunityFormSchema.extend({
+        customFields: customFieldsSchema(customFields, opportunity?.customFields),
+      }),
+    [customFields, opportunity],
+  );
   const form = useForm<OpportunityFormValues>({
-    resolver: zodResolver(opportunityFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: opportunity?.name ?? "",
       value: opportunity ? String(opportunity.value) : "",
@@ -170,6 +208,7 @@ export function OpportunityForm({
       contactId: pickedContact?.id ?? "",
       ownerId: myId,
       notes: opportunity?.notes ?? "",
+      customFields: customFieldDefaults(customFields, opportunity?.customFields),
     },
   });
 
@@ -177,7 +216,7 @@ export function OpportunityForm({
     setFormError(null);
     try {
       if (opportunity) {
-        const changes = changedFields(opportunity, values);
+        const changes = changedFields(opportunity, values, customFields);
         if (Object.keys(changes).length > 0) {
           await dispatch(updateOpportunity({ id: opportunity.id, changes })).unwrap();
           toast.success("Changes saved.");
@@ -185,13 +224,18 @@ export function OpportunityForm({
         router.replace(returnTo);
       } else {
         const created = await dispatch(
-          createOpportunity(toCreateInput(values, showOwner)),
+          createOpportunity(toCreateInput(values, showOwner, customFields)),
         ).unwrap();
         toast.success("Opportunity created.");
         router.replace(`/opportunities/${created.id}`);
       }
     } catch (error) {
-      setFormError(applyServerError(error as ApiError, form.setError, OPPORTUNITY_FORM_FIELDS));
+      setFormError(
+        applyServerError(error as ApiError, form.setError, [
+          ...OPPORTUNITY_FORM_FIELDS,
+          ...customFieldPaths(customFields),
+        ]),
+      );
     }
   }
 
@@ -295,6 +339,11 @@ export function OpportunityForm({
               </FormField>
             </div>
           </div>
+          <CustomFieldsSection
+            control={control}
+            fields={customFields}
+            stored={opportunity?.customFields}
+          />
           <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end">
             <Button asChild variant="outline" className="h-10 px-4">
               <Link href={returnTo}>Cancel</Link>

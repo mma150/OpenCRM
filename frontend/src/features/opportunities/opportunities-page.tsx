@@ -5,6 +5,11 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import {
+  CustomFieldFilterButton,
+  CustomFieldFilterChips,
+} from "@/components/shared/custom-fields-filter";
+import { ListActions } from "@/components/shared/list-actions";
 import { type ListFilter, ListToolbar } from "@/components/shared/list-toolbar";
 import {
   type ListUrlConfig,
@@ -17,12 +22,15 @@ import { Button } from "@/components/ui/button";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { CompanyFilter } from "@/features/companies/company-picker";
 import { ContactFilter } from "@/features/contacts/contact-picker";
+import { useCustomFields } from "@/features/custom-fields/use-custom-fields";
 import { stageOptions } from "@/features/pipeline-stages/stage-labels";
 import { usePipelineStages } from "@/features/pipeline-stages/use-pipeline-stages";
 import { useOwnerFilter } from "@/features/users/use-owner-filter";
 import { useCurrentUrl, withReturnTo } from "@/lib/return-to";
 import { useAppSelector } from "@/store/hooks";
 
+import { exportOpportunities } from "./opportunities.api";
+import { selectBoard, selectOpportunityList } from "./opportunities.slice";
 import type {
   BoardQuery,
   OpportunityListQuery,
@@ -46,8 +54,8 @@ type OpportunityFilter = "stageId" | "status" | "ownerId" | "companyId" | "conta
 // What the page keeps in the address:
 //   /opportunities?search=fleet&ownerId=...                       the board
 //   /opportunities?view=list&stageId=...&sort=value&order=desc    the list
-// The search text and the owner are shared by the two views; the other filters, the sort and
-// the page belong to the list. `view` is kept through every change (the board is the default
+// The search text, the owner and the custom field filters (`cf.<field id>`) are shared by the
+// two views; the other filters, the sort and the page belong to the list. `view` is kept through every change (the board is the default
 // and is left out).
 const LIST_URL: ListUrlConfig<OpportunityFilter, OpportunitySort> = {
   // Ids accept anything.
@@ -62,6 +70,7 @@ const LIST_URL: ListUrlConfig<OpportunityFilter, OpportunitySort> = {
   defaultSort: "createdAt",
   defaultOrder: "desc",
   keep: ["view"],
+  customFilters: true,
 };
 
 const viewOptions = [
@@ -89,8 +98,11 @@ export function OpportunitiesPage() {
   const searchParams = useSearchParams();
   const { data: me } = useAppSelector(selectAuth);
   const { data: stages } = usePipelineStages();
-  const { state, isFiltered, setSearch, setFilter, setSort, setPage, clearFilters } =
+  const { state, isFiltered, setSearch, setFilter, setCustom, setSort, setPage, clearFilters } =
     useListUrlState(LIST_URL);
+  const { data: customFields } = useCustomFields("OPPORTUNITY");
+  const { error: listError } = useAppSelector(selectOpportunityList);
+  const { error: boardError } = useAppSelector(selectBoard);
   const currentUrl = useCurrentUrl();
   const [dialog, setDialog] = useState<OpportunityDialog>(null);
   // For a user who sees more than their own opportunities.
@@ -103,8 +115,9 @@ export function OpportunitiesPage() {
     () => ({
       ...(state.search ? { search: state.search } : {}),
       ...(state.filters.ownerId ? { ownerId: state.filters.ownerId } : {}),
+      ...state.custom,
     }),
-    [state.search, state.filters.ownerId],
+    [state.search, state.filters.ownerId, state.custom],
   );
   const listQuery = useMemo<OpportunityListQuery>(
     () => ({
@@ -114,6 +127,7 @@ export function OpportunitiesPage() {
       ...(state.filters.ownerId ? { ownerId: state.filters.ownerId } : {}),
       ...(state.filters.companyId ? { companyId: state.filters.companyId } : {}),
       ...(state.filters.contactId ? { contactId: state.filters.contactId } : {}),
+      ...state.custom,
       sort: state.sort,
       order: state.order,
       page: state.page,
@@ -127,8 +141,9 @@ export function OpportunitiesPage() {
   }
   const { canWrite, canReassign } = opportunityAccess(me.role);
 
-  // Changing the view keeps what both views understand (the search text and the owner) and
-  // drops the rest, so the board is never narrowed by a filter it cannot show.
+  // Changing the view keeps what both views understand (the search text, the owner and the
+  // custom field filters) and drops the rest, so the board is never narrowed by a filter it
+  // cannot show.
   function changeView(next: View) {
     const params = new URLSearchParams();
     if (next === "list") {
@@ -140,11 +155,15 @@ export function OpportunitiesPage() {
     if (state.filters.ownerId) {
       params.set("ownerId", state.filters.ownerId);
     }
+    for (const [name, value] of Object.entries(state.custom)) {
+      params.set(name, value);
+    }
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }
 
-  const boardIsFiltered = state.search !== "" || state.filters.ownerId !== "";
+  const boardIsFiltered =
+    state.search !== "" || state.filters.ownerId !== "" || Object.keys(state.custom).length > 0;
   const narrowed = view === "list" ? isFiltered || state.page > 1 : boardIsFiltered;
   const newHref =
     narrowed || view === "list"
@@ -186,7 +205,15 @@ export function OpportunitiesPage() {
       <PageHeader
         title="Opportunities"
         description="Every deal in your pipeline, and the stage it has reached."
-        action={canWrite ? newButton : undefined}
+        action={
+          <>
+            {/* The export is the list: the board has no file of its own. */}
+            {view === "list" ? (
+              <ListActions onExport={() => exportOpportunities(listQuery)} />
+            ) : null}
+            {canWrite ? newButton : null}
+          </>
+        }
       />
 
       <SegmentedControl
@@ -241,6 +268,19 @@ export function OpportunitiesPage() {
               }
             : undefined
         }
+        more={
+          <CustomFieldFilterButton
+            fields={customFields ?? []}
+            values={state.custom}
+            onApply={setCustom}
+          />
+        }
+      />
+      <CustomFieldFilterChips
+        fields={customFields}
+        values={state.custom}
+        onChange={setCustom}
+        error={view === "list" ? listError : boardError}
       />
 
       {view === "list" ? (

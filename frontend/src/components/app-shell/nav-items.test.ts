@@ -15,6 +15,7 @@ describe("nav items", () => {
       "Profile",
       "Users",
       "Pipeline",
+      "Custom fields",
     ]);
     expect(navItemsFor("SALES_MANAGER").map((item) => item.label)).toEqual([
       "Home",
@@ -105,6 +106,8 @@ describe("nav items", () => {
     expect(pageTitle("/opportunities/123")).toBe("Opportunities");
     expect(pageTitle("/settings/users")).toBe("Settings / Users");
     expect(pageTitle("/settings/pipeline")).toBe("Settings / Pipeline");
+    expect(pageTitle("/settings/custom-fields")).toBe("Settings / Custom fields");
+    expect(pageTitle("/import")).toBe("Import");
     expect(pageTitle("/somewhere-else")).toBe("OpenCRM");
   });
 });

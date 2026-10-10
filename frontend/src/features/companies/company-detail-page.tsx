@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { CompanyContacts } from "@/features/contacts/company-contacts";
+import { RecordCustomFields } from "@/features/custom-fields/record-custom-fields";
 import { RecordOpportunities } from "@/features/opportunities/record-opportunities";
 import { RecordTasks } from "@/features/tasks/record-tasks";
 import { LogConversationButton } from "@/features/timeline/log-conversation-button";
@@ -168,6 +169,7 @@ function CompanyDetail({ company }: { company: Company }) {
                 </DetailList>
               </CardContent>
             </Card>
+            <RecordCustomFields recordType="COMPANY" values={company.customFields} />
             <NotesCard notes={company.notes} />
           </>
         }

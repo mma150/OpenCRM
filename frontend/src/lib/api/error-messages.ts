@@ -41,6 +41,8 @@ export function describeApiError(error: ApiError): string {
       return "This lead has been converted and can no longer be changed.";
     case "VALIDATION_FAILED":
       return "Some of the details are not valid. Check them and try again.";
+    case "PAYLOAD_TOO_LARGE":
+      return "The file is larger than 5 MB. Split it into smaller files and import each one.";
     case "NOT_FOUND":
       return "This no longer exists. Reload the page and try again.";
     case "SERVICE_UNAVAILABLE":

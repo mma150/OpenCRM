@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { selectAuth } from "@/features/auth/auth.slice";
+import { RecordCustomFields } from "@/features/custom-fields/record-custom-fields";
 import { RecordTasks } from "@/features/tasks/record-tasks";
 import { LogConversationButton } from "@/features/timeline/log-conversation-button";
 import { Timeline } from "@/features/timeline/timeline";
@@ -341,6 +342,7 @@ function LeadDetail({ lead }: { lead: Lead }) {
                 </DetailList>
               </CardContent>
             </Card>
+            <RecordCustomFields recordType="LEAD" values={lead.customFields} />
             <NotesCard notes={lead.notes} />
           </>
         }

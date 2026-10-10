@@ -1,3 +1,4 @@
+import { type DownloadedFile, downloadExport } from "@/lib/api/download";
 import { http } from "@/lib/api/http";
 import { browserTimeZone } from "@/lib/time-zone";
 
@@ -19,6 +20,12 @@ export async function listTasks(query: TaskListQuery): Promise<TaskList> {
     params: { ...query, tz: browserTimeZone() },
   });
   return { tasks: response.data.data, ...response.data.meta };
+}
+
+// The list as a CSV file: every match of the same search and filters, not one page.
+// `downloadExport` adds the time zone, as `listTasks` does.
+export function exportTasks(query: TaskListQuery): Promise<DownloadedFile> {
+  return downloadExport("/tasks/export", query, "tasks.csv");
 }
 
 export async function getTask(id: string): Promise<Task> {

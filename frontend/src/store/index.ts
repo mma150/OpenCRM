@@ -4,6 +4,7 @@ import { activityReducer } from "@/features/activity/activity.slice";
 import { authReducer, logout, sessionExpired } from "@/features/auth/auth.slice";
 import { companiesReducer } from "@/features/companies/companies.slice";
 import { contactsReducer } from "@/features/contacts/contacts.slice";
+import { customFieldsReducer } from "@/features/custom-fields/custom-fields.slice";
 import { dashboardReducer } from "@/features/dashboard/dashboard.slice";
 import { healthReducer } from "@/features/health/health.slice";
 import { leadsReducer } from "@/features/leads/leads.slice";
@@ -21,6 +22,7 @@ const appReducer = combineReducers({
   auth: authReducer,
   companies: companiesReducer,
   contacts: contactsReducer,
+  customFields: customFieldsReducer,
   dashboard: dashboardReducer,
   health: healthReducer,
   leads: leadsReducer,

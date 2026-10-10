@@ -3,11 +3,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import {
+  changedCustomFields,
+  customFieldDefaults,
+  type CustomFieldFormValues,
+  customFieldPaths,
+  customFieldsForCreate,
+  customFieldsSchema,
+  CustomFieldsSection,
+} from "@/components/shared/custom-fields-form";
 import { FormAlert } from "@/components/shared/form-alert";
 import { FormField } from "@/components/shared/form-field";
 import { SelectControl, type SelectOption } from "@/components/shared/select-control";
@@ -15,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import type { CustomField } from "@/features/custom-fields/custom-fields.types";
 import type { ApiError } from "@/lib/api/http";
 import { applyServerError } from "@/lib/form-errors";
 import { useAppDispatch } from "@/store/hooks";
@@ -41,7 +51,12 @@ const companyFormSchema = z.object({
   notes: optionalText(10_000),
 });
 
-type CompanyFormValues = z.infer<typeof companyFormSchema>;
+// The record's own fields, plus its custom fields as text keyed by the field's id.
+type CompanyFormValues = z.infer<typeof companyFormSchema> & {
+  customFields: CustomFieldFormValues;
+};
+
+const NO_CUSTOM_FIELDS: CustomField[] = [];
 
 // The form fields the API reports validation problems on.
 const COMPANY_FORM_FIELDS = [
@@ -58,12 +73,20 @@ const COMPANY_FORM_FIELDS = [
 const OPTIONAL_TEXT_FIELDS = ["website", "industry", "phone", "address", "notes"] as const;
 
 // Empty optional fields are left out, and the owner is sent only when it was offered.
-function toCreateInput(values: CompanyFormValues, withOwner: boolean): CreateCompanyInput {
+function toCreateInput(
+  values: CompanyFormValues,
+  withOwner: boolean,
+  customFields: CustomField[],
+): CreateCompanyInput {
   const input: CreateCompanyInput = { name: values.name };
   for (const field of OPTIONAL_TEXT_FIELDS) {
     if (values[field]) {
       input[field] = values[field];
     }
+  }
+  const custom = customFieldsForCreate(customFields, values.customFields);
+  if (custom) {
+    input.customFields = custom;
   }
   if (withOwner) {
     input.ownerId = values.ownerId;
@@ -72,7 +95,11 @@ function toCreateInput(values: CompanyFormValues, withOwner: boolean): CreateCom
 }
 
 // Only what the user actually changed is sent. An emptied field is sent as null, which clears it.
-function changedFields(company: Company, values: CompanyFormValues): UpdateCompanyInput {
+function changedFields(
+  company: Company,
+  values: CompanyFormValues,
+  customFields: CustomField[],
+): UpdateCompanyInput {
   const changes: UpdateCompanyInput = {};
   if (values.name !== company.name) {
     changes.name = values.name;
@@ -82,6 +109,10 @@ function changedFields(company: Company, values: CompanyFormValues): UpdateCompa
     if (next !== company[field]) {
       changes[field] = next;
     }
+  }
+  const custom = changedCustomFields(customFields, company.customFields, values.customFields);
+  if (custom) {
+    changes.customFields = custom;
   }
   return changes;
 }
@@ -94,12 +125,15 @@ function changedFields(company: Company, values: CompanyFormValues): UpdateCompa
 export function CompanyForm({
   company,
   myId,
+  customFields = NO_CUSTOM_FIELDS,
   owners = [],
   industries = [],
   returnTo,
 }: {
   company?: Company;
   myId: string;
+  // The custom fields in use of this record type; the page loads them.
+  customFields?: CustomField[];
   owners?: SelectOption[];
   industries?: string[];
   // Where Cancel goes, and where the user lands after saving an edit.
@@ -109,8 +143,15 @@ export function CompanyForm({
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
   const showOwner = !company && owners.length > 1;
+  const schema = useMemo(
+    () =>
+      companyFormSchema.extend({
+        customFields: customFieldsSchema(customFields, company?.customFields),
+      }),
+    [customFields, company],
+  );
   const form = useForm<CompanyFormValues>({
-    resolver: zodResolver(companyFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: company?.name ?? "",
       website: company?.website ?? "",
@@ -119,6 +160,7 @@ export function CompanyForm({
       address: company?.address ?? "",
       ownerId: myId,
       notes: company?.notes ?? "",
+      customFields: customFieldDefaults(customFields, company?.customFields),
     },
   });
 
@@ -126,19 +168,26 @@ export function CompanyForm({
     setFormError(null);
     try {
       if (company) {
-        const changes = changedFields(company, values);
+        const changes = changedFields(company, values, customFields);
         if (Object.keys(changes).length > 0) {
           await dispatch(updateCompany({ id: company.id, changes })).unwrap();
           toast.success("Changes saved.");
         }
         router.replace(returnTo);
       } else {
-        const created = await dispatch(createCompany(toCreateInput(values, showOwner))).unwrap();
+        const created = await dispatch(
+          createCompany(toCreateInput(values, showOwner, customFields)),
+        ).unwrap();
         toast.success("Company created.");
         router.replace(`/companies/${created.id}`);
       }
     } catch (error) {
-      setFormError(applyServerError(error as ApiError, form.setError, COMPANY_FORM_FIELDS));
+      setFormError(
+        applyServerError(error as ApiError, form.setError, [
+          ...COMPANY_FORM_FIELDS,
+          ...customFieldPaths(customFields),
+        ]),
+      );
     }
   }
 
@@ -215,6 +264,11 @@ export function CompanyForm({
               </FormField>
             </div>
           </div>
+          <CustomFieldsSection
+            control={control}
+            fields={customFields}
+            stored={company?.customFields}
+          />
           <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end">
             <Button asChild variant="outline" className="h-10 px-4">
               <Link href={returnTo}>Cancel</Link>

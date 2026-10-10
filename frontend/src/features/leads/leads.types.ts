@@ -1,3 +1,4 @@
+import type { CustomFilterParams } from "@/components/shared/list-url-state";
 import type { components, paths } from "@/lib/api/schema";
 
 // Every type comes from the generated schema, so a change to the API contract
@@ -21,8 +22,10 @@ export type ConvertLeadInput = Schemas["ConvertLeadBody"];
 // When to remind the owner, and about what; `at: null` clears it.
 export type FollowUpInput = Schemas["FollowUpBody"];
 
-// Search, filters, sort and page of GET /leads.
-export type LeadListQuery = NonNullable<paths["/leads"]["get"]["parameters"]["query"]>;
+// Search, filters, sort and page of GET /leads, and the custom field filters
+// (`cf.<field id>`), which the schema cannot list because their names depend on data.
+export type LeadListQuery = NonNullable<paths["/leads"]["get"]["parameters"]["query"]> &
+  CustomFilterParams;
 export type LeadSort = NonNullable<LeadListQuery["sort"]>;
 
 // Response bodies: { data, meta }.

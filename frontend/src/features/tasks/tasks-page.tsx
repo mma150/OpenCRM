@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { FormAlert } from "@/components/shared/form-alert";
+import { ListActions } from "@/components/shared/list-actions";
 import { ListPagination, pageRange } from "@/components/shared/list-pagination";
 import { type ListFilter, ListToolbar } from "@/components/shared/list-toolbar";
 import { type ListUrlConfig, useListUrlState } from "@/components/shared/list-url-state";
@@ -28,7 +29,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { TaskDialog } from "./task-dialog";
 import { DUE_GROUP_LABELS, DUE_GROUPS, dueGroupOptions, taskAccess } from "./task-labels";
 import { TaskRow } from "./task-row";
-import { getTask } from "./tasks.api";
+import { exportTasks, getTask } from "./tasks.api";
 import {
   fetchDoneTasks,
   fetchOpenTasks,
@@ -391,6 +392,20 @@ export function TasksPage() {
     </Button>
   ) : undefined;
 
+  // The export holds what the view shows: the Done view's list, or the open tasks with the
+  // same search, assignee and Due filter, soonest first like the groups.
+  const exportQuery: TaskListQuery =
+    view === "done"
+      ? doneQuery
+      : {
+          status: "OPEN",
+          ...(state.search ? { search: state.search } : {}),
+          ...(assigneeId ? { assigneeId } : {}),
+          ...(state.filters.due ? { due: state.filters.due as DueGroup } : {}),
+          sort: "dueAt",
+          order: "asc",
+        };
+
   const current = view === "done" ? done : open;
   const openCount = open.data
     ? DUE_GROUPS.reduce((sum, group) => sum + (open.data?.[group].total ?? 0), 0)
@@ -406,7 +421,12 @@ export function TasksPage() {
             ? "The team's follow-ups and to-dos."
             : "Your follow-ups and to-dos."
         }
-        action={newTaskButton}
+        action={
+          <>
+            <ListActions onExport={() => exportTasks(exportQuery)} />
+            {newTaskButton}
+          </>
+        }
       />
 
       <SegmentedControl

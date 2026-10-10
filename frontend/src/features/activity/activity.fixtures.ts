@@ -86,7 +86,7 @@ export const allActivity: ActivityEntry[] = [
   olderLostReason,
 ];
 
-export const summary = { conversations: 12, notes: 5, statusChanges: 3 };
+export const summary = { conversations: 12, notes: 5, statusChanges: 3, emails: 0 };
 
 export function activityList(
   entries: ActivityEntry[] = allActivity,

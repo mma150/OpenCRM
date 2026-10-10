@@ -171,7 +171,7 @@ Write a slice test and a component test, mocking at the feature's `*.api.ts` fil
 
 The slice recipe above is for **loading** data. Anything that **changes** data (sign in, invite a user, save a profile) follows this second recipe. The examples to copy are [`login-form.tsx`](../../frontend/src/features/auth/login-form.tsx) and [`invite-user-dialog.tsx`](../../frontend/src/features/users/invite-user-dialog.tsx).
 
-1. **The form is react-hook-form with a Zod schema** (`zodResolver`). Shared field rules (name, email, the password rule) come from [`src/lib/validation.ts`](../../frontend/src/lib/validation.ts). Every row is a [`FormField`](../../frontend/src/components/shared/form-field.tsx), and the form is `<form noValidate>` so the messages are ours, not the browser's.
+1. **The form is react-hook-form with a Zod schema** (`zodResolver`). Shared field rules (name, email, the password rule) come from [`src/lib/validation.ts`](../../frontend/src/lib/validation.ts). Every row is a [`FormField`](../../frontend/src/components/shared/form-field.tsx), and the form is `<form noValidate>` so the messages are ours, not the browser's. `FormField` hands its control the value with the type of the field that was named, so a form may hold a checkbox or a list beside its text.
 2. **The mutation is a thunk** made with `createAppThunk` from [`src/store/thunk.ts`](../../frontend/src/store/thunk.ts), named `<feature>/<verb>` like any other. It calls the API function and forwards the `ApiError` with `rejectWithValue`. It has **no** `pending` or `rejected` reducer: a mutation does not touch the slice's `status` or `error`, which belong to loading. Its `fulfilled` reducer puts the result in `data` when the result belongs there (the signed-in user, the changed user in the list). A mutation on a list then **reloads the list** with the query it was last loaded with, so the change shows where it belongs under the current filters and sort.
 3. **The form awaits `.unwrap()`** inside `onSubmit`, so react-hook-form's `isSubmitting` drives the button and the rejection arrives in a `catch`:
 
@@ -195,6 +195,7 @@ The slice recipe above is for **loading** data. Anything that **changes** data (
 
 - The fields sit in `grid grid-cols-1 gap-4 md:grid-cols-2`: one column on phones, two from `md`. Keep the `grid-cols-1`: it gives the column a zero minimum width, so a long value cannot push the form wider than its card.
 - Optional text is `""` in the form, and is left out (create) or sent as `null` (edit) in the request. A number field is text in the form and a JSON number in the request. An edit sends **only the fields that changed**.
+- The four record forms end with the record type's custom fields; see [Custom fields](#custom-fields).
 - Cancel and "after saving" go back to where the user came from. The page that links to the form passes its own address as `?from=` (`withReturnTo` and `useCurrentUrl` from [`src/lib/return-to.ts`](../../frontend/src/lib/return-to.ts)), and the form page reads it with `useReturnTo(fallback)`, which accepts only a path inside this app, like `?next=`.
 - A user whose role may not use the form gets a `PageState` saying so instead of the form.
 
@@ -277,7 +278,7 @@ The phone tabs are Home, Leads and Tasks, plus "More": the pages a sales person 
 | `href`, `label`, `icon` | Where it goes, what it is called, a `lucide-react` icon |
 | `roles` | Who sees it; leave out for everyone |
 | `bottomTab` | `true`: a tab in the phone's bottom bar. `false`: listed under "More". At most three tabs, so the bar is four with "More" (a test enforces this) |
-| `group: "settings"` | Pins the item to the bottom of the sidebar, under Settings (Users, Pipeline) |
+| `group: "settings"` | Pins the item to the bottom of the sidebar, under Settings (Users, Pipeline, Custom fields) |
 
 **Three widths, no drawer (D-13).**
 
@@ -287,7 +288,7 @@ The phone tabs are Home, Leads and Tasks, plus "More": the pages a sales person 
 | Tablet, `md` to `lg` (1024px) | The sidebar collapsed to icons, with tooltips |
 | Desktop, `lg` and up | The full sidebar (240px) with the OpenCRM name |
 
-The top bar shows the page title on the left (the OpenCRM name on phones, which have no sidebar) and, on the right, the notification bell (see [Notifications](#notifications)) and the user menu: Profile, Theme (Light, Dark, System) and Log out. The bell is in the top bar at every width, so `/notifications` is not in `nav-items.ts`; `pageTitle` names that page itself. Do not add a slide-in drawer or shadcn's `sidebar` or `sheet` components; the owner chose the bottom tab bar instead.
+The top bar shows the page title on the left (the OpenCRM name on phones, which have no sidebar) and, on the right, the notification bell (see [Notifications](#notifications)) and the user menu: Profile, Theme (Light, Dark, System) and Log out. The bell is in the top bar at every width, so `/notifications` is not in `nav-items.ts`; `pageTitle` names that page itself, and `/import`, which is reached from the lists. Do not add a slide-in drawer or shadcn's `sidebar` or `sheet` components; the owner chose the bottom tab bar instead.
 
 **What a page gets from the frame.** Padding, a centred column, and enough bottom padding on phones that the tab bar never covers the last line (including the iPhone safe area). A page therefore starts directly with its `PageHeader` and never sets its own outer padding or `min-h-screen`.
 
@@ -297,7 +298,9 @@ Build screens from these, in [`src/components/shared/`](../../frontend/src/compo
 
 | Component | Use it for |
 | --- | --- |
-| `PageHeader` | The page's `h1`, one line of help, and its main action button |
+| `PageHeader` | The page's `h1`, one line of help, and its main action button. A list passes `ListActions` before the button |
+| `ListActions` | "Export CSV" and "Import" beside a list's "New" button: two buttons from `sm`, one "More actions" menu on a phone. See [Export and import](#export-and-import) |
+| `CustomFieldsSection`, `CustomFieldsCard`, `CustomFieldFilterButton`, `CustomFieldFilterChips` | The custom fields of a record form, of a record page and of a list's filters. See [Custom fields](#custom-fields) |
 | `ResponsiveList` | **Every list of records.** See below |
 | `ListToolbar`, `ListPagination`, `useListUrlState` | The search box, filters and sort above a list, the paging row under it, and their state in the address. See [Lists with search, filters and paging](#lists-with-search-filters-and-paging) |
 | `RecordList` | Everything under the toolbar of a list page: `ResponsiveList`, the two empty states, the stale-page note and `ListPagination`. See [Lists with search, filters and paging](#lists-with-search-filters-and-paging) |
@@ -316,7 +319,7 @@ Build screens from these, in [`src/components/shared/`](../../frontend/src/compo
 | `RoleBadge`, `StatusBadge` | A role or a user status. Labels come from [`src/lib/user-labels.ts`](../../frontend/src/lib/user-labels.ts); never print the raw enum value |
 | `CopyLinkField` | A link the user has to pass on by hand |
 
-A feature keeps the labels and the badge for its own enums beside its code, in the same style: [`lead-labels.ts`](../../frontend/src/features/leads/lead-labels.ts) and [`lead-status-badge.tsx`](../../frontend/src/features/leads/lead-status-badge.tsx). Dates and money are written with the functions in [`src/lib/format.ts`](../../frontend/src/lib/format.ts), the one place that fixes the locale and the currency: `formatDate`, `formatDateTime`, `formatTime` and `formatCurrency`; `formatDay` for a calendar day without a time (an expected close date, `"2026-11-15"`), which is the same day for every viewer and must not go through `formatDate`; `formatRelativeDate` ("Today", "3 days ago", then the date) and `formatRelativeTime` (the "2 hours ago" hint beside a recent moment); `formatNearDateTime` for a due date or a reminder ("Today, 2:00 PM", "Tomorrow, 10:00 AM", then the date and time) and `isPast` for "is it late"; `formatDayHeading` for the days of a feed; and `toDateInputValue` / `toDateTimeInputValue` for native date inputs. Dates are always shown in the viewer's time zone. A date the user picks is a native `<input type="date">` or `datetime-local` in the shared `Input`; there is no calendar component.
+A feature keeps the labels and the badge for its own enums beside its code, in the same style: [`lead-labels.ts`](../../frontend/src/features/leads/lead-labels.ts) and [`lead-status-badge.tsx`](../../frontend/src/features/leads/lead-status-badge.tsx). Dates and money are written with the functions in [`src/lib/format.ts`](../../frontend/src/lib/format.ts), the one place that fixes the locale and the currency: `formatDate`, `formatDateTime`, `formatTime`, `formatCurrency` and `formatNumber` (a plain number, `12,500.5`); `formatDay` for a calendar day without a time (an expected close date, `"2026-11-15"`), which is the same day for every viewer and must not go through `formatDate`; `formatRelativeDate` ("Today", "3 days ago", then the date) and `formatRelativeTime` (the "2 hours ago" hint beside a recent moment); `formatNearDateTime` for a due date or a reminder ("Today, 2:00 PM", "Tomorrow, 10:00 AM", then the date and time) and `isPast` for "is it late"; `formatDayHeading` for the days of a feed; and `toDateInputValue` / `toDateTimeInputValue` for native date inputs. Dates are always shown in the viewer's time zone. A date the user picks is a native `<input type="date">` or `datetime-local` in the shared `Input`; there is no calendar component.
 
 ### ResponsiveList: the one list pattern (D-16)
 
@@ -367,6 +370,7 @@ const { state, isFiltered, setSearch, setFilter, setSort, setPage, clearFilters 
 - Every change except `setPage` goes back to page 1. The address is **replaced**, not pushed, so typing a search does not fill the browser history.
 - `setFilters({ range: "custom", from, to })` changes several filters in one step, for controls that belong together. Two `setFilter` calls in a row would both start from the same address, and the second would undo the first.
 - `keep: ["view"]` in the config names other parameters of the page that every change leaves in the address. The opportunities page uses it for its Board / List switch (`?view=list`), which is not list state: it is not reset by "Clear filters" and does not count as a filter.
+- `customFilters: true` makes every `cf.` parameter part of the list state: `state.custom` holds them as they are in the address (`{ "cf.<field id>.min": "10" }`), `setCustom(next)` replaces them all in one step, and they count for `isFiltered` and are cleared by `clearFilters`. See [Custom fields](#custom-fields).
 - `isFiltered` is true when the search box or a filter narrows the list. It chooses between the two empty states: "No leads yet" with the create action, or "No leads match your filters" with a **Clear filters** button (`clearFilters`). `RecordList` (below) does this for you.
 
 **2. `ListToolbar`: search, filters and sort.**
@@ -395,6 +399,7 @@ const { state, isFiltered, setSearch, setFilter, setSort, setPage, clearFilters 
 - `extra` is for a filter that is not a select. The contacts list puts `CompanyFilter` there: a company is searched for, not picked from a select, because there can be thousands (see [The record pickers](#the-record-pickers)).
 - The Owner filter of a list of owned records comes from `useOwnerFilter(value, onChange)` in [`use-owner-filter.ts`](../../frontend/src/features/users/use-owner-filter.ts). It loads the people the user may assign records to and returns the filter, or nothing for a Sales Rep and for anyone with fewer than two choices: `filters={[...ownFilters, ...ownerFilter]}`.
 - Sort is one select whose values name a field and a direction (`"name:asc"`).
+- `more` is a control after the sort order: the "More filters" button of a list with custom fields.
 - On phones the search box takes its own line and the selects sit two to a row; from `sm` they wrap in a row; from `xl` everything is on one line. It never scrolls sideways.
 
 **3. `ListPagination`: "Showing 26–50 of 64", Previous and Next.** Give it the `meta` of the list response and `setPage`. It renders nothing for an empty list. `pageRange(page, pageSize, total)` is the arithmetic, exported for the one thing a list must do itself: when the current page turns out to be past the end (its last record was deleted, or the address was edited), go to the last page that exists.
@@ -448,6 +453,7 @@ The page of one record (a lead, a contact, a company, an opportunity) is laid ou
 - **A list of the record's own is `extra`.** A contact's page passes its opportunities as `extra={{ label: "Opportunities", content: <RecordOpportunities ... /> }}`; a company's page passes a list of two, its contacts and its opportunities. From `lg` they sit above the timeline in the wide column; below `lg` each gets a button of its own between the other two ("Timeline" / "Contacts" / "Opportunities" / "Details"). Four buttons are the most a phone holds: a fifth section belongs in `aside`. Keep such a card short: [`company-contacts.tsx`](../../frontend/src/features/contacts/company-contacts.tsx) and [`record-opportunities.tsx`](../../frontend/src/features/opportunities/record-opportunities.tsx) show ten records and link to the list, filtered by this record, for the rest.
 - **What must be seen at every width goes under the header**, not in `aside`, which a phone keeps behind the "Details" button: the outcome of a closed opportunity (won or lost, the reason, the date), the stage stepper, the "Converted" banner of a lead with its links to the contact, company and opportunity it became, and the follow-up reminder of a lead or an opportunity (see [Follow-ups](#follow-ups)).
 - **The Tasks card is the first card of `aside` on all four record pages** (`RecordTasks`, see [Tasks](#tasks)). It is in `aside`, not `extra`, so that it sits in the same place on every record: a company already has two `extra` sections, and a fifth button does not fit a phone.
+- **The Custom fields card** comes after Details on all four record pages: `<RecordCustomFields recordType="LEAD" values={lead.customFields} />`. It draws nothing for a record type without custom fields.
 - **`DetailList` and `DetailItem`** are the label and value pairs inside a card. Show `EmptyValue` (`—`) for a missing value, and use `DetailLink` for another record, an email (`mailto:`) and a phone number (`tel:`). `NotesCard` is the record's own free text. A company's website goes through `WebsiteLink` in [`company-website.tsx`](../../frontend/src/features/companies/company-website.tsx): a value typed without a scheme opens over `https://`, in a new tab, and anything that does not pass the API's website rule is shown as text, never as a link.
 - **Loading, not found and errors** are drawn by `RecordLoader`. Each feature wraps it in a small loader of its own that dispatches the request ([`lead-loader.tsx`](../../frontend/src/features/leads/lead-loader.tsx)), which the detail and edit pages share. A record that does not exist and a record the user may not see get the same "not found" page, because the API does not say which it is.
 - **Only offer what the API will allow.** `recordAccess(role)` in [`src/lib/record-access.ts`](../../frontend/src/lib/record-access.ts) says what the signed-in role may do with an owned record (`canWrite`, `canReassign`); leads, contacts, companies and opportunities follow the same rule. A record can add a rule of its own on top: a converted lead keeps Reassign and its timeline form, and loses Edit, the status control, Convert, Mark as lost and Delete (`isConverted` in `lead-labels.ts`), because the API answers those with `LEAD_CONVERTED`. Hide every other control, in the list's row menu and on the record page alike. This is for clarity; the API is what enforces it.
@@ -607,6 +613,43 @@ Home is [`src/features/dashboard/`](../../frontend/src/features/dashboard/), mir
 - **The Team section** (`team-section.tsx`, from `GET /dashboard/team`) is rendered for an Admin and a Sales Manager only, so nobody else ever asks the API for it (`seesTeamDashboard`). It has a date range (This month, Last month, Last 7 days, Last 30 days, or two dates), sent as days in the viewer's time zone, and one row for each person with a totals row. It is a table from `lg` and cards below, because eight figures do not fit a tablet. Sorting is done in the browser, by a column heading (`aria-sort`) or, for the cards, a "Sort by" select. "Open pipeline" and "Overdue tasks" are as of now whatever the range, and the section says so.
 - **The two parts load on their own**: each has its skeleton, and its own error with Retry, and a failure of one leaves the other on screen. A brand-new install shows zeros and a sentence in each empty list.
 
+### Custom fields
+
+An Admin's own fields on leads, contacts, companies and opportunities are the feature [`src/features/custom-fields/`](../../frontend/src/features/custom-fields/), mirroring the API module (see [backend](backend.md#custom-fields)). The slice holds `fields` (the fields in use of each record type, which every user may read) and `settings` (every field of the record type open on the settings page, archived ones last). A change on the settings page is written into both, so forms and filters follow without asking again. `useCustomFields("LEAD")` loads the fields for a component that needs them; a form page uses `useCustomFieldsForForm`, which also says when the form may be drawn (a form takes its starting values once).
+
+Everything that shows a custom field is drawn **from the definitions by one shared component each**, in `src/components/shared/`, so a field an Admin adds appears everywhere with no code:
+
+- **Forms: [`custom-fields-form.tsx`](../../frontend/src/components/shared/custom-fields-form.tsx).** A record form keeps the custom fields under one key, `customFields`, as text keyed by the field's id. The form adds four things:
+
+  ```tsx
+  const schema = useMemo(
+    () => leadFormSchema.extend({ customFields: customFieldsSchema(customFields, lead?.customFields) }),
+    [customFields, lead],
+  );
+  // defaultValues: { ..., customFields: customFieldDefaults(customFields, lead?.customFields) }
+  <CustomFieldsSection control={control} fields={customFields} stored={lead?.customFields} />
+  // applyServerError(error, form.setError, [...LEAD_FORM_FIELDS, ...customFieldPaths(customFields)])
+  ```
+
+  `CustomFieldsSection` draws a text box, a number box (text with a decimal keypad, sent as a JSON number), a native date input or a select, marks required fields, and draws nothing when there are no fields. `customFieldsForCreate` sends only the fields that were filled in; `changedCustomFields` sends only the ones that changed, `null` for one that was emptied, because the API merges key by key. A required field must be filled in on a new record; on an existing one it only cannot be emptied, which is the API's rule. The API's errors arrive at `customFields.<field id>` and land on the field.
+- **A stored dropdown value whose option was removed** is listed last in its select as "West (removed option)". It can be kept (an unchanged field is never sent) and gone back to while the form is open; it is not offered to a record that never held it.
+- **Record pages: [`custom-fields-card.tsx`](../../frontend/src/components/shared/custom-fields-card.tsx)** shows every field in use with the record's value (`formatNumber`, `formatDay`) or `EmptyValue`.
+- **List filters (CF-03): [`custom-fields-filter.tsx`](../../frontend/src/components/shared/custom-fields-filter.tsx).** `CustomFieldFilterButton` goes in `ListToolbar`'s `more` and opens a panel with one control per field: text contains, a dropdown's option, a number range, a date range. It is a dialog, and full-screen on a phone. `CustomFieldFilterChips` goes under the toolbar: one removable chip per field and "Clear all". Both work on `state.custom`, which is exactly what the API takes, so the page spreads it into the list's query (and the export's, and the board's). The address is sent as it is, because which fields exist is the API's to say; when the API refuses a filter (a hand-edited address, a field archived since) the chips name it and offer to remove it, and the rest of the page keeps working. The query types of the four lists are the generated ones `& CustomFilterParams`, since OpenAPI cannot list parameters whose names depend on data.
+
+`/settings/custom-fields` ([`custom-fields-settings-page.tsx`](../../frontend/src/features/custom-fields/custom-fields-settings-page.tsx)) is for Admins, guarded and built like Pipeline: a tab per record type (kept in the address, `?type=contacts`), the fields in order with "Move up" and "Move down" buttons that keep the focus, Edit and Archive, and an Archived section with Restore and Delete. A field's type is fixed once it exists, so the edit dialog shows it without a control. A dropdown's options are edited as a list (add, remove, move up and down). Deleting is permanent and removes the values from every record, so its dialog needs a ticked box before the button works. The limit of 30 fields in use is said on the page ("30 of 30") and, when the API refuses the 31st as `VALIDATION_FAILED` with `details: null`, in the dialog's own words.
+
+### Export and import
+
+**Export.** Every list has "Export CSV" in [`ListActions`](../../frontend/src/components/shared/list-actions.tsx), for every role including Read-only: leads, contacts, companies, the opportunities list (not the board) and tasks. The feature's API file has the call (`exportLeads(query)`), which hands the list's own query to `downloadExport` in [`src/lib/api/download.ts`](../../frontend/src/lib/api/download.ts): it drops the page, adds the viewer's `tz`, fetches the file as a Blob through the one axios instance and reads `Content-Disposition` and `X-Export-Truncated`. So the file holds exactly what the search, filters and sort show. `ListActions` shows progress, saves the file with `saveFile` ([`src/lib/save-file.ts`](../../frontend/src/lib/save-file.ts)) and warns in a toast when the list was cut off at 10,000 rows. The error body of a refused download arrives as a Blob too; the interceptor in `http.ts` reads it back, so a download rejects with an `ApiError` like any request.
+
+**Import** is the feature [`src/features/imports/`](../../frontend/src/features/imports/), at `/import?type=leads|contacts|companies`. The lists of leads, contacts and companies link to it with their type (`importHref`), for every role but Read-only, who also gets a "no access" page there. It has no slice: nothing of an import is shown anywhere else, so the page calls `imports.api.ts` itself and keeps the three steps in its own state; leaving the page starts over.
+
+1. **The file** ([`import-file-step.tsx`](../../frontend/src/features/imports/import-file-step.tsx)): the type, a drop area with a "Choose a file" button, what the file must look like, and a template made in the browser from `GET /imports/fields`. The browser checks the name (`.csv`) and the size (5 MB), reads the file with `File.text()` and sends its **text**; there is no upload library.
+2. **The mapping** ([`import-mapping-step.tsx`](../../frontend/src/features/imports/import-mapping-step.tsx)): each column with sample values and a select of fields, pre-filled from the API's suggestion, with "Don't import". A field already taken by another column is switched off in the other selects, and the required fields without a column are listed; the Import button waits for them. The options are the owner (Admin and Sales Manager), "skip duplicates" and, for contacts, "create companies that do not exist yet". A table from `md`, stacked cards below. The form holds the columns by position, because a column's name may contain a dot.
+3. **The results** ([`import-results-step.tsx`](../../frontend/src/features/imports/import-results-step.tsx)): created, skipped, failed (and companies created), each failed row with its spreadsheet row number, the reasons and its values, "Download failed rows" (the API's `failedCsv`, saved as it came), "Import another file" and a link to the list.
+
+An error goes to the step it is about: `VALIDATION_FAILED` on `csv` and `PAYLOAD_TOO_LARGE` send the user back to step 1 with the reason (`fileProblem`), `mapping.<column>` lands on that column, `mapping` (a required field without a column) and anything else above the mapping, `ownerId` on the owner.
+
 ## Styling (D-08)
 
 Styling is **Tailwind CSS 4 with shadcn/ui** (`radix` base, `nova` preset, configured in [`frontend/components.json`](../../frontend/components.json)). Use Tailwind classes; do not add inline styles or another styling system.
@@ -684,6 +727,13 @@ Every screen must work at 375px, 768px and 1280px **with no horizontal page scro
 | Home: every number links to its list; the Team section is shown to, and asked for by, an Admin and a Sales Manager only; sorting in the browser; each part has its own error | `dashboard-page.test.tsx`, `dashboard.slice.test.ts` |
 | Tasks is in the navigation for every role and a phone tab; the bar keeps to three tabs plus More | `nav-items.test.ts` |
 | `?from=` cannot leave the app | `lead-form.test.tsx` (through `safeNextPath`) |
+| Custom fields settings: Admin only, the tabs, add and edit with the type fixed, the options editor, reorder with buttons, archive and restore, permanent delete behind a ticked box, the limit of 30 | `custom-fields-settings-page.test.tsx`, `custom-fields.slice.test.ts` |
+| Custom fields in a form, per type: required, a number sent as a number, only changed keys on an edit, a removed option kept, the API's errors on their fields | `custom-fields-form.test.tsx`, `leads-custom-fields.test.tsx` |
+| The Custom fields card: every type, the empty marker, hidden without fields | `custom-fields-card.test.tsx`, `leads-custom-fields.test.tsx` |
+| Custom field filters: the panel per type, the address, chips, Clear all, a refused filter named and removable | `custom-fields-filter.test.tsx`, `list-url-state.test.tsx`, `leads-custom-fields.test.tsx` |
+| An export is sent the list's own query without the page, with `tz`; the truncation warning; a refused download is an `ApiError` | `download.test.ts`, `list-actions.test.tsx`, `list-actions.pages.test.tsx`, `leads-custom-fields.test.tsx` |
+| Export for every role, Import for every role but Read-only; no export on the board; the board and the list keep the custom filters | `list-actions.pages.test.tsx`, `leads-custom-fields.test.tsx` |
+| The import: file checks, the template, the preview, the mapping rules, the options by role and type, results, the failed rows file byte for byte, each error on its step | `import-page.test.tsx`, `import-labels.test.ts` |
 | Thin route files, slice shape, error switch, tokens, responsive rules | Code review, with the health, auth, users, leads, contacts, companies, opportunities and tasks features as the reference |
 
 `pnpm --dir frontend check` runs ESLint (zero warnings allowed), the Prettier check and the strict TypeScript check.

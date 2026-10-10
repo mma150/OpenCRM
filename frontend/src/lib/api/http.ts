@@ -66,9 +66,38 @@ export const http = axios.create({
   withCredentials: true,
 });
 
+// A download asks for its answer as a Blob (`responseType: "blob"`), so the error envelope
+// of a refused download arrives as one too. It is read back into an object here, so
+// `toApiError` sees the same body as for any other request.
+async function readBlobBody(error: unknown): Promise<void> {
+  const body: unknown = error instanceof AxiosError ? error.response?.data : undefined;
+  if (!(error instanceof AxiosError) || !error.response || !isBlob(body)) {
+    return;
+  }
+  try {
+    error.response.data = JSON.parse(await body.text()) as unknown;
+  } catch {
+    // Not JSON: toApiError answers UNKNOWN_ERROR, as for any body it cannot read.
+    error.response.data = undefined;
+  }
+}
+
+// Asked by what it can do, not by its class: a Blob made by another realm's fetch (as in the
+// tests) is not an instance of this window's Blob.
+function isBlob(value: unknown): value is Blob {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "text" in value &&
+    typeof value.text === "function" &&
+    "size" in value
+  );
+}
+
 http.interceptors.response.use(
   (response) => response,
-  (error: unknown) => {
+  async (error: unknown) => {
+    await readBlobBody(error);
     const apiError = toApiError(error);
     // Keyed on the code, never on HTTP 401: a wrong password (INVALID_CREDENTIALS) is also a 401
     // and must not sign anyone out.

@@ -12,11 +12,12 @@ import {
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 
 // What FormField hands to the control it wraps: the react-hook-form field plus the
-// attributes that tie the control to its label, hint and error message.
-export type FormControlProps<Values extends FieldValues> = ControllerRenderProps<
-  Values,
-  Path<Values>
-> & {
+// attributes that tie the control to its label, hint and error message. `value` has the
+// type of the field that was named, so a form may hold more than text.
+export type FormControlProps<
+  Values extends FieldValues,
+  Name extends Path<Values> = Path<Values>,
+> = ControllerRenderProps<Values, Name> & {
   id: string;
   "aria-invalid": boolean;
   "aria-describedby": string | undefined;
@@ -24,7 +25,7 @@ export type FormControlProps<Values extends FieldValues> = ControllerRenderProps
 
 // One form row: label, control, optional hint, and the error (from Zod or from the server).
 // Every form in the app uses it, so labels and errors look and read the same everywhere.
-export function FormField<Values extends FieldValues>({
+export function FormField<Values extends FieldValues, Name extends Path<Values>>({
   control,
   name,
   label,
@@ -33,12 +34,12 @@ export function FormField<Values extends FieldValues>({
   children,
 }: {
   control: Control<Values>;
-  name: Path<Values>;
+  name: Name;
   label: string;
   description?: string;
   // Shown at the end of the label row, such as the "Forgot password?" link.
   labelAction?: ReactNode;
-  children: (props: FormControlProps<Values>) => ReactNode;
+  children: (props: FormControlProps<Values, Name>) => ReactNode;
 }) {
   const descriptionId = `${name}-description`;
   const errorId = `${name}-error`;

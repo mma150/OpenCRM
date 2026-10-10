@@ -1,3 +1,4 @@
+import type { CustomFilterParams } from "@/components/shared/list-url-state";
 import type { components, paths } from "@/lib/api/schema";
 
 // Every type comes from the generated schema, so a change to the API contract
@@ -9,8 +10,10 @@ export type Contact = Schemas["Contact"];
 export type CreateContactInput = Schemas["CreateContactBody"];
 export type UpdateContactInput = Schemas["UpdateContactBody"];
 
-// Search, filters, sort and page of GET /contacts.
-export type ContactListQuery = NonNullable<paths["/contacts"]["get"]["parameters"]["query"]>;
+// Search, filters, sort and page of GET /contacts, and the custom field filters
+// (`cf.<field id>`), which the schema cannot list because their names depend on data.
+export type ContactListQuery = NonNullable<paths["/contacts"]["get"]["parameters"]["query"]> &
+  CustomFilterParams;
 export type ContactSort = NonNullable<ContactListQuery["sort"]>;
 
 // Response bodies: { data, meta }.

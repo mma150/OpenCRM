@@ -2498,6 +2498,947 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/settings/email/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Whether outgoing email is on
+         * @description For every signed-in user. true when an Admin saved a mail server here or the SMTP_* environment variables name one.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Whether email is on */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["EmailStatus"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/settings/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The outgoing mail server in effect (Admin only)
+         * @description What was saved here, or else what the SMTP_* environment variables say, or else source NONE. The password is never returned, only hasPassword.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The settings in effect */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["EmailSettings"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /**
+         * Save the outgoing mail server (Admin only)
+         * @description Replaces what was saved and wins over the SMTP_* environment variables from the next email on. password left out keeps the stored one, null removes it; removing the username removes the password too. The password is stored encrypted (AES-256-GCM); without SETTINGS_ENCRYPTION_KEY on the server a password is refused. Nothing is sent: use the test route afterwards.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateEmailSettingsBody"];
+                };
+            };
+            responses: {
+                /** @description The saved settings */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["EmailSettings"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or a password without a username (details name username) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description ENCRYPTION_KEY_MISSING: a password was sent but the server has no SETTINGS_ENCRYPTION_KEY; nothing was saved */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /**
+         * Forget the saved mail server (Admin only)
+         * @description Goes back to the SMTP_* environment variables, or to no email when they name no server. Answers with the settings then in effect.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The settings in effect now */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["EmailSettings"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/settings/email/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a test email with the settings in effect (Admin only)
+         * @description Waits for the mail server's answer. A failure says what kind of problem it was (connection, time-out, login, encryption, refused address) and the SMTP status number, never the mail server's own text. Counts towards the caller's email sending limit.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TestEmailBody"];
+                };
+            };
+            responses: {
+                /** @description The mail server accepted the message */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["TestEmailResult"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description EMAIL_NOT_CONFIGURED: no mail server is set up */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description RATE_LIMITED: too many emails in a short time */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description EMAIL_SEND_FAILED: the mail server could not be reached or refused */
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/email-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the caller's own templates and every shared one, by name
+         * @description Not paged: a user owns at most 200 templates.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The templates */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["EmailTemplate"][];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a template, owned by the caller */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateEmailTemplateBody"];
+                };
+            };
+            responses: {
+                /** @description The new template */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["EmailTemplate"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, a name the caller already uses (details name the field), or the caller already has 200 templates (details null) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description FORBIDDEN: a Read-only user, sharing without being an Admin or a Sales Manager, or changing a shared template of someone else without being an Admin */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/email-templates/placeholders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The placeholders a subject or a body may use
+         * @description Written as {{contact.firstName}}. They are filled in on the server when the email is sent: a placeholder that is not on this list stays in the text as typed, and one the record has no value for is replaced by nothing. POST /emails/preview shows the result before sending.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The supported placeholders */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["EmailPlaceholder"][];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/email-templates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one template */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The template */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["EmailTemplate"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No template has this id, or it is another user's private template (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /**
+         * Delete a template
+         * @description Its owner, or an Admin for a shared one. Emails already sent keep their text.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: null;
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description FORBIDDEN: a Read-only user, sharing without being an Admin or a Sales Manager, or changing a shared template of someone else without being an Admin */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No template has this id, or it is another user's private template (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Change a template
+         * @description Its owner may change it; an Admin may also change any shared one. Only the keys sent are changed.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateEmailTemplateBody"];
+                };
+            };
+            responses: {
+                /** @description The changed template */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["EmailTemplate"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or a name its owner already uses */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description FORBIDDEN: a Read-only user, sharing without being an Admin or a Sales Manager, or changing a shared template of someone else without being an Admin */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No template has this id, or it is another user's private template (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/emails/defaults": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Who an email from this record would usually go to
+         * @description For the send form to offer: a lead's own address, a contact's, the contacts of a company that have an address, an opportunity's contact. Only people the caller may see.
+         */
+        get: {
+            parameters: {
+                query: {
+                    recordType: components["schemas"]["EmailRecordType"];
+                    recordId: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The suggested recipients */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["EmailDefaults"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No record of this type has this id, or it is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/emails/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fill in the placeholders of a subject and a body without sending
+         * @description Answers with the text as it would be sent from this record by the caller, and lists the placeholders that are not supported (left as typed) and those the record has no value for (replaced by nothing). quote.number and quote.total are always empty here: they are only known when a quote is sent.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PreviewEmailBody"];
+                };
+            };
+            responses: {
+                /** @description The text with its placeholders filled in */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["EmailPreview"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No record of this type has this id, or it is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/emails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send an email from a record
+         * @description Sent through the organisation's mail server as plain text: From is the configured address under the caller's name, Reply-To is the caller's own address. Placeholders in the subject and the body are filled in first. When the mail server has accepted it, an EMAIL entry is written on the record's timeline (body: the text; details: to, cc, subject, status SENT, templateId, quote null) and the record's lastContactAt moves, as for a conversation. When sending fails nothing is written. At most 10 addresses in to and 10 in cc; an address in both is sent once. No attachments.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SendEmailBody"];
+                };
+            };
+            responses: {
+                /** @description The timeline entry of the email */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["TimelineEntry"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or a templateId that is not a template the caller may see */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot send email (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No record of this type has this id, or it is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description EMAIL_NOT_CONFIGURED: no mail server is set up */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description RATE_LIMITED: more than 30 emails in 5 minutes; details.retryAfterSeconds says when to try again */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description EMAIL_SEND_FAILED: the mail server could not be reached or refused the message; nothing was written on the timeline */
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -2774,6 +3715,941 @@ export interface paths {
                 };
                 /** @description The file is over 5 MB, or the request body over 12 MB (PAYLOAD_TOO_LARGE) */
                 413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the invoices the caller may see, with search, filters, sorting and paging
+         * @description The invoices of the opportunities the caller may see. search matches the invoice's number and the company's name as the invoice has it. The newest number first unless asked otherwise. status follows what an invoice reads as: OVERDUE lists the ones marked overdue and the sent ones past their due date, SENT only the sent ones that are not. tz is the viewer's time zone (UTC when left out): it decides whether a sent invoice past its dueDate reads as OVERDUE.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    search?: string;
+                    sort?: "number" | "issueDate" | "dueDate" | "total";
+                    order?: "asc" | "desc";
+                    status?: components["schemas"]["InvoiceStatus"];
+                    opportunityId?: string;
+                    companyId?: string;
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description One page of invoices; meta.total counts every match */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Invoice"][];
+                            meta: components["schemas"]["ListMeta"];
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoices/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Totals and counts over the invoices the caller may see
+         * @description outstandingTotal adds up the sent and overdue invoices, overdueTotal those that read as OVERDUE, paidThisMonthTotal those paid in the viewer's current month. counts follows what each invoice reads as. tz is the viewer's time zone (UTC when left out): it decides whether a sent invoice past its dueDate reads as OVERDUE.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The figures */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["InvoiceSummary"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoices/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the invoices the caller may see as a CSV file
+         * @description The list itself as a file: the same search, filters, sort and visibility, without paging. One row per invoice (no lines). Written like every other export: UTF-8 with a byte order mark, at most 10,000 rows, formulas neutralised.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    search?: string;
+                    sort?: "number" | "issueDate" | "dueDate" | "total";
+                    order?: "asc" | "desc";
+                    status?: components["schemas"]["InvoiceStatus"];
+                    opportunityId?: string;
+                    companyId?: string;
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The CSV file */
+                200: {
+                    headers: {
+                        /** @description attachment; filename="<list>-<YYYY-MM-DD>.csv" */
+                        "Content-Disposition"?: string;
+                        /** @description true when the list has more rows than the 10,000 an export holds */
+                        "X-Export-Truncated"?: "true" | "false";
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/csv": string;
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get one invoice with its lines
+         * @description tz is the viewer's time zone (UTC when left out): it decides whether a sent invoice past its dueDate reads as OVERDUE.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The invoice */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Invoice"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No invoice has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change an invoice's due date or notes
+         * @description Nothing else about an invoice can be changed: its buyer, lines and totals are a copy of the quote. A void invoice cannot be changed at all. tz is the viewer's time zone (UTC when left out): it decides whether a sent invoice past its dueDate reads as OVERDUE.
+         */
+        patch: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateInvoiceBody"];
+                };
+            };
+            responses: {
+                /** @description The changed invoice */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Invoice"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or a dueDate before the issue date */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change invoices (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No invoice has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INVALID_STATUS_CHANGE: the invoice is void */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/invoices/{id}/document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The invoice as a print-ready document
+         * @description Like GET /quotes/{id}/document: the seller from the organisation settings, the buyer as the invoice has it, the lines, the totals with one row per tax rate, the notes and the terms. tz is the viewer's time zone (UTC when left out): it decides whether a sent invoice past its dueDate reads as OVERDUE.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The document */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["SalesDocument"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No invoice has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoices/{id}/mark-sent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a draft invoice as sent
+         * @description DRAFT to SENT; sets sentAt. Nothing is emailed. Writes an INVOICE_STATUS entry on the opportunity's timeline. tz is the viewer's time zone (UTC when left out): it decides whether a sent invoice past its dueDate reads as OVERDUE.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The invoice in its new status */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Invoice"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change invoices (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No invoice has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INVALID_STATUS_CHANGE: the invoice is not in a status this change starts from (details.status is the status it is stored as) */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoices/{id}/mark-overdue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a sent invoice as overdue
+         * @description SENT to OVERDUE. A sent invoice past its due date already reads as OVERDUE without this; marking it keeps it overdue whatever the due date. Writes an INVOICE_STATUS entry on the opportunity's timeline. tz is the viewer's time zone (UTC when left out): it decides whether a sent invoice past its dueDate reads as OVERDUE.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The invoice in its new status */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Invoice"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change invoices (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No invoice has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INVALID_STATUS_CHANGE: the invoice is not in a status this change starts from (details.status is the status it is stored as) */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoices/{id}/mark-unpaid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Put a paid or overdue invoice back to sent
+         * @description PAID or OVERDUE to SENT; clears paidAt. The way back from a wrong click. Writes an INVOICE_STATUS entry on the opportunity's timeline. tz is the viewer's time zone (UTC when left out): it decides whether a sent invoice past its dueDate reads as OVERDUE.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The invoice in its new status */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Invoice"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change invoices (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No invoice has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INVALID_STATUS_CHANGE: the invoice is not in a status this change starts from (details.status is the status it is stored as) */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoices/{id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Void an invoice
+         * @description DRAFT, SENT or OVERDUE to VOID. A paid invoice must be marked unpaid first. The invoice keeps its number, and its quote still cannot have another invoice. Writes an INVOICE_STATUS entry on the opportunity's timeline. tz is the viewer's time zone (UTC when left out): it decides whether a sent invoice past its dueDate reads as OVERDUE.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The invoice in its new status */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Invoice"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change invoices (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No invoice has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INVALID_STATUS_CHANGE: the invoice is not in a status this change starts from (details.status is the status it is stored as) */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoices/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Put a void invoice back to draft
+         * @description VOID to DRAFT; clears sentAt. The way back from a wrong click. Writes an INVOICE_STATUS entry on the opportunity's timeline. tz is the viewer's time zone (UTC when left out): it decides whether a sent invoice past its dueDate reads as OVERDUE.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The invoice in its new status */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Invoice"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change invoices (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No invoice has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INVALID_STATUS_CHANGE: the invoice is not in a status this change starts from (details.status is the status it is stored as) */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoices/{id}/mark-paid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark an invoice as paid
+         * @description DRAFT, SENT or OVERDUE to PAID. paidAt is when the money came in; left out (the body may be left out altogether) it is now. Writes an INVOICE_STATUS entry on the opportunity's timeline. tz is the viewer's time zone (UTC when left out): it decides whether a sent invoice past its dueDate reads as OVERDUE.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["MarkInvoicePaidBody"];
+                };
+            };
+            responses: {
+                /** @description The invoice, now PAID */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Invoice"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or a paidAt in the future */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change invoices (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No invoice has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INVALID_STATUS_CHANGE: the invoice is not in a status this change starts from (details.status is the status it is stored as) */
+                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4706,6 +6582,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/settings/organization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The organisation's details and the defaults of a new quote
+         * @description Who the quotes and invoices are from (name, address, email, phone, tax id) and what a new quote starts with. Until an Admin saves them the name is empty, a quote is valid for 30 days, the default tax rate is 0 and an invoice is due after 30 days.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The settings */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["OrganizationSettings"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /**
+         * Replace the organisation's details and defaults (Admin only)
+         * @description A text that is left out is cleared; a number that is left out goes back to its default. Quotes and invoices that exist keep their own dates, terms and tax rates.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateOrganizationBody"];
+                };
+            };
+            responses: {
+                /** @description The saved settings */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["OrganizationSettings"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/pipeline-stages": {
         parameters: {
             query?: never;
@@ -5041,6 +7029,1497 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the products, with search, a filter, sorting and paging
+         * @description For every signed-in user. search matches the name and the SKU. By name unless asked otherwise; active=true leaves out the archived products (what a product picker wants), active=false lists only those.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    search?: string;
+                    sort?: "name" | "sku" | "unitPrice" | "createdAt";
+                    order?: "asc" | "desc";
+                    active?: "true" | "false";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description One page of products; meta.total counts every match */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Product"][];
+                            meta: components["schemas"]["ListMeta"];
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Add a product (Admin only) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateProductBody"];
+                };
+            };
+            responses: {
+                /** @description The new product */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Product"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or a SKU another product already has */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one product */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The product */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Product"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No product has this id (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a product that no quote uses (Admin only) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: null;
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No product has this id (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description PRODUCT_IN_USE: the product is on a quote; archive it instead */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Change a product (Admin only)
+         * @description Only the keys sent are changed. Quote lines already made from the product keep their own description, price and tax rate.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateProductBody"];
+                };
+            };
+            responses: {
+                /** @description The changed product */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Product"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or a SKU another product already has */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No product has this id (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/products/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive a product: no longer offered for new quote lines (Admin only)
+         * @description Quotes that use it are not changed. Archiving it again answers with it unchanged.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The product, with active false */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Product"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No product has this id (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/products/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Put an archived product back in use (Admin only) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The product, with active true */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Product"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No product has this id (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the quotes the caller may see, with search, filters, sorting and paging
+         * @description The quotes of the opportunities the caller may see. search matches the quote's number, its opportunity's name and its company's name. Newest first unless asked otherwise; sort=number follows the series. status=SENT leaves out the expired ones and status=EXPIRED lists only those. ownerId is the owner of the opportunity. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    search?: string;
+                    sort?: "number" | "issueDate" | "validUntil" | "total" | "createdAt";
+                    order?: "asc" | "desc";
+                    status?: components["schemas"]["QuoteStatus"];
+                    opportunityId?: string;
+                    ownerId?: string;
+                    companyId?: string;
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description One page of quotes; meta.total counts every match */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Quote"][];
+                            meta: components["schemas"]["ListMeta"];
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Create a draft quote on an opportunity
+         * @description Needs an opportunity the caller may see and change. What is left out is filled in: contact and company from the opportunity, issueDate as the viewer's today, validUntil from the organisation's validity days, terms from the organisation's default terms. The number (Q-0001, Q-0002, ...) is given by the server. The totals are counted by the server. Writes a QUOTE_STATUS entry on the opportunity's timeline. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateQuoteBody"];
+                };
+            };
+            responses: {
+                /** @description The new quote */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Quote"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: as for PATCH, or an opportunityId that is not an opportunity the caller may see */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change quotes (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/quotes/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the quotes the caller may see as a CSV file
+         * @description The list itself as a file: the same search, filters, sort and visibility, without paging. One row per quote (no lines). Written like every other export: UTF-8 with a byte order mark, at most 10,000 rows, formulas neutralised.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    search?: string;
+                    sort?: "number" | "issueDate" | "validUntil" | "total" | "createdAt";
+                    order?: "asc" | "desc";
+                    status?: components["schemas"]["QuoteStatus"];
+                    opportunityId?: string;
+                    ownerId?: string;
+                    companyId?: string;
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The CSV file */
+                200: {
+                    headers: {
+                        /** @description attachment; filename="<list>-<YYYY-MM-DD>.csv" */
+                        "Content-Disposition"?: string;
+                        /** @description true when the list has more rows than the 10,000 an export holds */
+                        "X-Export-Truncated"?: "true" | "false";
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/csv": string;
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/quotes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get one quote with its lines
+         * @description tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The quote */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Quote"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No quote has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /**
+         * Delete a draft quote
+         * @description Only a DRAFT. It is deleted for real, its number is not used again, and the opportunity's timeline gets a QUOTE_STATUS entry with to: null.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: null;
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change quotes (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No quote has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description QUOTE_NOT_EDITABLE: the quote is not a draft; reopen it first */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Change a draft quote
+         * @description Only the keys sent are changed, except lines, which replaces the whole list (the lines get new ids). The totals are counted again. Only a DRAFT quote can be changed. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         */
+        patch: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateQuoteBody"];
+                };
+            };
+            responses: {
+                /** @description The changed quote */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Quote"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input; a contactId or companyId that is not a record the caller may see; a line whose product does not exist or is archived, or that has no description or price (details name lines.<index>.<field>); a validUntil before the issue date; a percentage discount above 100 */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change quotes (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No quote has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description QUOTE_NOT_EDITABLE: the quote is not a draft; reopen it first */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/quotes/{id}/document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The quote as a print-ready document
+         * @description Everything a print view or a PDF renderer needs, with nothing left to look up or count: the seller from the organisation settings, the buyer, the lines, the totals with one row per tax rate, the notes and the terms. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The document */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["SalesDocument"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No quote has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/quotes/{id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Make a new draft from a quote
+         * @description A new quote with its own number and the same opportunity, buyer, lines, discount, notes and terms, issued today and valid for the organisation's validity days. Works on a quote in any status. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The new draft */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Quote"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change quotes (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No quote has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/quotes/{id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a quote as sent, and optionally email it
+         * @description Without a body the quote is only marked SENT. With email, the message is sent first, like POST /emails from the opportunity (the caller's name, Reply-To the caller, placeholders filled in, quote.number and quote.total included), with the quote's lines and totals added below the body as text; there is no attachment. Then the quote becomes SENT and the opportunity's timeline gets the QUOTE_STATUS entry and an EMAIL entry whose details.quote names the quote. When the email fails nothing changes. A quote that is already SENT can be emailed again; without email that is INVALID_STATUS_CHANGE. Needs at least one line. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["SendQuoteBody"];
+                };
+            };
+            responses: {
+                /** @description The quote, now SENT */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Quote"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or the quote has no lines (details null) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change quotes (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No quote has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INVALID_STATUS_CHANGE: the quote is accepted or declined, or already sent and no email was asked for (details.status is its status). EMAIL_NOT_CONFIGURED: an email was asked for but no mail server is set up */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description RATE_LIMITED: too many emails in a short time */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description EMAIL_SEND_FAILED: the mail server could not be reached or refused */
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/quotes/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a quote as accepted
+         * @description From DRAFT or SENT (an expired one included). Needs at least one line. Writes a QUOTE_STATUS entry on the opportunity's timeline. The opportunity itself is not closed. An accepted quote can be turned into an invoice. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The quote, now ACCEPTED */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Quote"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: the quote has no lines (details null) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change quotes (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No quote has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INVALID_STATUS_CHANGE: the quote is already accepted or declined */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/quotes/{id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a quote as declined
+         * @description From DRAFT or SENT. Writes a QUOTE_STATUS entry on the opportunity's timeline. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The quote, now DECLINED */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Quote"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change quotes (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No quote has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INVALID_STATUS_CHANGE: the quote is already accepted or declined */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/quotes/{id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Put a sent, accepted or declined quote back to draft
+         * @description Clears sentAt, acceptedAt and declinedAt, so the quote can be changed again. Refused once an invoice was made from the quote. Writes a QUOTE_STATUS entry on the opportunity's timeline. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The quote, now DRAFT */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Quote"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change quotes (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No quote has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INVALID_STATUS_CHANGE: the quote is already a draft. INVOICE_EXISTS: an invoice was made from it (details.invoice is { id, number }) */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/quotes/{id}/invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Make the invoice of an accepted quote
+         * @description One invoice per quote. The buyer, the lines and the totals are copied as they are now and never change afterwards. The number (INV-0001, INV-0002, ...) is given by the server, without gaps. The body may be left out: issueDate is then the viewer's today and dueDate follows the organisation's payment terms. The invoice starts as DRAFT, and the opportunity's timeline gets an INVOICE_STATUS entry. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateInvoiceBody"];
+                };
+            };
+            responses: {
+                /** @description The new invoice */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Invoice"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or a dueDate before the issue date */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Read-only user cannot change quotes (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No quote has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description INVALID_STATUS_CHANGE: the quote is not accepted (details.status is its status). INVOICE_EXISTS: the quote already has an invoice (details.invoice is { id, number }) */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/tasks": {
@@ -7268,7 +10747,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** @enum {string} */
-        ErrorCode: "VALIDATION_FAILED" | "NOT_FOUND" | "SERVICE_UNAVAILABLE" | "INTERNAL_ERROR" | "UNAUTHENTICATED" | "INVALID_CREDENTIALS" | "FORBIDDEN" | "ACCOUNT_DEACTIVATED" | "ACCOUNT_LOCKED" | "RATE_LIMITED" | "INVALID_TOKEN" | "SETUP_CLOSED" | "EMAIL_IN_USE" | "LAST_ADMIN" | "PAYLOAD_TOO_LARGE" | "LEAD_CONVERTED";
+        ErrorCode: "VALIDATION_FAILED" | "NOT_FOUND" | "SERVICE_UNAVAILABLE" | "INTERNAL_ERROR" | "UNAUTHENTICATED" | "INVALID_CREDENTIALS" | "FORBIDDEN" | "ACCOUNT_DEACTIVATED" | "ACCOUNT_LOCKED" | "RATE_LIMITED" | "INVALID_TOKEN" | "SETUP_CLOSED" | "EMAIL_IN_USE" | "LAST_ADMIN" | "PAYLOAD_TOO_LARGE" | "LEAD_CONVERTED" | "EMAIL_NOT_CONFIGURED" | "EMAIL_SEND_FAILED" | "ENCRYPTION_KEY_MISSING" | "PRODUCT_IN_USE" | "QUOTE_NOT_EDITABLE" | "INVALID_STATUS_CHANGE" | "INVOICE_EXISTS";
         ValidationDetail: {
             path: string;
             message: string;
@@ -7291,7 +10770,7 @@ export interface components {
             };
         };
         /** @enum {string} */
-        TimelineKind: "CONVERSATION" | "NOTE" | "CREATED" | "STATUS_CHANGE" | "ASSIGNMENT";
+        TimelineKind: "CONVERSATION" | "NOTE" | "CREATED" | "STATUS_CHANGE" | "ASSIGNMENT" | "EMAIL" | "QUOTE_STATUS" | "INVOICE_STATUS";
         TimelineEntry: {
             id: string;
             kind: components["schemas"]["TimelineKind"];
@@ -7315,6 +10794,7 @@ export interface components {
             conversations: number;
             notes: number;
             statusChanges: number;
+            emails: number;
         };
         ListMeta: {
             page: number;
@@ -7322,7 +10802,7 @@ export interface components {
             total: number;
         };
         /** @enum {string} */
-        TimelineKindFilter: "CONVERSATION" | "NOTE" | "CREATED" | "STATUS_CHANGE" | "ASSIGNMENT" | "SYSTEM";
+        TimelineKindFilter: "CONVERSATION" | "NOTE" | "CREATED" | "STATUS_CHANGE" | "ASSIGNMENT" | "EMAIL" | "QUOTE_STATUS" | "INVOICE_STATUS" | "SYSTEM";
         ActivityAuthor: {
             id: string;
             name: string;
@@ -7616,6 +11096,111 @@ export interface components {
             openPipelineValue: number;
             overdueTasks: number;
         };
+        EmailStatus: {
+            enabled: boolean;
+        };
+        EmailSettings: {
+            /** @enum {string} */
+            source: "DATABASE" | "ENVIRONMENT" | "NONE";
+            host: string | null;
+            port: number | null;
+            secure: boolean;
+            username: string | null;
+            hasPassword: boolean;
+            fromName: string | null;
+            fromAddress: string | null;
+            replyTo: string | null;
+            updatedAt: string | null;
+            canStorePassword: boolean;
+            passwordUnreadable: boolean;
+        };
+        UpdateEmailSettingsBody: {
+            host: string;
+            port: number;
+            /** @default false */
+            secure: boolean;
+            username?: string | null;
+            password?: string | null;
+            fromName?: string | null;
+            fromAddress: string;
+            replyTo?: string | null;
+        };
+        TestEmailResult: {
+            sent: boolean;
+            to: string;
+        };
+        TestEmailBody: {
+            to: string;
+        };
+        EmailTemplate: {
+            id: string;
+            name: string;
+            subject: string;
+            body: string;
+            shared: boolean;
+            owner: {
+                id: string;
+                name: string;
+            };
+            editable: boolean;
+            createdAt: string;
+            updatedAt: string;
+        };
+        EmailPlaceholder: {
+            key: string;
+            token: string;
+            label: string;
+            description: string;
+        };
+        CreateEmailTemplateBody: {
+            name: string;
+            subject: string;
+            body: string;
+            shared?: boolean;
+        };
+        UpdateEmailTemplateBody: {
+            name?: string;
+            subject?: string;
+            body?: string;
+            shared?: boolean;
+        };
+        EmailDefaults: {
+            recipients: {
+                name: string;
+                email: string;
+                contactId: string | null;
+            }[];
+        };
+        /** @enum {string} */
+        EmailRecordType: "LEAD" | "CONTACT" | "COMPANY" | "OPPORTUNITY";
+        EmailPreview: {
+            subject: string;
+            body: string;
+            unknown: string[];
+            empty: string[];
+        };
+        PreviewEmailBody: {
+            record: {
+                type: components["schemas"]["EmailRecordType"];
+                /** Format: uuid */
+                id: string;
+            };
+            subject: string;
+            body: string;
+        };
+        SendEmailBody: {
+            record: {
+                type: components["schemas"]["EmailRecordType"];
+                /** Format: uuid */
+                id: string;
+            };
+            to: string[];
+            cc?: string[];
+            subject: string;
+            body: string;
+            /** Format: uuid */
+            templateId?: string;
+        };
         Health: {
             /** @enum {string} */
             status: "ok";
@@ -7678,6 +11263,123 @@ export interface components {
             ownerId?: string;
             skipDuplicates?: boolean;
             createCompanies?: boolean;
+        };
+        Invoice: {
+            id: string;
+            number: string;
+            quote: {
+                id: string;
+                number: string;
+            };
+            opportunity: {
+                id: string;
+                name: string;
+            };
+            contact: {
+                id: string;
+                name: string;
+                email: string | null;
+            } | null;
+            company: {
+                id: string;
+                name: string;
+            } | null;
+            status: components["schemas"]["InvoiceStatus"];
+            issueDate: string;
+            dueDate: string;
+            lines: components["schemas"]["DocumentLine"][];
+            subtotal: number;
+            discountTotal: number;
+            taxTotal: number;
+            total: number;
+            notes: string | null;
+            terms: string | null;
+            sentAt: string | null;
+            paidAt: string | null;
+            createdBy: {
+                id: string;
+                name: string;
+            };
+            createdAt: string;
+            updatedAt: string;
+        };
+        /** @enum {string} */
+        InvoiceStatus: "DRAFT" | "SENT" | "PAID" | "OVERDUE" | "VOID";
+        DocumentLine: {
+            id: string;
+            productId: string | null;
+            description: string;
+            quantity: number;
+            unitPrice: number;
+            discountPercent: number;
+            taxRate: number;
+            lineTotal: number;
+        };
+        InvoiceSummary: {
+            outstandingTotal: number;
+            overdueTotal: number;
+            paidThisMonthTotal: number;
+            counts: {
+                DRAFT: number;
+                SENT: number;
+                PAID: number;
+                OVERDUE: number;
+                VOID: number;
+            };
+        };
+        SalesDocument: {
+            /** @enum {string} */
+            kind: "QUOTE" | "INVOICE";
+            number: string;
+            status: string;
+            currency: string;
+            issueDate: string;
+            validUntil: string | null;
+            dueDate: string | null;
+            paymentTermsDays: number | null;
+            quoteNumber: string | null;
+            seller: {
+                name: string;
+                address: string | null;
+                email: string | null;
+                phone: string | null;
+                taxId: string | null;
+            };
+            buyer: {
+                contactName: string | null;
+                contactEmail: string | null;
+                companyName: string | null;
+                companyAddress: string | null;
+            };
+            opportunityName: string;
+            preparedBy: {
+                name: string;
+                email: string;
+            };
+            lines: components["schemas"]["DocumentLine"][];
+            subtotal: number;
+            /** @enum {string|null} */
+            discountType: "NONE" | "PERCENT" | "AMOUNT" | null;
+            discountValue: number | null;
+            discountTotal: number;
+            taxes: {
+                rate: number;
+                taxableAmount: number;
+                taxAmount: number;
+            }[];
+            taxTotal: number;
+            total: number;
+            notes: string | null;
+            terms: string | null;
+        };
+        UpdateInvoiceBody: {
+            /** Format: date */
+            dueDate?: string;
+            notes?: string | null;
+        };
+        MarkInvoicePaidBody: {
+            /** Format: date-time */
+            paidAt?: string;
         };
         Lead: {
             id: string;
@@ -7918,6 +11620,32 @@ export interface components {
             /** Format: uuid */
             ownerId: string;
         };
+        OrganizationSettings: {
+            name: string;
+            address: string | null;
+            email: string | null;
+            phone: string | null;
+            taxId: string | null;
+            defaultQuoteTerms: string | null;
+            defaultValidityDays: number;
+            defaultTaxRate: number;
+            invoicePaymentTermsDays: number;
+            updatedAt: string | null;
+        };
+        UpdateOrganizationBody: {
+            name: string;
+            address?: string | null;
+            email?: string | null;
+            phone?: string | null;
+            taxId?: string | null;
+            defaultQuoteTerms?: string | null;
+            /** @default 30 */
+            defaultValidityDays: number;
+            /** @default 0 */
+            defaultTaxRate: number;
+            /** @default 30 */
+            invoicePaymentTermsDays: number;
+        };
         PipelineStage: {
             id: string;
             name: string;
@@ -7937,6 +11665,133 @@ export interface components {
         DeletePipelineStageBody: {
             /** Format: uuid */
             moveToStageId?: string;
+        };
+        Product: {
+            id: string;
+            name: string;
+            sku: string | null;
+            description: string | null;
+            unitPrice: number;
+            taxRate: number | null;
+            active: boolean;
+            createdAt: string;
+            updatedAt: string;
+        };
+        CreateProductBody: {
+            name: string;
+            unitPrice: number;
+            sku?: string | null;
+            description?: string | null;
+            taxRate?: number | null;
+        };
+        UpdateProductBody: {
+            name?: string;
+            unitPrice?: number;
+            sku?: string | null;
+            description?: string | null;
+            taxRate?: number | null;
+        };
+        Quote: {
+            id: string;
+            number: string;
+            opportunity: {
+                id: string;
+                name: string;
+            };
+            contact: {
+                id: string;
+                name: string;
+                email: string | null;
+            } | null;
+            company: {
+                id: string;
+                name: string;
+            } | null;
+            status: components["schemas"]["QuoteStatus"];
+            issueDate: string;
+            validUntil: string | null;
+            lines: components["schemas"]["DocumentLine"][];
+            discountType: components["schemas"]["QuoteDiscountType"];
+            discountValue: number;
+            subtotal: number;
+            discountTotal: number;
+            taxTotal: number;
+            total: number;
+            notes: string | null;
+            terms: string | null;
+            sentAt: string | null;
+            acceptedAt: string | null;
+            declinedAt: string | null;
+            invoice: {
+                id: string;
+                number: string;
+            } | null;
+            createdBy: {
+                id: string;
+                name: string;
+            };
+            createdAt: string;
+            updatedAt: string;
+        };
+        /** @enum {string} */
+        QuoteStatus: "DRAFT" | "SENT" | "ACCEPTED" | "DECLINED" | "EXPIRED";
+        /** @enum {string} */
+        QuoteDiscountType: "NONE" | "PERCENT" | "AMOUNT";
+        CreateQuoteBody: {
+            /** Format: uuid */
+            opportunityId: string;
+            /** Format: uuid */
+            contactId?: string | null;
+            /** Format: uuid */
+            companyId?: string | null;
+            /** Format: date */
+            issueDate?: string;
+            /** Format: date */
+            validUntil?: string | null;
+            lines?: components["schemas"]["QuoteLineInput"][];
+            discountType?: components["schemas"]["QuoteDiscountType"];
+            discountValue?: number;
+            notes?: string | null;
+            terms?: string | null;
+        };
+        QuoteLineInput: {
+            /** Format: uuid */
+            productId?: string | null;
+            description?: string;
+            quantity: number;
+            unitPrice?: number;
+            discountPercent?: number;
+            taxRate?: number;
+        };
+        UpdateQuoteBody: {
+            /** Format: uuid */
+            contactId?: string | null;
+            /** Format: uuid */
+            companyId?: string | null;
+            /** Format: date */
+            issueDate?: string;
+            /** Format: date */
+            validUntil?: string | null;
+            lines?: components["schemas"]["QuoteLineInput"][];
+            discountType?: components["schemas"]["QuoteDiscountType"];
+            discountValue?: number;
+            notes?: string | null;
+            terms?: string | null;
+        };
+        SendQuoteBody: {
+            email?: {
+                to: string[];
+                cc?: string[];
+                subject: string;
+                body: string;
+            };
+        };
+        CreateInvoiceBody: {
+            /** Format: date */
+            issueDate?: string;
+            /** Format: date */
+            dueDate?: string;
+            notes?: string | null;
         };
         /** @enum {string} */
         TaskRecordType: "LEAD" | "CONTACT" | "COMPANY" | "OPPORTUNITY";

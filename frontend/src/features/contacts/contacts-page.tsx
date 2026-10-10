@@ -4,6 +4,11 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import {
+  CustomFieldFilterButton,
+  CustomFieldFilterChips,
+} from "@/components/shared/custom-fields-filter";
+import { ListActions } from "@/components/shared/list-actions";
 import { ListToolbar } from "@/components/shared/list-toolbar";
 import {
   type ListUrlConfig,
@@ -17,6 +22,7 @@ import type { ListColumn } from "@/components/shared/responsive-list";
 import { Button } from "@/components/ui/button";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { CompanyFilter } from "@/features/companies/company-picker";
+import { useCustomFields } from "@/features/custom-fields/use-custom-fields";
 import { useOwnerFilter } from "@/features/users/use-owner-filter";
 import { formatRelativeDate } from "@/lib/format";
 import { recordAccess } from "@/lib/record-access";
@@ -24,6 +30,7 @@ import { useCurrentUrl, withReturnTo } from "@/lib/return-to";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 import { type ContactDialog, ContactDialogs } from "./contact-dialogs";
+import { exportContacts } from "./contacts.api";
 import { fetchContacts, selectContactList } from "./contacts.slice";
 import type { Contact, ContactListQuery, ContactSort } from "./contacts.types";
 
@@ -38,6 +45,7 @@ const LIST_URL: ListUrlConfig<ContactFilter, ContactSort> = {
   sorts: ["name", "company", "createdAt", "updatedAt", "lastContactAt"],
   defaultSort: "name",
   defaultOrder: "asc",
+  customFilters: true,
 };
 
 const sortOptions = [
@@ -186,8 +194,9 @@ export function ContactsPage() {
   const dispatch = useAppDispatch();
   const { data: me } = useAppSelector(selectAuth);
   const { data, status, error } = useAppSelector(selectContactList);
-  const { state, isFiltered, setSearch, setFilter, setSort, setPage, clearFilters } =
+  const { state, isFiltered, setSearch, setFilter, setCustom, setSort, setPage, clearFilters } =
     useListUrlState(LIST_URL);
+  const { data: customFields } = useCustomFields("CONTACT");
   const currentUrl = useCurrentUrl();
   const [dialog, setDialog] = useState<ContactDialog>(null);
   // For a user who sees more than their own contacts.
@@ -200,6 +209,7 @@ export function ContactsPage() {
       ...(state.search ? { search: state.search } : {}),
       ...(state.filters.companyId ? { companyId: state.filters.companyId } : {}),
       ...(state.filters.ownerId ? { ownerId: state.filters.ownerId } : {}),
+      ...state.custom,
       sort: state.sort,
       order: state.order,
       page: state.page,
@@ -232,7 +242,15 @@ export function ContactsPage() {
       <PageHeader
         title="Contacts"
         description="The people you deal with, and when you last spoke."
-        action={canWrite ? newContactButton : undefined}
+        action={
+          <>
+            <ListActions
+              importHref={canWrite ? "/import?type=contacts" : undefined}
+              onExport={() => exportContacts(query)}
+            />
+            {canWrite ? newContactButton : null}
+          </>
+        }
       />
 
       <ListToolbar
@@ -260,6 +278,19 @@ export function ContactsPage() {
             setSort(sort as ContactSort, order as SortOrder);
           },
         }}
+        more={
+          <CustomFieldFilterButton
+            fields={customFields ?? []}
+            values={state.custom}
+            onApply={setCustom}
+          />
+        }
+      />
+      <CustomFieldFilterChips
+        fields={customFields}
+        values={state.custom}
+        onChange={setCustom}
+        error={error}
       />
 
       <RecordList

@@ -1,3 +1,4 @@
+import type { CustomFilterParams } from "@/components/shared/list-url-state";
 import type { components, paths } from "@/lib/api/schema";
 
 // Every type comes from the generated schema, so a change to the API contract
@@ -11,8 +12,10 @@ export type CompanyRef = Pick<Company, "id" | "name">;
 export type CreateCompanyInput = Schemas["CreateCompanyBody"];
 export type UpdateCompanyInput = Schemas["UpdateCompanyBody"];
 
-// Search, filters, sort and page of GET /companies.
-export type CompanyListQuery = NonNullable<paths["/companies"]["get"]["parameters"]["query"]>;
+// Search, filters, sort and page of GET /companies, and the custom field filters
+// (`cf.<field id>`), which the schema cannot list because their names depend on data.
+export type CompanyListQuery = NonNullable<paths["/companies"]["get"]["parameters"]["query"]> &
+  CustomFilterParams;
 export type CompanySort = NonNullable<CompanyListQuery["sort"]>;
 
 // Response bodies: { data, meta }.

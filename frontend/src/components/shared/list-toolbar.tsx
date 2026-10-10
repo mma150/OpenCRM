@@ -143,6 +143,7 @@ export function ListToolbar({
   filters = [],
   extra,
   sort,
+  more,
   searchDelayMs = 300,
 }: {
   // `maxLength` is the longest search text the API accepts.
@@ -156,6 +157,8 @@ export function ListToolbar({
   // A filter that is not a select (the company picker above the contacts). It comes first.
   extra?: ReactNode;
   sort?: ListSort;
+  // A control after the sort order: the "More filters" button of a list with custom fields.
+  more?: ReactNode;
   searchDelayMs?: number;
 }) {
   return (
@@ -190,6 +193,7 @@ export function ListToolbar({
             onChange={sort.onChange}
           />
         ) : null}
+        {more}
       </div>
     </div>
   );

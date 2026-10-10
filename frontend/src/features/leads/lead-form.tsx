@@ -3,11 +3,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import {
+  changedCustomFields,
+  customFieldDefaults,
+  type CustomFieldFormValues,
+  customFieldPaths,
+  customFieldsForCreate,
+  customFieldsSchema,
+  CustomFieldsSection,
+} from "@/components/shared/custom-fields-form";
 import { FormAlert } from "@/components/shared/form-alert";
 import { FormField } from "@/components/shared/form-field";
 import { SelectControl, type SelectOption } from "@/components/shared/select-control";
@@ -15,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import type { CustomField } from "@/features/custom-fields/custom-fields.types";
 import type { ApiError } from "@/lib/api/http";
 import { applyServerError } from "@/lib/form-errors";
 import { useAppDispatch } from "@/store/hooks";
@@ -47,7 +57,10 @@ const leadFormSchema = z.object({
   notes: optionalText(10_000),
 });
 
-type LeadFormValues = z.infer<typeof leadFormSchema>;
+// The record's own fields, plus its custom fields as text keyed by the field's id.
+type LeadFormValues = z.infer<typeof leadFormSchema> & { customFields: CustomFieldFormValues };
+
+const NO_CUSTOM_FIELDS: CustomField[] = [];
 
 // The form fields the API reports validation problems on.
 const LEAD_FORM_FIELDS = [
@@ -71,7 +84,11 @@ function amountOf(values: LeadFormValues): number | null {
 }
 
 // Empty optional fields are left out, and the owner is sent only when it was offered.
-function toCreateInput(values: LeadFormValues, withOwner: boolean): CreateLeadInput {
+function toCreateInput(
+  values: LeadFormValues,
+  withOwner: boolean,
+  customFields: CustomField[],
+): CreateLeadInput {
   const input: CreateLeadInput = {
     firstName: values.firstName,
     lastName: values.lastName,
@@ -86,6 +103,10 @@ function toCreateInput(values: LeadFormValues, withOwner: boolean): CreateLeadIn
   if (amount !== null) {
     input.estimatedValue = amount;
   }
+  const custom = customFieldsForCreate(customFields, values.customFields);
+  if (custom) {
+    input.customFields = custom;
+  }
   if (withOwner) {
     input.ownerId = values.ownerId;
   }
@@ -93,7 +114,11 @@ function toCreateInput(values: LeadFormValues, withOwner: boolean): CreateLeadIn
 }
 
 // Only what the user actually changed is sent. An emptied field is sent as null, which clears it.
-function changedFields(lead: Lead, values: LeadFormValues): UpdateLeadInput {
+function changedFields(
+  lead: Lead,
+  values: LeadFormValues,
+  customFields: CustomField[],
+): UpdateLeadInput {
   const changes: UpdateLeadInput = {};
   if (values.firstName !== lead.firstName) {
     changes.firstName = values.firstName;
@@ -113,6 +138,10 @@ function changedFields(lead: Lead, values: LeadFormValues): UpdateLeadInput {
   if (amountOf(values) !== lead.estimatedValue) {
     changes.estimatedValue = amountOf(values);
   }
+  const custom = changedCustomFields(customFields, lead.customFields, values.customFields);
+  if (custom) {
+    changes.customFields = custom;
+  }
   return changes;
 }
 
@@ -123,11 +152,14 @@ function changedFields(lead: Lead, values: LeadFormValues): UpdateLeadInput {
 export function LeadForm({
   lead,
   myId,
+  customFields = NO_CUSTOM_FIELDS,
   owners = [],
   returnTo,
 }: {
   lead?: Lead;
   myId: string;
+  // The custom fields in use of this record type; the page loads them.
+  customFields?: CustomField[];
   owners?: SelectOption[];
   // Where Cancel goes, and where the user lands after saving an edit.
   returnTo: string;
@@ -136,8 +168,15 @@ export function LeadForm({
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
   const showOwner = !lead && owners.length > 1;
+  const schema = useMemo(
+    () =>
+      leadFormSchema.extend({
+        customFields: customFieldsSchema(customFields, lead?.customFields),
+      }),
+    [customFields, lead],
+  );
   const form = useForm<LeadFormValues>({
-    resolver: zodResolver(leadFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       firstName: lead?.firstName ?? "",
       lastName: lead?.lastName ?? "",
@@ -149,6 +188,7 @@ export function LeadForm({
       estimatedValue: lead?.estimatedValue == null ? "" : String(lead.estimatedValue),
       ownerId: myId,
       notes: lead?.notes ?? "",
+      customFields: customFieldDefaults(customFields, lead?.customFields),
     },
   });
 
@@ -156,19 +196,26 @@ export function LeadForm({
     setFormError(null);
     try {
       if (lead) {
-        const changes = changedFields(lead, values);
+        const changes = changedFields(lead, values, customFields);
         if (Object.keys(changes).length > 0) {
           await dispatch(updateLead({ id: lead.id, changes })).unwrap();
           toast.success("Changes saved.");
         }
         router.replace(returnTo);
       } else {
-        const created = await dispatch(createLead(toCreateInput(values, showOwner))).unwrap();
+        const created = await dispatch(
+          createLead(toCreateInput(values, showOwner, customFields)),
+        ).unwrap();
         toast.success("Lead created.");
         router.replace(`/leads/${created.id}`);
       }
     } catch (error) {
-      setFormError(applyServerError(error as ApiError, form.setError, LEAD_FORM_FIELDS));
+      setFormError(
+        applyServerError(error as ApiError, form.setError, [
+          ...LEAD_FORM_FIELDS,
+          ...customFieldPaths(customFields),
+        ]),
+      );
     }
   }
 
@@ -252,6 +299,11 @@ export function LeadForm({
               </FormField>
             </div>
           </div>
+          <CustomFieldsSection
+            control={control}
+            fields={customFields}
+            stored={lead?.customFields}
+          />
           <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end">
             <Button asChild variant="outline" className="h-10 px-4">
               <Link href={returnTo}>Cancel</Link>

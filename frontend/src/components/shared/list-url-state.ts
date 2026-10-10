@@ -5,6 +5,15 @@ import { useMemo } from "react";
 
 export type SortOrder = "asc" | "desc";
 
+// The custom field filters of a list, as they are in the address and as the API takes them:
+// `cf.<field id>` (text, dropdown), `cf.<field id>.min` / `.max` (number) and
+// `cf.<field id>.from` / `.to` (date). See custom-fields-filter.tsx.
+export type CustomFilterParams = Record<`cf.${string}`, string>;
+
+const CUSTOM_PREFIX = "cf.";
+// The longest value the API accepts in a custom field filter.
+const MAX_CUSTOM_VALUE_LENGTH = 100;
+
 // What a list keeps in the query string. Declare it once per list, as a constant outside
 // the component, so the hook sees the same object on every render.
 export type ListUrlConfig<Filter extends string, Sort extends string> = {
@@ -16,12 +25,17 @@ export type ListUrlConfig<Filter extends string, Sort extends string> = {
   // Other parameters of the page that every change leaves as they are (the Board / List
   // switch of the opportunities page, `view`). They are not part of the list state.
   keep?: readonly string[];
+  // True for a list of records with custom fields: every `cf.` parameter is then part of
+  // the list state (`state.custom`), whatever fields the Admin has made.
+  customFilters?: boolean;
 };
 
 // "" means "not set" for the search box and for every filter.
 export type ListUrlState<Filter extends string, Sort extends string> = {
   search: string;
   filters: Record<Filter, string>;
+  // The custom field filters that are set. Empty for a list without `customFilters`.
+  custom: CustomFilterParams;
   sort: Sort;
   order: SortOrder;
   page: number;
@@ -40,6 +54,21 @@ export function readListState<Filter extends string, Sort extends string>(
     filters[name] = allowed === null || allowed.includes(value) ? value : "";
   }
 
+  // Which fields exist is the API's to say, so every `cf.` parameter with a value is kept.
+  const custom: CustomFilterParams = {};
+  if (config.customFilters) {
+    for (const [name, raw] of params) {
+      const value = raw.trim();
+      if (
+        name.startsWith(CUSTOM_PREFIX) &&
+        value !== "" &&
+        value.length <= MAX_CUSTOM_VALUE_LENGTH
+      ) {
+        custom[name as keyof CustomFilterParams] = value;
+      }
+    }
+  }
+
   const sort = config.sorts.find((candidate) => candidate === params.get("sort"));
   const order = params.get("order");
   const page = Number(params.get("page"));
@@ -47,6 +76,7 @@ export function readListState<Filter extends string, Sort extends string>(
   return {
     search: (params.get("search") ?? "").trim(),
     filters,
+    custom,
     sort: sort ?? config.defaultSort,
     // An order without a sort means nothing, so the pair falls back together.
     order: sort && (order === "asc" || order === "desc") ? order : config.defaultOrder,
@@ -67,6 +97,11 @@ export function writeListState<Filter extends string, Sort extends string>(
   for (const name of Object.keys(config.filters) as Filter[]) {
     if (state.filters[name]) {
       params.set(name, state.filters[name]);
+    }
+  }
+  for (const [name, value] of Object.entries(state.custom)) {
+    if (value) {
+      params.set(name, value);
     }
   }
   if (state.sort !== config.defaultSort || state.order !== config.defaultOrder) {
@@ -109,7 +144,10 @@ export function useListUrlState<Filter extends string, Sort extends string>(
     return {
       state,
       // True when the search box or any filter narrows the list (sort and page do not).
-      isFiltered: state.search !== "" || Object.values(state.filters).some((value) => value !== ""),
+      isFiltered:
+        state.search !== "" ||
+        Object.values(state.filters).some((value) => value !== "") ||
+        Object.keys(state.custom).length > 0,
       // Every change except the page itself goes back to page 1.
       setSearch: (search: string) => {
         go({ ...state, search: search.trim(), page: 1 });
@@ -123,15 +161,19 @@ export function useListUrlState<Filter extends string, Sort extends string>(
       setFilters: (changes: Partial<Record<Filter, string>>) => {
         go({ ...state, filters: { ...state.filters, ...changes }, page: 1 });
       },
+      // Replaces every custom field filter at once: the filter panel applies them together.
+      setCustom: (custom: CustomFilterParams) => {
+        go({ ...state, custom, page: 1 });
+      },
       setSort: (sort: Sort, order: SortOrder) => {
         go({ ...state, sort, order, page: 1 });
       },
       setPage: (page: number) => {
         go({ ...state, page });
       },
-      // Clears the search box and the filters; the sort order stays.
+      // Clears the search box and the filters, custom ones included; the sort order stays.
       clearFilters: () => {
-        go({ ...state, search: "", filters: noFilters, page: 1 });
+        go({ ...state, search: "", filters: noFilters, custom: {}, page: 1 });
       },
     };
   }, [state, config, router, pathname, searchParams]);

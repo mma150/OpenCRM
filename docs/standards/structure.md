@@ -46,7 +46,8 @@ backend/
     ├── routes.ts                   Mounts every module router under /api/v1, serves openapi.json
     ├── lib/                        Shared helpers: prisma.ts, logger.ts, openapi.ts, app-error.ts,
     │                               password.ts (+ common-passwords.txt), tokens.ts, sessions.ts,
-    │                               session-cookie.ts, account-links.ts, mailer.ts, user-fields.ts,
+    │                               session-cookie.ts, account-links.ts, mailer.ts (the only sender
+    │                               of email, and which mail server is in effect), user-fields.ts,
     │                               record-access.ts (who may see and change an owned record),
     │                               record-owner.ts (a record's owner: the include, and the check
     │                               that a new owner is allowed), record-fields.ts (field schemas
@@ -63,7 +64,10 @@ backend/
     │                               storing, showing and filtering them), csv.ts (the CSV reader
     │                               and writer, and the guard against spreadsheet formulas),
     │                               csv-export.ts (what the export routes of the lists share),
-    │                               route-docs.ts (OpenAPI sentences several route files share)
+    │                               route-docs.ts (OpenAPI sentences several route files share),
+    │                               secret-box.ts (AES-256-GCM for the secrets the app stores),
+    │                               sales-documents.ts (what quotes and invoices share: the
+    │                               arithmetic, the numbering, a line, the print-ready document)
     ├── middleware/                 error-handler.ts, not-found.ts, authenticate.ts, require-role.ts,
     │                               origin-check.ts, rate-limit.ts
     ├── modules/
@@ -95,10 +99,24 @@ backend/
     │   ├── custom-fields/          The custom fields an Admin adds to leads, contacts, companies
     │   │                           and opportunities: list, add, edit, reorder, archive, restore,
     │   │                           delete. The values live on the records (lib/custom-fields.ts)
-    │   └── imports/                CSV import of leads, contacts and companies: the fields a
-    │                               column can go to, the preview with a suggested mapping, and
-    │                               the import itself with its per-row errors. (The CSV exports
-    │                               are routes of the lists: /<records>/export and /tasks/export)
+    │   ├── imports/                CSV import of leads, contacts and companies: the fields a
+    │   │                           column can go to, the preview with a suggested mapping, and
+    │   │                           the import itself with its per-row errors. (The CSV exports
+    │   │                           are routes of the lists: /<records>/export and /tasks/export)
+    │   ├── email-settings/         The outgoing mail server an Admin saves (/settings/email),
+    │   │                           its test message, and whether email is on
+    │   ├── organization/           The organisation's details and the defaults of a new quote
+    │   │                           (/settings/organization)
+    │   ├── email-templates/        Reusable emails, own and shared, and their placeholders
+    │   ├── emails/                 Sending an email from a record, its preview and its
+    │   │                           suggested recipients
+    │   ├── products/               The product catalog: list it, and (Admin) add, edit,
+    │   │                           archive, restore and delete
+    │   ├── quotes/                 Quotes on an opportunity: lines and totals, send (and
+    │   │                           email), accept, decline, reopen, duplicate, the print-ready
+    │   │                           document; and POST /quotes/:id/invoice
+    │   └── invoices/               Invoices made from accepted quotes: list, summary, mark
+    │                               sent, paid, overdue, unpaid, void, restore, the document
     └── generated/prisma/           Prisma client; gitignored, recreated by `prisma generate`
 ```
 
@@ -113,7 +131,7 @@ frontend/
     ├── app/                        Thin route files only: layout.tsx, globals.css and two route groups
     │   ├── (auth)/                 Signed-out pages: login, setup, forgot-password, reset-password, accept-invite
     │   ├── (app)/                  Signed-in pages inside the app frame: page.tsx (Home), profile, settings/users,
-    │   │                           settings/pipeline, leads (the list), leads/new, leads/[id], leads/[id]/edit,
+    │   │                           settings/pipeline, settings/custom-fields, import, leads (the list), leads/new, leads/[id], leads/[id]/edit,
     │   │                           and the same four routes under contacts/, companies/ and opportunities/
     │   │                           (whose first page is the board and the list), activity, tasks, notifications
     │   └── status/                 The API status page (no sign-in)
@@ -147,6 +165,14 @@ frontend/
     │   │                           opportunity-picker.tsx
     │   ├── pipeline-stages/        pipeline-stages.{types,api,slice}.ts, use-pipeline-stages.ts, stage-labels.ts,
     │   │                           pipeline-settings-page.tsx (/settings/pipeline) and stage-dialogs.tsx
+    │   ├── custom-fields/          custom-fields.{types,api,slice}.ts, use-custom-fields.ts, custom-field-labels.ts,
+    │   │                           custom-fields-settings-page.tsx (/settings/custom-fields) and
+    │   │                           custom-field-dialogs.tsx, record-custom-fields.tsx (the Custom fields card
+    │   │                           of a record page)
+    │   ├── imports/                The CSV import at /import: imports.{types,api}.ts (no slice: nothing of an
+    │   │                           import is shown elsewhere), import-page.tsx (the three steps),
+    │   │                           import-file-step.tsx, import-mapping-step.tsx, import-results-step.tsx,
+    │   │                           import-labels.ts (the types, the limits, the template)
     │   ├── timeline/               A record's history, for any kind of record: record-types.ts (the one table of
     │   │                           record types: lead, contact, company, opportunity), timeline.{types,api,slice}.ts,
     │   │                           timeline.tsx (the card), timeline-composer.tsx (the form), timeline-entry.tsx,
@@ -173,15 +199,20 @@ frontend/
     │                               record-list.tsx, record-menus.tsx, record-dialogs.tsx (reassign, delete),
     │                               record-loader.tsx, record-picker.tsx (search for one record: the company,
     │                               contact, lead and opportunity pickers are built on it), follow-up.tsx (the
-    │                               follow-up reminder of a lead or an opportunity)
+    │                               follow-up reminder of a lead or an opportunity), custom-fields-form.tsx,
+    │                               custom-fields-card.tsx and custom-fields-filter.tsx (the custom fields of a
+    │                               record form, a record page and a list's filters), list-actions.tsx
+    │                               (Export CSV and Import beside a list's "New" button)
     ├── lib/
     │   ├── api/http.ts             The one axios instance and the ApiError type
     │   ├── api/error-messages.ts   describeApiError: the words for every error code
+    │   ├── api/download.ts         downloadExport: a list's CSV export as a file, with its headers
     │   ├── api/schema.d.ts         Generated from the OpenAPI document, committed, never edited
     │   └── utils.ts ...            Small helpers: cn, form-errors, validation, safe-next, return-to, format,
     │                               user-labels, use-is-phone, record-access (what a role may do with a record),
     │                               time-zone (the `tz` the API is sent), use-visible-height (full-screen dialogs),
-    │                               use-preselected-record (the record a "new" form starts with, from the address)
+    │                               use-preselected-record (the record a "new" form starts with, from the address),
+    │                               save-file (hands a file to the browser's download folder)
     ├── store/                      index.ts (makeStore), hooks.ts (typed hooks), thunk.ts, store-provider.tsx
     ├── test/                       Test helpers: render-with-store.tsx, navigation-mock.ts
     └── env.ts                      The only reader of process.env (validated with Zod)
@@ -224,7 +255,7 @@ Then mount the router in `backend/src/routes.ts` (`router.use("/leads", leadsRou
 
 Then add the reducer to `makeStore` in `frontend/src/store/index.ts`, add a route file under `frontend/src/app/` that only renders the feature component, and add one line to `nav-items.ts` if the feature has a page of its own in the navigation.
 
-A feature of **owned records** (leads, contacts, companies, opportunities) builds its list, record page and dialogs from the shared record components instead of copying another feature's: see [What owned records share](frontend.md#what-owned-records-share). If the record has a timeline, it adds one line to `RECORD_TYPES` in `frontend/src/features/timeline/record-types.ts` (see [The timeline](frontend.md#the-timeline)). If other records link to it, it gets a picker built on the shared `RecordPicker` (see [The record pickers](frontend.md#the-record-pickers)) and, on the pages of the records it belongs to, a short card passed as `extra` to `RecordLayout` (`record-opportunities.tsx` is the example).
+A feature of **owned records** (leads, contacts, companies, opportunities) builds its list, record page and dialogs from the shared record components instead of copying another feature's: see [What owned records share](frontend.md#what-owned-records-share). Its form, record page and list show the record type's custom fields through the shared custom field components ([Custom fields](frontend.md#custom-fields)), and its list offers the export through `ListActions` ([Export and import](frontend.md#export-and-import)). If the record has a timeline, it adds one line to `RECORD_TYPES` in `frontend/src/features/timeline/record-types.ts` (see [The timeline](frontend.md#the-timeline)). If other records link to it, it gets a picker built on the shared `RecordPicker` (see [The record pickers](frontend.md#the-record-pickers)) and, on the pages of the records it belongs to, a short card passed as `extra` to `RecordLayout` (`record-opportunities.tsx` is the example).
 
 A feature can span two backend modules' worth of screens only when each keeps its own folder: the pipeline's stages live in `features/pipeline-stages/` (the API module `pipeline-stages`), the opportunities that sit in them in `features/opportunities/`.
 

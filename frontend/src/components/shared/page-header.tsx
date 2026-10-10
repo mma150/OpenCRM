@@ -16,7 +16,13 @@ export function PageHeader({
         <h1 className="text-2xl font-semibold tracking-tight wrap-anywhere">{title}</h1>
         {description ? <p className="text-muted-foreground text-sm">{description}</p> : null}
       </div>
-      {action ? <div className="flex shrink-0 flex-col sm:flex-row">{action}</div> : null}
+      {/* On a phone the action fills the row; a second control (the list's "More actions"
+          menu) keeps its own width beside it. */}
+      {action ? (
+        <div className="flex shrink-0 gap-2 max-sm:[&>a]:flex-1 max-sm:[&>button]:flex-1">
+          {action}
+        </div>
+      ) : null}
     </header>
   );
 }

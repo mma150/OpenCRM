@@ -157,7 +157,9 @@ export function DetailList({ children }: { children: ReactNode }) {
 export function DetailItem({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="min-w-0">
-      <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{label}</dt>
+      <dt className="text-muted-foreground text-xs font-medium tracking-wide wrap-anywhere uppercase">
+        {label}
+      </dt>
       <dd className="mt-1 text-sm wrap-anywhere">{children}</dd>
     </div>
   );

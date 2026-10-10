@@ -7,6 +7,7 @@ import { PageLoading } from "@/components/shared/page-state";
 import { BackLink } from "@/components/shared/record-layout";
 import { NoWriteAccess } from "@/components/shared/record-loader";
 import { selectAuth } from "@/features/auth/auth.slice";
+import { useCustomFieldsForForm } from "@/features/custom-fields/use-custom-fields";
 import {
   fetchAssignableUsers,
   selectAssignableUsers,
@@ -39,6 +40,7 @@ export function NewCompanyPage() {
   const { data: me } = useAppSelector(selectAuth);
   const { data: assignable, status: assignableStatus } = useAppSelector(selectAssignableUsers);
   const returnTo = useReturnTo("/companies");
+  const customFields = useCustomFieldsForForm("COMPANY");
   const canWrite = me ? recordAccess(me.role).canWrite : false;
   const industries = useIndustries(canWrite);
 
@@ -64,8 +66,14 @@ export function NewCompanyPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <BackLink href={returnTo} label="Back to companies" />
       <PageHeader title="New company" description="Add an organisation and who looks after it." />
-      {ownersReady ? (
-        <CompanyForm myId={me.id} owners={owners} industries={industries} returnTo={returnTo} />
+      {ownersReady && customFields.ready ? (
+        <CompanyForm
+          myId={me.id}
+          owners={owners}
+          industries={industries}
+          customFields={customFields.fields}
+          returnTo={returnTo}
+        />
       ) : (
         <PageLoading />
       )}
@@ -77,6 +85,7 @@ export function NewCompanyPage() {
 export function EditCompanyPage({ id }: { id: string }) {
   const { data: me } = useAppSelector(selectAuth);
   const returnTo = useReturnTo(`/companies/${id}`);
+  const customFields = useCustomFieldsForForm("COMPANY");
   const canWrite = me ? recordAccess(me.role).canWrite : false;
   const industries = useIndustries(canWrite);
 
@@ -98,13 +107,18 @@ export function EditCompanyPage({ id }: { id: string }) {
               description="Change the company's details."
             />
             {/* The key remounts the form if a fresher copy of the company arrives. */}
-            <CompanyForm
-              key={company.updatedAt}
-              company={company}
-              myId={me.id}
-              industries={industries}
-              returnTo={returnTo}
-            />
+            {customFields.ready ? (
+              <CompanyForm
+                key={company.updatedAt}
+                company={company}
+                myId={me.id}
+                industries={industries}
+                customFields={customFields.fields}
+                returnTo={returnTo}
+              />
+            ) : (
+              <PageLoading />
+            )}
           </>
         )}
       </CompanyLoader>

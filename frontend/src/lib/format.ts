@@ -29,6 +29,13 @@ export function formatCurrency(amount: number): string {
   return currencyFormat.format(amount);
 }
 
+// A plain number as people write it: 12500.5 -> "12,500.5". Not money: no currency sign.
+const numberFormat = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 10 });
+
+export function formatNumber(value: number): string {
+  return numberFormat.format(value);
+}
+
 const dateTimeFormat = new Intl.DateTimeFormat(LOCALE, { dateStyle: "medium", timeStyle: "short" });
 const timeFormat = new Intl.DateTimeFormat(LOCALE, { timeStyle: "short" });
 const dayFormat = new Intl.DateTimeFormat(LOCALE, {
