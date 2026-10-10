@@ -143,3 +143,24 @@ export async function addTimelineEntry(
     include: withAuthor,
   });
 }
+
+// The CREATED entries of many records at once, for an import, where one insert per record
+// would be thousands of statements. Like addTimelineEntry it only inserts, and it takes the
+// transaction that created the records.
+export async function addCreatedEntries(
+  tx: Prisma.TransactionClient,
+  authorId: string,
+  type: RecordType,
+  records: { id: string; createdAt: Date }[],
+  details: Prisma.InputJsonObject,
+): Promise<void> {
+  await tx.timelineEntry.createMany({
+    data: records.map((record) => ({
+      kind: "CREATED" as const,
+      authorId,
+      ...recordColumn({ type, id: record.id }),
+      occurredAt: record.createdAt,
+      details,
+    })),
+  });
+}

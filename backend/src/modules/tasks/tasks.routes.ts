@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+  csvResponse,
   errorResponse,
   jsonBody,
   jsonResponse,
@@ -8,11 +9,13 @@ import {
   sessionSecurity,
 } from "../../lib/openapi";
 import { deletedResponseSchema, recordIdParamsSchema } from "../../lib/record-fields";
+import { CSV_EXPORT } from "../../lib/route-docs";
 import { authenticate } from "../../middleware/authenticate";
 import {
   completeTaskHandler,
   createTaskHandler,
   deleteTaskHandler,
+  exportTasksHandler,
   getTaskHandler,
   getTaskSummaryHandler,
   listTasksHandler,
@@ -37,8 +40,9 @@ tasksRouter.use(authenticate);
 
 tasksRouter.get("/", listTasksHandler);
 tasksRouter.post("/", createTaskHandler);
-// Above /:id, or "summary" would be read as an id.
+// Above /:id, or "summary" and "export" would be read as ids.
 tasksRouter.get("/summary", getTaskSummaryHandler);
+tasksRouter.get("/export", exportTasksHandler);
 tasksRouter.get("/:id", getTaskHandler);
 tasksRouter.patch("/:id", updateTaskHandler);
 tasksRouter.delete("/:id", deleteTaskHandler);
@@ -70,6 +74,21 @@ registry.registerPath({
   request: { query: taskListQuerySchema },
   responses: {
     200: jsonResponse("One page of tasks; meta.total counts every match", taskListResponseSchema),
+    400: validationFailed,
+    401: unauthenticated,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/tasks/export",
+  tags,
+  summary: "Download the tasks the caller may see as a CSV file",
+  description: CSV_EXPORT,
+  security,
+  request: { query: taskListQuerySchema },
+  responses: {
+    200: csvResponse("The CSV file"),
     400: validationFailed,
     401: unauthenticated,
   },

@@ -1,5 +1,21 @@
-import type { Contact, Prisma } from "../../generated/prisma/client";
+import type { Contact, CustomField, Prisma } from "../../generated/prisma/client";
 import { AppError, fieldError } from "../../lib/app-error";
+import {
+  buildCsvExport,
+  type CsvExport,
+  customFieldColumns,
+  type ExportColumn,
+  exportWindow,
+  momentFormatter,
+} from "../../lib/csv-export";
+import {
+  type CustomFieldFilter,
+  customFieldsForCreate,
+  customFieldsForUpdate,
+  customFieldWhere,
+  listActiveCustomFields,
+  toApiCustomFields,
+} from "../../lib/custom-fields";
 import { type Page, pageWindow, searchWords } from "../../lib/list-query";
 import { prisma } from "../../lib/prisma";
 import {
@@ -14,6 +30,7 @@ import { addTimelineEntry } from "../../lib/timeline";
 import { visibleCompanies } from "../companies/companies.service";
 import type {
   ApiContact,
+  ContactExportQuery,
   ContactListQuery,
   CreateContactBody,
   UpdateContactBody,
@@ -44,7 +61,7 @@ type ContactWithOwner = Contact & {
   convertedLeads: { id: string; firstName: string; lastName: string }[];
 };
 
-function toApiContact(contact: ContactWithOwner): ApiContact {
+function toApiContact(contact: ContactWithOwner, fields: CustomField[]): ApiContact {
   const lead = contact.convertedLeads[0];
   return {
     id: contact.id,
@@ -59,9 +76,15 @@ function toApiContact(contact: ContactWithOwner): ApiContact {
     owner: contact.owner,
     convertedFromLead: lead ? { id: lead.id, name: `${lead.firstName} ${lead.lastName}` } : null,
     lastContactAt: contact.lastContactAt?.toISOString() ?? null,
+    customFields: toApiCustomFields(fields, contact.customFields),
     createdAt: contact.createdAt.toISOString(),
     updatedAt: contact.updatedAt.toISOString(),
   };
+}
+
+// A contact as the API answers with it: its custom fields are the ones in use right now.
+async function presentContact(contact: ContactWithOwner): Promise<ApiContact> {
+  return toApiContact(contact, await listActiveCustomFields("CONTACT"));
 }
 
 // Every query starts here: the contacts this user may see, never a deleted one.
@@ -122,8 +145,9 @@ async function findPageByCompany(
   actor: Actor,
   where: Prisma.ContactWhereInput,
   query: ContactListQuery,
+  window: { skip: number; take: number },
 ): Promise<ContactWithOwner[]> {
-  const { skip, take } = pageWindow(query);
+  const { skip, take } = window;
   const include = withOwnerAndCompany(actor);
   const inCompany = { company: visibleCompanies(actor) };
   const withCompany = { AND: [where, inCompany] };
@@ -150,9 +174,13 @@ async function findPageByCompany(
   return [...first, ...rest];
 }
 
-export async function listContacts(
+// What the list and the export share: the contacts that match, in order, within `window`.
+async function findContacts(
   actor: Actor,
   query: ContactListQuery,
+  filters: CustomFieldFilter[],
+  fields: CustomField[],
+  window: { skip: number; take: number },
 ): Promise<Page<ApiContact>> {
   // Every word typed must appear in the name, the email or the name of the company (a
   // company the caller cannot see never matches).
@@ -173,39 +201,81 @@ export async function listContacts(
     ? { company: { id: query.companyId, ...visibleCompanies(actor) } }
     : {};
   const where: Prisma.ContactWhereInput = {
-    AND: [visibleContacts(actor), { ownerId: query.ownerId }, inCompany, ...search],
+    AND: [
+      visibleContacts(actor),
+      { ownerId: query.ownerId },
+      inCompany,
+      ...customFieldWhere(fields, filters),
+      ...search,
+    ],
   };
 
   const [contacts, total] = await Promise.all([
     query.sort === "company"
-      ? findPageByCompany(actor, where, query)
+      ? findPageByCompany(actor, where, query, window)
       : prisma.contact.findMany({
           where,
           include: withOwnerAndCompany(actor),
           orderBy: orderBy(query),
-          ...pageWindow(query),
+          ...window,
         }),
     prisma.contact.count({ where }),
   ]);
-  return { items: contacts.map((contact) => toApiContact(contact)), total };
+  return { items: contacts.map((contact) => toApiContact(contact, fields)), total };
+}
+
+export async function listContacts(
+  actor: Actor,
+  query: ContactListQuery,
+  filters: CustomFieldFilter[],
+): Promise<Page<ApiContact>> {
+  const fields = await listActiveCustomFields("CONTACT");
+  return findContacts(actor, query, filters, fields, pageWindow(query));
+}
+
+// DATA-03: the list as a CSV file, for everyone who can see the list. The company is named
+// only when it is one the caller may see, as in the list.
+export async function exportContacts(
+  actor: Actor,
+  query: ContactExportQuery,
+  filters: CustomFieldFilter[],
+): Promise<CsvExport> {
+  const fields = await listActiveCustomFields("CONTACT");
+  const moment = momentFormatter(query.tz);
+  const columns: ExportColumn<ApiContact>[] = [
+    { header: "First name", value: (contact) => contact.firstName },
+    { header: "Last name", value: (contact) => contact.lastName },
+    { header: "Job title", value: (contact) => contact.jobTitle },
+    { header: "Email", value: (contact) => contact.email },
+    { header: "Phone", value: (contact) => contact.phone },
+    { header: "Company", value: (contact) => contact.company?.name ?? null },
+    { header: "Owner", value: (contact) => contact.owner.name },
+    { header: "Notes", value: (contact) => contact.notes },
+    { header: "Last contact", value: (contact) => moment(contact.lastContactAt) },
+    { header: "Created", value: (contact) => moment(contact.createdAt) },
+    { header: "Updated", value: (contact) => moment(contact.updatedAt) },
+    ...customFieldColumns<ApiContact>(fields),
+  ];
+  return buildCsvExport(columns, await findContacts(actor, query, filters, fields, exportWindow));
 }
 
 export async function getContact(actor: Actor, id: string): Promise<ApiContact> {
-  return toApiContact(await findContact(actor, id));
+  return presentContact(await findContact(actor, id));
 }
 
 export async function createContact(actor: Actor, input: CreateContactBody): Promise<ApiContact> {
   assertCanWrite(actor);
-  const { ownerId = actor.id, ...fields } = input;
+  const { ownerId = actor.id, customFields: sent, ...fields } = input;
   await assertAssignable(actor, ownerId, "contacts");
   if (fields.companyId) {
     await assertCompanyVisible(actor, fields.companyId);
   }
+  const customFields = customFieldsForCreate(await listActiveCustomFields("CONTACT"), sent);
 
   // Every change the timeline records is made in one transaction with its entry.
   const contact = await prisma.$transaction(async (tx) => {
     const created = await tx.contact.create({
-      data: { ...fields, ownerId, createdById: actor.id },
+      data: { ...fields, customFields, ownerId, createdById: actor.id },
     });
     await addTimelineEntry(tx, {
       kind: "CREATED",
@@ -226,11 +296,13 @@ export async function updateContact(
   input: UpdateContactBody,
 ): Promise<ApiContact> {
   assertCanWrite(actor);
-  await findContact(actor, id);
+  const contact = await findContact(actor, id);
   if (input.companyId) {
     await assertCompanyVisible(actor, input.companyId);
   }
-  await prisma.contact.update({ where: { id }, data: input });
+  const { customFields: sent, ...fields } = input;
+  const customFields = await customFieldsForUpdate("CONTACT", contact.customFields, sent);
+  await prisma.contact.update({ where: { id }, data: { ...fields, customFields } });
   return getContact(actor, id);
 }
 
@@ -245,7 +317,7 @@ export async function assignContact(
   await assertAssignable(actor, ownerId, "contacts");
   // Assigning a contact to the owner it already has changes nothing, so it writes no entry.
   if (ownerId === contact.ownerId) {
-    return toApiContact(contact);
+    return presentContact(contact);
   }
 
   await prisma.$transaction(async (tx) => {

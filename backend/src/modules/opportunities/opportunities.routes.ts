@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+  csvResponse,
   errorResponse,
   jsonBody,
   jsonResponse,
@@ -12,12 +13,14 @@ import {
   followUpBodySchema,
   recordIdParamsSchema,
 } from "../../lib/record-fields";
+import { CSV_EXPORT, CUSTOM_FIELD_FILTERS } from "../../lib/route-docs";
 import { authenticate } from "../../middleware/authenticate";
 import {
   assignOpportunityHandler,
   closeOpportunityHandler,
   createOpportunityHandler,
   deleteOpportunityHandler,
+  exportOpportunitiesHandler,
   getBoardHandler,
   getOpportunityHandler,
   listOpportunitiesHandler,
@@ -33,6 +36,7 @@ import {
   closeOpportunityBodySchema,
   createOpportunityBodySchema,
   moveOpportunityBodySchema,
+  opportunityExportQuerySchema,
   opportunityListQuerySchema,
   opportunityListResponseSchema,
   opportunityResponseSchema,
@@ -48,8 +52,9 @@ opportunitiesRouter.use(authenticate);
 
 opportunitiesRouter.get("/", listOpportunitiesHandler);
 opportunitiesRouter.post("/", createOpportunityHandler);
-// Above /:id, or "board" would be read as an id.
+// Above /:id, or "board" and "export" would be read as ids.
 opportunitiesRouter.get("/board", getBoardHandler);
+opportunitiesRouter.get("/export", exportOpportunitiesHandler);
 opportunitiesRouter.get("/:id", getOpportunityHandler);
 opportunitiesRouter.patch("/:id", updateOpportunityHandler);
 opportunitiesRouter.delete("/:id", deleteOpportunityHandler);
@@ -81,8 +86,7 @@ registry.registerPath({
   path: "/opportunities",
   tags,
   summary: "List the opportunities the caller may see, with search, filters, sorting and paging",
-  description:
-    "search matches the opportunity's name, its company's name and its contact's name. Newest first unless asked otherwise; sort=stage follows the pipeline (open stages, Won, Lost), and an opportunity without an expected close date sorts last.",
+  description: `search matches the opportunity's name, its company's name and its contact's name. Newest first unless asked otherwise; sort=stage follows the pipeline (open stages, Won, Lost), and an opportunity without an expected close date sorts last. ${CUSTOM_FIELD_FILTERS}`,
   security,
   request: { query: opportunityListQuerySchema },
   responses: {
@@ -101,11 +105,26 @@ registry.registerPath({
   tags,
   summary: "The pipeline as columns: every stage in order with its opportunities",
   description:
-    "One column for each stage, Won and Lost included, in pipeline order. count and totalValue cover every matching opportunity in the stage; opportunities holds at most 50 of them, the most recently changed first.",
+    "One column for each stage, Won and Lost included, in pipeline order. count and totalValue cover every matching opportunity in the stage; opportunities holds at most 50 of them, the most recently changed first. Takes the list's search, ownerId and custom field filters (cf.<field id>...).",
   security,
   request: { query: boardQuerySchema },
   responses: {
     200: jsonResponse("The columns in pipeline order", boardResponseSchema),
+    400: validationFailed,
+    401: unauthenticated,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/opportunities/export",
+  tags,
+  summary: "Download the opportunities the caller may see as a CSV file",
+  description: CSV_EXPORT,
+  security,
+  request: { query: opportunityExportQuerySchema },
+  responses: {
+    200: csvResponse("The CSV file"),
     400: validationFailed,
     401: unauthenticated,
   },

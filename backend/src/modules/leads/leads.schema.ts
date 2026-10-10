@@ -1,3 +1,4 @@
+import { customFieldInputSchema, customFieldValuesSchema } from "../../lib/custom-fields";
 import { listEnvelope, listQuerySchema } from "../../lib/list-query";
 import { envelope, z } from "../../lib/openapi";
 import {
@@ -8,6 +9,7 @@ import {
   recordLinkSchema,
   recordOwnerSchema,
 } from "../../lib/record-fields";
+import { timeZoneSchema } from "../../lib/time-zone";
 import { nameSchema } from "../../lib/user-fields";
 import { companyNameSchema } from "../companies/companies.schema";
 import { opportunityNameSchema } from "../opportunities/opportunities.schema";
@@ -65,6 +67,8 @@ export const leadSchema = z
         opportunity: recordLinkSchema.nullable(),
       })
       .nullable(),
+    // One key per custom field of leads that is in use; null where the lead has no value.
+    customFields: customFieldValuesSchema,
     createdAt: z.string(),
     updatedAt: z.string(),
   })
@@ -80,6 +84,8 @@ const leadFields = {
   phone: optionalText(50),
   estimatedValue: moneySchema.nullable().optional(),
   notes: optionalText(10_000),
+  // { "<custom field id>": value }. On PATCH only the keys sent change; null clears one.
+  customFields: customFieldInputSchema,
 };
 
 export const createLeadBodySchema = z
@@ -161,6 +167,12 @@ export const leadListQuerySchema = listQuerySchema(
 });
 
 export type LeadListQuery = z.infer<typeof leadListQuerySchema>;
+
+// The export takes what the list takes (paging is ignored), and the viewer's time zone for
+// the times in the file.
+export const leadExportQuerySchema = leadListQuerySchema.extend({ tz: timeZoneSchema });
+
+export type LeadExportQuery = z.infer<typeof leadExportQuerySchema>;
 
 export const leadResponseSchema = envelope(leadSchema);
 export const leadListResponseSchema = listEnvelope(leadSchema);

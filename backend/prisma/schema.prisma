@@ -79,6 +79,21 @@ enum NotificationKind {
   TASK_ASSIGNED
 }
 
+// The record types an Admin can add custom fields to.
+enum CustomFieldRecordType {
+  LEAD
+  CONTACT
+  COMPANY
+  OPPORTUNITY
+}
+
+enum CustomFieldType {
+  TEXT
+  NUMBER
+  DATE
+  DROPDOWN
+}
+
 // Account status is derived, not stored: not active = deactivated, no password yet = invited.
 // Users are never deleted, so their history survives deactivation.
 model User {
@@ -184,6 +199,10 @@ model Lead {
   followUpAt             DateTime?
   followUpNote           String?
   followUpNotifiedAt     DateTime?
+  // Values of the custom fields (lib/custom-fields.ts): { "<CustomField id>": value }, a
+  // string (TEXT, DROPDOWN, and DATE as "2026-11-15") or a number. A field without a value
+  // has no key.
+  customFields           Json            @default("{}")
   createdById            String
   createdBy              User            @relation("LeadCreator", fields: [createdById], references: [id], onDelete: Restrict)
   createdAt              DateTime        @default(now())
@@ -219,6 +238,10 @@ model Company {
   notes           String?
   ownerId         String
   owner           User            @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  // Values of the custom fields (lib/custom-fields.ts): { "<CustomField id>": value }, a
+  // string (TEXT, DROPDOWN, and DATE as "2026-11-15") or a number. A field without a value
+  // has no key.
+  customFields    Json            @default("{}")
   createdById     String
   createdBy       User            @relation("CompanyCreator", fields: [createdById], references: [id], onDelete: Restrict)
   createdAt       DateTime        @default(now())
@@ -254,6 +277,10 @@ model Contact {
   lastContactAt   DateTime?
   ownerId         String
   owner           User            @relation("ContactOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  // Values of the custom fields (lib/custom-fields.ts): { "<CustomField id>": value }, a
+  // string (TEXT, DROPDOWN, and DATE as "2026-11-15") or a number. A field without a value
+  // has no key.
+  customFields    Json            @default("{}")
   createdById     String
   createdBy       User            @relation("ContactCreator", fields: [createdById], references: [id], onDelete: Restrict)
   createdAt       DateTime        @default(now())
@@ -317,6 +344,10 @@ model Opportunity {
   followUpNotifiedAt DateTime?
   ownerId            String
   owner              User            @relation("OpportunityOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  // Values of the custom fields (lib/custom-fields.ts): { "<CustomField id>": value }, a
+  // string (TEXT, DROPDOWN, and DATE as "2026-11-15") or a number. A field without a value
+  // has no key.
+  customFields       Json            @default("{}")
   createdById        String
   createdBy          User            @relation("OpportunityCreator", fields: [createdById], references: [id], onDelete: Restrict)
   createdAt          DateTime        @default(now())
@@ -441,4 +472,24 @@ model Notification {
 
   @@index([userId, createdAt])
   @@index([userId, readAt])
+}
+
+// A field an Admin added to one record type (CF-01). Its values live in the `customFields`
+// JSON column of that record's table, keyed by this id. `type` and `recordType` never change
+// after creation. An archived field keeps its values but is not shown, filled in or
+// filtered on; deleting it for good (only once archived) removes the values too.
+model CustomField {
+  id         String                @id @default(uuid(7))
+  recordType CustomFieldRecordType
+  label      String
+  type       CustomFieldType
+  // The choices of a DROPDOWN, in order. Empty for every other type.
+  options    String[]
+  required   Boolean               @default(false)
+  position   Int
+  archived   Boolean               @default(false)
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+
+  @@index([recordType, position])
 }

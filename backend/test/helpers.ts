@@ -30,9 +30,9 @@ export function createTestApp() {
   return createApp({ rateLimit: { ipLimit: 100_000, emailLimit: 100_000, statusLimit: 100_000 } });
 }
 
-// Every record, its timeline, every task and every notification, keeping the users and the
-// pipeline stages: for a test file that makes its users once and wants a clean slate before
-// each test. Entries and tasks go before the records they belong to, leads before what they
+// Every record, its timeline, every task, every notification and every custom field, keeping
+// the users and the pipeline stages: for a test file that makes its users once and wants a
+// clean slate before each test. Entries and tasks go before the records they belong to, leads before what they
 // were converted into, and opportunities and contacts before the contacts and companies
 // they are linked to.
 export async function resetRecords(): Promise<void> {
@@ -43,6 +43,7 @@ export async function resetRecords(): Promise<void> {
   await prisma.opportunity.deleteMany();
   await prisma.contact.deleteMany();
   await prisma.company.deleteMany();
+  await prisma.customField.deleteMany();
 }
 
 // The pipeline as the migration seeds it, for a test that renames, adds, reorders or

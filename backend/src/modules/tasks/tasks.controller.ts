@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 
+import { sendCsv } from "../../lib/csv-export";
 import type { ListMeta } from "../../lib/list-query";
 import { recordIdParamsSchema } from "../../lib/record-fields";
 import { getAuth } from "../../middleware/authenticate";
@@ -15,6 +16,7 @@ import {
   completeTask,
   createTask,
   deleteTask,
+  exportTasks,
   getTask,
   getTaskSummary,
   listTasks,
@@ -27,6 +29,11 @@ export async function listTasksHandler(req: Request, res: Response) {
   const { items, total } = await listTasks(getAuth(req).user, query);
   const meta: ListMeta = { page: query.page, pageSize: query.pageSize, total };
   res.json({ data: items, meta });
+}
+
+export async function exportTasksHandler(req: Request, res: Response) {
+  const query = taskListQuerySchema.parse(req.query);
+  sendCsv(res, "tasks", query.tz, await exportTasks(getAuth(req).user, query));
 }
 
 export async function getTaskSummaryHandler(req: Request, res: Response) {

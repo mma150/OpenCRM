@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+  csvResponse,
   errorResponse,
   jsonBody,
   jsonResponse,
@@ -8,17 +9,20 @@ import {
   sessionSecurity,
 } from "../../lib/openapi";
 import { deletedResponseSchema, recordIdParamsSchema } from "../../lib/record-fields";
+import { CSV_EXPORT, CUSTOM_FIELD_FILTERS } from "../../lib/route-docs";
 import { authenticate } from "../../middleware/authenticate";
 import {
   assignContactHandler,
   createContactHandler,
   deleteContactHandler,
+  exportContactsHandler,
   getContactHandler,
   listContactsHandler,
   updateContactHandler,
 } from "./contacts.controller";
 import {
   assignContactBodySchema,
+  contactExportQuerySchema,
   contactListQuerySchema,
   contactListResponseSchema,
   contactResponseSchema,
@@ -34,6 +38,8 @@ contactsRouter.use(authenticate);
 
 contactsRouter.get("/", listContactsHandler);
 contactsRouter.post("/", createContactHandler);
+// Above /:id, or "export" would be read as an id.
+contactsRouter.get("/export", exportContactsHandler);
 contactsRouter.get("/:id", getContactHandler);
 contactsRouter.patch("/:id", updateContactHandler);
 contactsRouter.delete("/:id", deleteContactHandler);
@@ -58,8 +64,7 @@ registry.registerPath({
   path: "/contacts",
   tags,
   summary: "List the contacts the caller may see, with search, filters, sorting and paging",
-  description:
-    "search matches the first name, last name, email and company name. Sorted by name, A to Z, unless asked otherwise; a contact without a company, or never contacted, sorts last in both directions.",
+  description: `search matches the first name, last name, email and company name. Sorted by name, A to Z, unless asked otherwise; a contact without a company, or never contacted, sorts last in both directions. ${CUSTOM_FIELD_FILTERS}`,
   security,
   request: { query: contactListQuerySchema },
   responses: {
@@ -67,6 +72,21 @@ registry.registerPath({
       "One page of contacts; meta.total counts every match",
       contactListResponseSchema,
     ),
+    400: validationFailed,
+    401: unauthenticated,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/contacts/export",
+  tags,
+  summary: "Download the contacts the caller may see as a CSV file",
+  description: CSV_EXPORT,
+  security,
+  request: { query: contactExportQuerySchema },
+  responses: {
+    200: csvResponse("The CSV file"),
     400: validationFailed,
     401: unauthenticated,
   },

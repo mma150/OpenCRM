@@ -565,6 +565,9 @@
           "contactCount": {
             "type": "integer"
           },
+          "customFields": {
+            "$ref": "#/components/schemas/CustomFieldValues"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -582,9 +585,26 @@
           "notes",
           "owner",
           "contactCount",
+          "customFields",
           "createdAt",
           "updatedAt"
         ]
+      },
+      "CustomFieldValues": {
+        "type": "object",
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
       },
       "CreateCompanyBody": {
         "type": "object",
@@ -628,6 +648,22 @@
               "null"
             ],
             "maxLength": 10000
+          },
+          "customFields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
           },
           "ownerId": {
             "type": "string",
@@ -681,6 +717,22 @@
               "null"
             ],
             "maxLength": 10000
+          },
+          "customFields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
           }
         },
         "additionalProperties": false
@@ -794,6 +846,9 @@
               "null"
             ]
           },
+          "customFields": {
+            "$ref": "#/components/schemas/CustomFieldValues"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -814,6 +869,7 @@
           "owner",
           "convertedFromLead",
           "lastContactAt",
+          "customFields",
           "createdAt",
           "updatedAt"
         ]
@@ -867,6 +923,22 @@
               "null"
             ],
             "maxLength": 10000
+          },
+          "customFields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
           },
           "ownerId": {
             "type": "string",
@@ -928,6 +1000,22 @@
               "null"
             ],
             "maxLength": 10000
+          },
+          "customFields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
           }
         },
         "additionalProperties": false
@@ -943,6 +1031,156 @@
         "required": [
           "ownerId"
         ],
+        "additionalProperties": false
+      },
+      "CustomField": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "recordType": {
+            "$ref": "#/components/schemas/CustomFieldRecordType"
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/CustomFieldType"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "recordType",
+          "label",
+          "type",
+          "options",
+          "required",
+          "position",
+          "archived",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CustomFieldRecordType": {
+        "type": "string",
+        "enum": [
+          "LEAD",
+          "CONTACT",
+          "COMPANY",
+          "OPPORTUNITY"
+        ]
+      },
+      "CustomFieldType": {
+        "type": "string",
+        "enum": [
+          "TEXT",
+          "NUMBER",
+          "DATE",
+          "DROPDOWN"
+        ]
+      },
+      "CreateCustomFieldBody": {
+        "type": "object",
+        "properties": {
+          "recordType": {
+            "$ref": "#/components/schemas/CustomFieldRecordType"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "pattern": "^\\P{Cc}*$/u"
+          },
+          "type": {
+            "$ref": "#/components/schemas/CustomFieldType"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^\\P{Cc}*$/u"
+            },
+            "maxItems": 50
+          },
+          "required": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "recordType",
+          "label",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "ReorderCustomFieldsBody": {
+        "type": "object",
+        "properties": {
+          "recordType": {
+            "$ref": "#/components/schemas/CustomFieldRecordType"
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 30
+          }
+        },
+        "required": [
+          "recordType",
+          "ids"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateCustomFieldBody": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "pattern": "^\\P{Cc}*$/u"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^\\P{Cc}*$/u"
+            },
+            "maxItems": 50
+          },
+          "required": {
+            "type": "boolean"
+          }
+        },
         "additionalProperties": false
       },
       "MyDashboard": {
@@ -1423,6 +1661,235 @@
           "database"
         ]
       },
+      "ImportField": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ImportFieldKind"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "required",
+          "kind"
+        ]
+      },
+      "ImportFieldKind": {
+        "type": "string",
+        "enum": [
+          "TEXT",
+          "EMAIL",
+          "NUMBER",
+          "DATE",
+          "DROPDOWN"
+        ]
+      },
+      "ImportType": {
+        "type": "string",
+        "enum": [
+          "LEAD",
+          "CONTACT",
+          "COMPANY"
+        ]
+      },
+      "ImportPreview": {
+        "type": "object",
+        "properties": {
+          "headers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sampleRows": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "rowCount": {
+            "type": "integer"
+          },
+          "suggestedMapping": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "required": [
+          "headers",
+          "sampleRows",
+          "rowCount",
+          "suggestedMapping"
+        ]
+      },
+      "ImportPreviewBody": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ImportType"
+          },
+          "csv": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "csv"
+        ],
+        "additionalProperties": false
+      },
+      "ImportResult": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "created": {
+            "type": "integer"
+          },
+          "skipped": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "companiesCreated": {
+            "type": "integer"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportRowError"
+            }
+          },
+          "errorsTruncated": {
+            "type": "boolean"
+          },
+          "failedCsv": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "total",
+          "created",
+          "skipped",
+          "failed",
+          "companiesCreated",
+          "errors",
+          "errorsTruncated",
+          "failedCsv"
+        ]
+      },
+      "ImportRowError": {
+        "type": "object",
+        "properties": {
+          "row": {
+            "type": "integer"
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "column": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "column",
+                "message"
+              ]
+            }
+          }
+        },
+        "required": [
+          "row",
+          "values",
+          "messages"
+        ]
+      },
+      "ImportBody": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ImportType"
+          },
+          "csv": {
+            "type": "string"
+          },
+          "mapping": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skipDuplicates": {
+            "type": "boolean"
+          },
+          "createCompanies": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type",
+          "csv",
+          "mapping"
+        ],
+        "additionalProperties": false
+      },
       "Lead": {
         "type": "object",
         "properties": {
@@ -1601,6 +2068,9 @@
               "opportunity"
             ]
           },
+          "customFields": {
+            "$ref": "#/components/schemas/CustomFieldValues"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -1630,6 +2100,7 @@
           "followUpNote",
           "convertedAt",
           "convertedTo",
+          "customFields",
           "createdAt",
           "updatedAt"
         ]
@@ -1729,6 +2200,22 @@
             ],
             "maxLength": 10000
           },
+          "customFields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
           "ownerId": {
             "type": "string",
             "format": "uuid"
@@ -1801,6 +2288,22 @@
               "null"
             ],
             "maxLength": 10000
+          },
+          "customFields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
           },
           "status": {
             "$ref": "#/components/schemas/OpenLeadStatus"
@@ -2223,6 +2726,9 @@
               "null"
             ]
           },
+          "customFields": {
+            "$ref": "#/components/schemas/CustomFieldValues"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -2247,6 +2753,7 @@
           "lastContactAt",
           "followUpAt",
           "followUpNote",
+          "customFields",
           "createdAt",
           "updatedAt"
         ]
@@ -2338,6 +2845,22 @@
             ],
             "maxLength": 10000
           },
+          "customFields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
           "stageId": {
             "type": "string",
             "format": "uuid"
@@ -2392,6 +2915,22 @@
               "null"
             ],
             "maxLength": 10000
+          },
+          "customFields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
           }
         },
         "additionalProperties": false
@@ -3831,7 +4370,7 @@
           "Companies"
         ],
         "summary": "List the companies the caller may see, with search, filters, sorting and paging",
-        "description": "search matches the name, website and industry. industry matches the whole value, whatever the case. Sorted by name, A to Z, unless asked otherwise; a company without an industry sorts last.",
+        "description": "search matches the name, website and industry. industry matches the whole value, whatever the case. Sorted by name, A to Z, unless asked otherwise; a company without an industry sorts last. Custom field filters go in the query string beside the others, named after the field's id: cf.<field id>=text for a TEXT field (contains, whatever the case) or a DROPDOWN field (is exactly that option), cf.<field id>.min and cf.<field id>.max for a NUMBER field, cf.<field id>.from and cf.<field id>.to (days such as 2026-11-15) for a DATE field; all bounds are inclusive. A record without a value never matches. An id that is not a custom field in use of this record type, a form that does not fit the field's type, or a bad value is VALIDATION_FAILED naming the parameter; a parameter sent empty is ignored.",
         "security": [
           {
             "sessionCookie": []
@@ -4084,6 +4623,162 @@
                     "data",
                     "meta"
                   ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/companies/export": {
+      "get": {
+        "tags": [
+          "Companies"
+        ],
+        "summary": "Download the companies the caller may see as a CSV file",
+        "description": "The list itself as a file: the same search, filters (custom field filters included), sort and visibility, without paging (page and pageSize are ignored). Every role that can see the list can export it. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named after the viewer's today. At most 10,000 rows: a longer list is cut off there, in the sort order asked for, and X-Export-Truncated is true. A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "industry",
+                "createdAt",
+                "updatedAt"
+              ],
+              "default": "name"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "required": false,
+            "name": "industry",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "ownerId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "default": "UTC"
+            },
+            "required": false,
+            "name": "tz",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The CSV file",
+            "headers": {
+              "Content-Disposition": {
+                "description": "attachment; filename=\"<list>-<YYYY-MM-DD>.csv\"",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Export-Truncated": {
+                "description": "true when the list has more rows than the 10,000 an export holds",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is not acceptable (VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4485,7 +5180,7 @@
           "Contacts"
         ],
         "summary": "List the contacts the caller may see, with search, filters, sorting and paging",
-        "description": "search matches the first name, last name, email and company name. Sorted by name, A to Z, unless asked otherwise; a contact without a company, or never contacted, sorts last in both directions.",
+        "description": "search matches the first name, last name, email and company name. Sorted by name, A to Z, unless asked otherwise; a contact without a company, or never contacted, sorts last in both directions. Custom field filters go in the query string beside the others, named after the field's id: cf.<field id>=text for a TEXT field (contains, whatever the case) or a DROPDOWN field (is exactly that option), cf.<field id>.min and cf.<field id>.max for a NUMBER field, cf.<field id>.from and cf.<field id>.to (days such as 2026-11-15) for a DATE field; all bounds are inclusive. A record without a value never matches. An id that is not a custom field in use of this record type, a form that does not fit the field's type, or a bad value is VALIDATION_FAILED naming the parameter; a parameter sent empty is ignored.",
         "security": [
           {
             "sessionCookie": []
@@ -4690,6 +5385,162 @@
           },
           "403": {
             "description": "A Read-only user cannot change records (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contacts/export": {
+      "get": {
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "Download the contacts the caller may see as a CSV file",
+        "description": "The list itself as a file: the same search, filters (custom field filters included), sort and visibility, without paging (page and pageSize are ignored). Every role that can see the list can export it. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named after the viewer's today. At most 10,000 rows: a longer list is cut off there, in the sort order asked for, and X-Export-Truncated is true. A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "company",
+                "createdAt",
+                "updatedAt",
+                "lastContactAt"
+              ],
+              "default": "name"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "companyId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "ownerId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "default": "UTC"
+            },
+            "required": false,
+            "name": "tz",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The CSV file",
+            "headers": {
+              "Content-Disposition": {
+                "description": "attachment; filename=\"<list>-<YYYY-MM-DD>.csv\"",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Export-Truncated": {
+                "description": "true when the list has more rows than the 10,000 an export holds",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is not acceptable (VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -5077,6 +5928,648 @@
         }
       }
     },
+    "/custom-fields": {
+      "get": {
+        "tags": [
+          "Custom fields"
+        ],
+        "summary": "List the custom fields, of one record type or of all",
+        "description": "In order: by record type, then the order the Admin gave the fields. Archived fields are left out unless includeArchived=true, which only an Admin may send; they then follow the fields in use of their record type.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/CustomFieldRecordType"
+            },
+            "required": false,
+            "name": "recordType",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "default": "false"
+            },
+            "required": false,
+            "name": "includeArchived",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The fields, in order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CustomField"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED: a recordType or includeArchived that is not a value",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "includeArchived=true from someone who is not an Admin (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Custom fields"
+        ],
+        "summary": "Add a custom field to a record type, last in its order (Admin only)",
+        "description": "A DROPDOWN needs 1 to 50 options, each once whatever the case; the other types take none. The label is 1 to 60 characters and unique among the fields of the record type, archived ones included, whatever the case. A record type can have 30 fields in use.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCustomFieldBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The new field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CustomField"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED: bad input, a label another field of the record type has, options that do not fit the type (details name the field), or the record type already has 30 fields in use (details null)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not an Admin (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/custom-fields/order": {
+      "put": {
+        "tags": [
+          "Custom fields"
+        ],
+        "summary": "Put the fields of one record type in a new order (Admin only)",
+        "description": "ids must hold every field of the record type that is in use (not archived) exactly once. Answers with every field of that record type, archived ones last.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderCustomFieldsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Every field of the record type, in order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CustomField"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED: bad input, or ids that are not every field in use exactly once",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not an Admin (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/custom-fields/{id}": {
+      "patch": {
+        "tags": [
+          "Custom fields"
+        ],
+        "summary": "Change a field's label, options or whether it is required (Admin only)",
+        "description": "Only the keys sent are changed; the record type and the type are fixed. options replaces the whole list. A record that holds an option that was removed keeps showing it and can be saved with it unchanged, but the option can no longer be chosen. Making a field required does not touch existing records: it is checked when a record is created and when a request sends the field.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomFieldBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CustomField"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED: bad input, a label another field of the record type has, or options that do not fit the type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not an Admin (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No custom field has this id (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Custom fields"
+        ],
+        "summary": "Delete an archived field for good, with every value records hold for it",
+        "description": "Admin only. A field that is in use must be archived first.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted; data is null",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "null"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED: the id is not a UUID, or the field is not archived (details null)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not an Admin (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No custom field has this id (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/custom-fields/{id}/archive": {
+      "post": {
+        "tags": [
+          "Custom fields"
+        ],
+        "summary": "Archive a field: hide it everywhere but keep its values (Admin only)",
+        "description": "An archived field is left out of records, forms, filters, imports and exports, and a request that names it is refused. Archiving an archived field answers with it as it is.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The field, archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CustomField"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED: the id is not a UUID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not an Admin (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No custom field has this id (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/custom-fields/{id}/restore": {
+      "post": {
+        "tags": [
+          "Custom fields"
+        ],
+        "summary": "Bring an archived field back, last in its order, with its values (Admin only)",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The field, in use again",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CustomField"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED: the id is not a UUID, or the record type already has 30 fields in use (details null)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not an Admin (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No custom field has this id (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/dashboard/me": {
       "get": {
         "tags": [
@@ -5296,12 +6789,282 @@
         }
       }
     },
+    "/imports/fields": {
+      "get": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "The fields a column of a CSV file can be mapped to, for one record type",
+        "description": "The record's own fields, then its custom fields in use (key cf:<custom field id>). For contacts, companyName links the contact to a company by name.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/ImportType"
+            },
+            "required": true,
+            "name": "type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The fields, in the order a form would show them",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ImportField"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED: type is missing or not LEAD, CONTACT or COMPANY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A Read-only user cannot import (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/imports/preview": {
+      "post": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Read a CSV file's columns and first rows, and suggest a mapping",
+        "description": "Nothing is saved. The file is CSV text with commas between cells and the column names in its first row (UTF-8; a byte order mark is fine). It may hold at most 5 MB and 5,000 data rows; empty rows are ignored. An empty file, a first row without names, a column without a name, two columns with one name (whatever the case), a quoted cell that is never closed and more than 5,000 rows are VALIDATION_FAILED on csv. suggestedMapping goes by the column names: a field's own label and common other names for it (\"E-mail\", \"Phone number\", \"Surname\"), whatever the case and punctuation; each field is suggested for one column at most.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportPreviewBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The columns, a sample and a suggested mapping",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ImportPreview"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED: bad input, or a file that cannot be read (see above)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A Read-only user cannot import (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The file is over 5 MB, or the request body over 12 MB (PAYLOAD_TOO_LARGE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/imports": {
+      "post": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Import leads, contacts or companies from a CSV file with a column mapping",
+        "description": "The file is CSV text with commas between cells and the column names in its first row (UTF-8; a byte order mark is fine). It may hold at most 5 MB and 5,000 data rows; empty rows are ignored. An empty file, a first row without names, a column without a name, two columns with one name (whatever the case), a quoted cell that is never closed and more than 5,000 rows are VALIDATION_FAILED on csv. mapping names, for each column to import, the key of a field from GET /imports/fields; every required field must be mapped, and no field twice. Each row is checked with the rules of the record's create route and saved on its own: the rows that pass are created, each with its CREATED timeline entry (details.import is true), and the rest come back in errors and failedCsv with the reason. A lead without a Source is given OTHER. Numbers are written like 1200.50 or 1,200.50 and dates like 2026-11-15. Records belong to the caller, or to ownerId.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "What was created, skipped and refused",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ImportResult"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED: bad input, a file that cannot be read (csv), a mapping that names an unknown column or field, maps a field twice or leaves a required field out (mapping, mapping.<header>), or an ownerId the caller may not assign records to",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A Read-only user cannot import (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The file is over 5 MB, or the request body over 12 MB (PAYLOAD_TOO_LARGE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/leads": {
       "get": {
         "tags": [
           "Leads"
         ],
         "summary": "List the leads the caller may see, with search, filters, sorting and paging",
+        "description": "Custom field filters go in the query string beside the others, named after the field's id: cf.<field id>=text for a TEXT field (contains, whatever the case) or a DROPDOWN field (is exactly that option), cf.<field id>.min and cf.<field id>.max for a NUMBER field, cf.<field id>.from and cf.<field id>.to (days such as 2026-11-15) for a DATE field; all bounds are inclusive. A record without a value never matches. An id that is not a custom field in use of this record type, a form that does not fit the field's type, or a bad value is VALIDATION_FAILED naming the parameter; a parameter sent empty is ignored.",
         "security": [
           {
             "sessionCookie": []
@@ -5515,6 +7278,171 @@
           },
           "403": {
             "description": "A Read-only user cannot change records (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/leads/export": {
+      "get": {
+        "tags": [
+          "Leads"
+        ],
+        "summary": "Download the leads the caller may see as a CSV file",
+        "description": "The list itself as a file: the same search, filters (custom field filters included), sort and visibility, without paging (page and pageSize are ignored). Every role that can see the list can export it. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named after the viewer's today. At most 10,000 rows: a longer list is cut off there, in the sort order asked for, and X-Export-Truncated is true. A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "company",
+                "status",
+                "createdAt",
+                "updatedAt",
+                "lastContactAt",
+                "followUpAt"
+              ],
+              "default": "createdAt"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/LeadStatus"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/LeadSource"
+            },
+            "required": false,
+            "name": "source",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "ownerId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "default": "UTC"
+            },
+            "required": false,
+            "name": "tz",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The CSV file",
+            "headers": {
+              "Content-Disposition": {
+                "description": "attachment; filename=\"<list>-<YYYY-MM-DD>.csv\"",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Export-Truncated": {
+                "description": "true when the list has more rows than the 10,000 an export holds",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is not acceptable (VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -6549,7 +8477,7 @@
           "Opportunities"
         ],
         "summary": "List the opportunities the caller may see, with search, filters, sorting and paging",
-        "description": "search matches the opportunity's name, its company's name and its contact's name. Newest first unless asked otherwise; sort=stage follows the pipeline (open stages, Won, Lost), and an opportunity without an expected close date sorts last.",
+        "description": "search matches the opportunity's name, its company's name and its contact's name. Newest first unless asked otherwise; sort=stage follows the pipeline (open stages, Won, Lost), and an opportunity without an expected close date sorts last. Custom field filters go in the query string beside the others, named after the field's id: cf.<field id>=text for a TEXT field (contains, whatever the case) or a DROPDOWN field (is exactly that option), cf.<field id>.min and cf.<field id>.max for a NUMBER field, cf.<field id>.from and cf.<field id>.to (days such as 2026-11-15) for a DATE field; all bounds are inclusive. A record without a value never matches. An id that is not a custom field in use of this record type, a form that does not fit the field's type, or a bad value is VALIDATION_FAILED naming the parameter; a parameter sent empty is ignored.",
         "security": [
           {
             "sessionCookie": []
@@ -6799,7 +8727,7 @@
           "Opportunities"
         ],
         "summary": "The pipeline as columns: every stage in order with its opportunities",
-        "description": "One column for each stage, Won and Lost included, in pipeline order. count and totalValue cover every matching opportunity in the stage; opportunities holds at most 50 of them, the most recently changed first.",
+        "description": "One column for each stage, Won and Lost included, in pipeline order. count and totalValue cover every matching opportunity in the stage; opportunities holds at most 50 of them, the most recently changed first. Takes the list's search, ownerId and custom field filters (cf.<field id>...).",
         "security": [
           {
             "sessionCookie": []
@@ -6851,6 +8779,189 @@
                     "data",
                     "meta"
                   ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is not acceptable (VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/opportunities/export": {
+      "get": {
+        "tags": [
+          "Opportunities"
+        ],
+        "summary": "Download the opportunities the caller may see as a CSV file",
+        "description": "The list itself as a file: the same search, filters (custom field filters included), sort and visibility, without paging (page and pageSize are ignored). Every role that can see the list can export it. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named after the viewer's today. At most 10,000 rows: a longer list is cut off there, in the sort order asked for, and X-Export-Truncated is true. A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "value",
+                "expectedCloseDate",
+                "createdAt",
+                "stage",
+                "followUpAt"
+              ],
+              "default": "createdAt"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "stageId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/StageKind"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "ownerId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "companyId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "contactId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "default": "UTC"
+            },
+            "required": false,
+            "name": "tz",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The CSV file",
+            "headers": {
+              "Content-Disposition": {
+                "description": "attachment; filename=\"<list>-<YYYY-MM-DD>.csv\"",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Export-Truncated": {
+                "description": "true when the list has more rows than the 10,000 an export holds",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -8340,6 +10451,184 @@
           },
           "403": {
             "description": "A Read-only user cannot change tasks (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/export": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Download the tasks the caller may see as a CSV file",
+        "description": "The list itself as a file: the same search, filters (custom field filters included), sort and visibility, without paging (page and pageSize are ignored). Every role that can see the list can export it. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named after the viewer's today. At most 10,000 rows: a longer list is cut off there, in the sort order asked for, and X-Export-Truncated is true. A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula.",
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "dueAt",
+                "createdAt",
+                "title"
+              ],
+              "default": "dueAt"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/TaskStatus"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "assigneeId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/TaskRecordType"
+            },
+            "required": false,
+            "name": "recordType",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "recordId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/TaskDue"
+            },
+            "required": false,
+            "name": "due",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "default": "UTC"
+            },
+            "required": false,
+            "name": "tz",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The CSV file",
+            "headers": {
+              "Content-Disposition": {
+                "description": "attachment; filename=\"<list>-<YYYY-MM-DD>.csv\"",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Export-Truncated": {
+                "description": "true when the list has more rows than the 10,000 an export holds",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is not acceptable (VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in (UNAUTHENTICATED)",
             "content": {
               "application/json": {
                 "schema": {

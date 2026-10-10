@@ -1,3 +1,4 @@
+import { customFieldInputSchema, customFieldValuesSchema } from "../../lib/custom-fields";
 import { listEnvelope, listQuerySchema } from "../../lib/list-query";
 import { envelope, z } from "../../lib/openapi";
 import {
@@ -7,6 +8,7 @@ import {
   recordLinkSchema,
   recordOwnerSchema,
 } from "../../lib/record-fields";
+import { timeZoneSchema } from "../../lib/time-zone";
 import { stageKindSchema } from "../pipeline-stages/pipeline-stages.schema";
 
 export const opportunitySchema = z
@@ -36,6 +38,8 @@ export const opportunitySchema = z
     // none is set.
     followUpAt: z.string().nullable(),
     followUpNote: z.string().nullable(),
+    // One key per custom field of opportunities that is in use; null where there is no value.
+    customFields: customFieldValuesSchema,
     createdAt: z.string(),
     updatedAt: z.string(),
   })
@@ -53,6 +57,8 @@ const opportunityFields = {
   contactId: z.uuid().nullable().optional(),
   companyId: z.uuid().nullable().optional(),
   notes: optionalText(10_000),
+  // { "<custom field id>": value }. On PATCH only the keys sent change; null clears one.
+  customFields: customFieldInputSchema,
 };
 
 export const createOpportunityBodySchema = z
@@ -122,6 +128,14 @@ export const opportunityListQuerySchema = listQuerySchema(
 });
 
 export type OpportunityListQuery = z.infer<typeof opportunityListQuerySchema>;
+
+// The export takes what the list takes (paging is ignored), and the viewer's time zone for
+// the times in the file.
+export const opportunityExportQuerySchema = opportunityListQuerySchema.extend({
+  tz: timeZoneSchema,
+});
+
+export type OpportunityExportQuery = z.infer<typeof opportunityExportQuerySchema>;
 
 // The board takes the same search and owner filter as the list.
 export const boardQuerySchema = z.object({

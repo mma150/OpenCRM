@@ -1,11 +1,14 @@
 import type { Request, Response } from "express";
 
+import { sendCsv } from "../../lib/csv-export";
+import { parseCustomFieldFilters } from "../../lib/custom-fields";
 import type { ListMeta } from "../../lib/list-query";
 import { recordIdParamsSchema } from "../../lib/record-fields";
 import { getAuth } from "../../middleware/authenticate";
 import {
   type ApiCompany,
   assignCompanyBodySchema,
+  companyExportQuerySchema,
   companyListQuerySchema,
   createCompanyBodySchema,
   updateCompanyBodySchema,
@@ -14,6 +17,7 @@ import {
   assignCompany,
   createCompany,
   deleteCompany,
+  exportCompanies,
   getCompany,
   listCompanies,
   listIndustries,
@@ -22,9 +26,16 @@ import {
 
 export async function listCompaniesHandler(req: Request, res: Response) {
   const query = companyListQuerySchema.parse(req.query);
-  const { items, total } = await listCompanies(getAuth(req).user, query);
+  const filters = parseCustomFieldFilters(req.query);
+  const { items, total } = await listCompanies(getAuth(req).user, query, filters);
   const meta: ListMeta = { page: query.page, pageSize: query.pageSize, total };
   res.json({ data: items, meta });
+}
+
+export async function exportCompaniesHandler(req: Request, res: Response) {
+  const query = companyExportQuerySchema.parse(req.query);
+  const filters = parseCustomFieldFilters(req.query);
+  sendCsv(res, "companies", query.tz, await exportCompanies(getAuth(req).user, query, filters));
 }
 
 export async function listIndustriesHandler(req: Request, res: Response) {

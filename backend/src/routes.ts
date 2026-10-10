@@ -6,8 +6,10 @@ import { activityRouter } from "./modules/activity/activity.routes";
 import { createAuthRouter } from "./modules/auth/auth.routes";
 import { companiesRouter } from "./modules/companies/companies.routes";
 import { contactsRouter } from "./modules/contacts/contacts.routes";
+import { customFieldsRouter } from "./modules/custom-fields/custom-fields.routes";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
 import { healthRouter } from "./modules/health/health.routes";
+import { importsRouter } from "./modules/imports/imports.routes";
 import { leadsRouter } from "./modules/leads/leads.routes";
 import { notificationsRouter } from "./modules/notifications/notifications.routes";
 import { opportunitiesRouter } from "./modules/opportunities/opportunities.routes";
@@ -46,6 +48,8 @@ export function createV1Router(limiters: AuthLimiters) {
   router.use("/tasks", tasksRouter);
   router.use("/notifications", notificationsRouter);
   router.use("/dashboard", dashboardRouter);
+  router.use("/custom-fields", customFieldsRouter);
+  router.use("/imports", importsRouter);
 
   return router;
 }

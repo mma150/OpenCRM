@@ -1,6 +1,8 @@
+import { customFieldInputSchema, customFieldValuesSchema } from "../../lib/custom-fields";
 import { listEnvelope, listQuerySchema } from "../../lib/list-query";
 import { envelope, z } from "../../lib/openapi";
 import { optionalText, recordOwnerSchema } from "../../lib/record-fields";
+import { timeZoneSchema } from "../../lib/time-zone";
 
 export const companySchema = z
   .object({
@@ -14,6 +16,8 @@ export const companySchema = z
     owner: recordOwnerSchema,
     // The contacts linked to the company that the caller may see.
     contactCount: z.number().int(),
+    // One key per custom field of companies that is in use; null where there is no value.
+    customFields: customFieldValuesSchema,
     createdAt: z.string(),
     updatedAt: z.string(),
   })
@@ -39,6 +43,8 @@ const companyFields = {
   phone: optionalText(50),
   address: optionalText(500),
   notes: optionalText(10_000),
+  // { "<custom field id>": value }. On PATCH only the keys sent change; null clears one.
+  customFields: customFieldInputSchema,
 };
 
 export const createCompanyBodySchema = z
@@ -75,6 +81,12 @@ export const companyListQuerySchema = listQuerySchema(
 });
 
 export type CompanyListQuery = z.infer<typeof companyListQuerySchema>;
+
+// The export takes what the list takes (paging is ignored), and the viewer's time zone for
+// the times in the file.
+export const companyExportQuerySchema = companyListQuerySchema.extend({ tz: timeZoneSchema });
+
+export type CompanyExportQuery = z.infer<typeof companyExportQuerySchema>;
 
 export const companyResponseSchema = envelope(companySchema);
 export const companyListResponseSchema = listEnvelope(companySchema);

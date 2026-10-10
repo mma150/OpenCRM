@@ -54,6 +54,25 @@ export function jsonResponse(description: string, schema: z.ZodType) {
   return { description, content: { "application/json": { schema } } };
 }
 
+// A CSV file sent as a download (lib/csv-export.ts): the one kind of success response that
+// is not JSON.
+export function csvResponse(description: string) {
+  return {
+    description,
+    headers: {
+      "Content-Disposition": {
+        description: 'attachment; filename="<list>-<YYYY-MM-DD>.csv"',
+        schema: { type: "string" as const },
+      },
+      "X-Export-Truncated": {
+        description: "true when the list has more rows than the 10,000 an export holds",
+        schema: { type: "string" as const, enum: ["true", "false"] },
+      },
+    },
+    content: { "text/csv": { schema: z.string() } },
+  };
+}
+
 // `description` names the error codes this status can carry.
 export function errorResponse(description: string) {
   return jsonResponse(description, errorResponseSchema);

@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
 
+import { sendCsv } from "../../lib/csv-export";
+import { parseCustomFieldFilters } from "../../lib/custom-fields";
 import type { ListMeta } from "../../lib/list-query";
 import { followUpBodySchema, recordIdParamsSchema } from "../../lib/record-fields";
 import { getAuth } from "../../middleware/authenticate";
@@ -11,6 +13,7 @@ import {
   closeOpportunityBodySchema,
   createOpportunityBodySchema,
   moveOpportunityBodySchema,
+  opportunityExportQuerySchema,
   opportunityListQuerySchema,
   reopenOpportunityBodySchema,
   updateOpportunityBodySchema,
@@ -20,6 +23,7 @@ import {
   closeOpportunity,
   createOpportunity,
   deleteOpportunity,
+  exportOpportunities,
   getBoard,
   getOpportunity,
   listOpportunities,
@@ -31,14 +35,23 @@ import {
 
 export async function listOpportunitiesHandler(req: Request, res: Response) {
   const query = opportunityListQuerySchema.parse(req.query);
-  const { items, total } = await listOpportunities(getAuth(req).user, query);
+  const filters = parseCustomFieldFilters(req.query);
+  const { items, total } = await listOpportunities(getAuth(req).user, query, filters);
   const meta: ListMeta = { page: query.page, pageSize: query.pageSize, total };
   res.json({ data: items, meta });
 }
 
+export async function exportOpportunitiesHandler(req: Request, res: Response) {
+  const query = opportunityExportQuerySchema.parse(req.query);
+  const filters = parseCustomFieldFilters(req.query);
+  const file = await exportOpportunities(getAuth(req).user, query, filters);
+  sendCsv(res, "opportunities", query.tz, file);
+}
+
 export async function getBoardHandler(req: Request, res: Response) {
   const query = boardQuerySchema.parse(req.query);
-  const data: BoardColumn[] = await getBoard(getAuth(req).user, query);
+  const filters = parseCustomFieldFilters(req.query);
+  const data: BoardColumn[] = await getBoard(getAuth(req).user, query, filters);
   res.json({ data, meta: {} });
 }
 

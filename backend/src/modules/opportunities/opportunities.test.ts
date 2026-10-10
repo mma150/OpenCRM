@@ -45,6 +45,7 @@ interface ApiOpportunity {
   lastContactAt: string | null;
   followUpAt: string | null;
   followUpNote: string | null;
+  customFields: Record<string, string | number | null>;
   createdAt: string;
   updatedAt: string;
 }
@@ -323,6 +324,7 @@ describe("create", () => {
       lastContactAt: null,
       followUpAt: null,
       followUpNote: null,
+      customFields: {},
       createdAt: opportunity.createdAt,
       updatedAt: opportunity.updatedAt,
     });

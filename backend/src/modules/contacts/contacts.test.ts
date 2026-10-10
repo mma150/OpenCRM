@@ -26,6 +26,7 @@ interface ApiContact {
   owner: { id: string; name: string };
   convertedFromLead: { id: string; name: string } | null;
   lastContactAt: string | null;
+  customFields: Record<string, string | number | null>;
   createdAt: string;
   updatedAt: string;
 }
@@ -252,6 +253,7 @@ describe("create", () => {
       owner: { id: ravi.id, name: "Ravi Rep" },
       convertedFromLead: null,
       lastContactAt: null,
+      customFields: {},
       createdAt: contact.createdAt,
       updatedAt: contact.updatedAt,
     });

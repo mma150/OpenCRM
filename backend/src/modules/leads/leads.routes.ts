@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+  csvResponse,
   errorResponse,
   jsonBody,
   jsonResponse,
@@ -12,12 +13,14 @@ import {
   followUpBodySchema,
   recordIdParamsSchema,
 } from "../../lib/record-fields";
+import { CSV_EXPORT, CUSTOM_FIELD_FILTERS } from "../../lib/route-docs";
 import { authenticate } from "../../middleware/authenticate";
 import {
   assignLeadHandler,
   convertLeadHandler,
   createLeadHandler,
   deleteLeadHandler,
+  exportLeadsHandler,
   getLeadHandler,
   listLeadsHandler,
   markLeadLostHandler,
@@ -28,6 +31,7 @@ import {
   assignLeadBodySchema,
   convertLeadBodySchema,
   createLeadBodySchema,
+  leadExportQuerySchema,
   leadListQuerySchema,
   leadListResponseSchema,
   leadResponseSchema,
@@ -43,6 +47,8 @@ leadsRouter.use(authenticate);
 
 leadsRouter.get("/", listLeadsHandler);
 leadsRouter.post("/", createLeadHandler);
+// Above /:id, or "export" would be read as an id.
+leadsRouter.get("/export", exportLeadsHandler);
 leadsRouter.get("/:id", getLeadHandler);
 leadsRouter.patch("/:id", updateLeadHandler);
 leadsRouter.delete("/:id", deleteLeadHandler);
@@ -71,10 +77,26 @@ registry.registerPath({
   path: "/leads",
   tags,
   summary: "List the leads the caller may see, with search, filters, sorting and paging",
+  description: CUSTOM_FIELD_FILTERS,
   security,
   request: { query: leadListQuerySchema },
   responses: {
     200: jsonResponse("One page of leads; meta.total counts every match", leadListResponseSchema),
+    400: validationFailed,
+    401: unauthenticated,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/leads/export",
+  tags,
+  summary: "Download the leads the caller may see as a CSV file",
+  description: CSV_EXPORT,
+  security,
+  request: { query: leadExportQuerySchema },
+  responses: {
+    200: csvResponse("The CSV file"),
     400: validationFailed,
     401: unauthenticated,
   },

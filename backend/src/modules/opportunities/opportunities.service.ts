@@ -1,5 +1,22 @@
-import type { PipelineStage, Prisma } from "../../generated/prisma/client";
+import type { CustomField, PipelineStage, Prisma } from "../../generated/prisma/client";
 import { AppError, fieldError } from "../../lib/app-error";
+import {
+  buildCsvExport,
+  type CsvExport,
+  customFieldColumns,
+  enumLabel,
+  type ExportColumn,
+  exportWindow,
+  momentFormatter,
+} from "../../lib/csv-export";
+import {
+  type CustomFieldFilter,
+  customFieldsForCreate,
+  customFieldsForUpdate,
+  customFieldWhere,
+  listActiveCustomFields,
+  toApiCustomFields,
+} from "../../lib/custom-fields";
 import { type Page, pageWindow, searchWords } from "../../lib/list-query";
 import { prisma } from "../../lib/prisma";
 import {
@@ -25,6 +42,7 @@ import {
   type BoardQuery,
   type CloseOpportunityBody,
   type CreateOpportunityBody,
+  type OpportunityExportQuery,
   type OpportunityListQuery,
   type UpdateOpportunityBody,
 } from "./opportunities.schema";
@@ -63,7 +81,10 @@ function toDate(day: string | null | undefined): Date | null | undefined {
   return typeof day === "string" ? new Date(day) : day;
 }
 
-function toApiOpportunity(opportunity: OpportunityWithDetails): ApiOpportunity {
+function toApiOpportunity(
+  opportunity: OpportunityWithDetails,
+  fields: CustomField[],
+): ApiOpportunity {
   return {
     id: opportunity.id,
     name: opportunity.name,
@@ -81,9 +102,15 @@ function toApiOpportunity(opportunity: OpportunityWithDetails): ApiOpportunity {
     lastContactAt: opportunity.lastContactAt?.toISOString() ?? null,
     followUpAt: opportunity.followUpAt?.toISOString() ?? null,
     followUpNote: opportunity.followUpNote,
+    customFields: toApiCustomFields(fields, opportunity.customFields),
     createdAt: opportunity.createdAt.toISOString(),
     updatedAt: opportunity.updatedAt.toISOString(),
   };
+}
+
+// An opportunity as the API answers with it: its custom fields are the ones in use now.
+async function presentOpportunity(opportunity: OpportunityWithDetails): Promise<ApiOpportunity> {
+  return toApiOpportunity(opportunity, await listActiveCustomFields("OPPORTUNITY"));
 }
 
 // Every query starts here: the opportunities this user may see, never a deleted one.
@@ -135,6 +162,8 @@ function matching(
       "search" | "stageId" | "status" | "ownerId" | "companyId" | "contactId"
     >
   >,
+  // The custom field filters, as customFieldWhere() returns them.
+  custom: Prisma.OpportunityWhereInput[],
 ): Prisma.OpportunityWhereInput {
   const visible = visibleLiveRecords(actor);
   // Every word typed must appear in the name, the company's name or the contact's name.
@@ -155,6 +184,7 @@ function matching(
       query.status ? { stage: { kind: query.status } } : {},
       query.companyId ? { company: { id: query.companyId, ...visible } } : {},
       query.contactId ? { contact: { id: query.contactId, ...visible } } : {},
+      ...custom,
       ...search,
     ],
   };
@@ -180,27 +210,81 @@ function orderBy(query: OpportunityListQuery): Prisma.OpportunityOrderByWithRela
   }
 }
 
-export async function listOpportunities(
+// What the list and the export share: the opportunities that match, in order, within
+// `window`.
+async function findOpportunities(
   actor: Actor,
   query: OpportunityListQuery,
+  filters: CustomFieldFilter[],
+  fields: CustomField[],
+  window: { skip: number; take: number },
 ): Promise<Page<ApiOpportunity>> {
-  const where = matching(actor, query);
+  const where = matching(actor, query, customFieldWhere(fields, filters));
   const [opportunities, total] = await Promise.all([
     prisma.opportunity.findMany({
       where,
       include: withDetails(actor),
       orderBy: orderBy(query),
-      ...pageWindow(query),
+      ...window,
     }),
     prisma.opportunity.count({ where }),
   ]);
-  return { items: opportunities.map((opportunity) => toApiOpportunity(opportunity)), total };
+  return {
+    items: opportunities.map((opportunity) => toApiOpportunity(opportunity, fields)),
+    total,
+  };
+}
+
+export async function listOpportunities(
+  actor: Actor,
+  query: OpportunityListQuery,
+  filters: CustomFieldFilter[],
+): Promise<Page<ApiOpportunity>> {
+  const fields = await listActiveCustomFields("OPPORTUNITY");
+  return findOpportunities(actor, query, filters, fields, pageWindow(query));
+}
+
+// DATA-03: the list as a CSV file, for everyone who can see the list. The contact and the
+// company are named only when the caller may see them, as in the list.
+export async function exportOpportunities(
+  actor: Actor,
+  query: OpportunityExportQuery,
+  filters: CustomFieldFilter[],
+): Promise<CsvExport> {
+  const fields = await listActiveCustomFields("OPPORTUNITY");
+  const moment = momentFormatter(query.tz);
+  const columns: ExportColumn<ApiOpportunity>[] = [
+    { header: "Name", value: (opportunity) => opportunity.name },
+    { header: "Value", value: (opportunity) => opportunity.value },
+    { header: "Stage", value: (opportunity) => opportunity.stage.name },
+    { header: "Status", value: (opportunity) => enumLabel(opportunity.status) },
+    { header: "Expected close date", value: (opportunity) => opportunity.expectedCloseDate },
+    { header: "Contact", value: (opportunity) => opportunity.contact?.name ?? null },
+    { header: "Company", value: (opportunity) => opportunity.company?.name ?? null },
+    { header: "Owner", value: (opportunity) => opportunity.owner.name },
+    { header: "Close reason", value: (opportunity) => opportunity.closeReason },
+    { header: "Closed", value: (opportunity) => moment(opportunity.closedAt) },
+    { header: "Notes", value: (opportunity) => opportunity.notes },
+    { header: "Last contact", value: (opportunity) => moment(opportunity.lastContactAt) },
+    { header: "Follow-up", value: (opportunity) => moment(opportunity.followUpAt) },
+    { header: "Follow-up note", value: (opportunity) => opportunity.followUpNote },
+    { header: "Created", value: (opportunity) => moment(opportunity.createdAt) },
+    { header: "Updated", value: (opportunity) => moment(opportunity.updatedAt) },
+    ...customFieldColumns<ApiOpportunity>(fields),
+  ];
+  const page = await findOpportunities(actor, query, filters, fields, exportWindow);
+  return buildCsvExport(columns, page);
 }
 
 // The pipeline as columns (OPP-02): every stage in order, Won and Lost included, each with
 // its newest cards. The count and the total value cover the whole column, not only the cards.
-export async function getBoard(actor: Actor, query: BoardQuery): Promise<BoardColumn[]> {
-  const where = matching(actor, query);
+export async function getBoard(
+  actor: Actor,
+  query: BoardQuery,
+  filters: CustomFieldFilter[],
+): Promise<BoardColumn[]> {
+  const fields = await listActiveCustomFields("OPPORTUNITY");
+  const where = matching(actor, query, customFieldWhere(fields, filters));
   const [stages, totals] = await Promise.all([
     prisma.pipelineStage.findMany({ orderBy: pipelineOrder }),
     prisma.opportunity.groupBy({
@@ -226,14 +310,14 @@ export async function getBoard(actor: Actor, query: BoardQuery): Promise<BoardCo
         stage: { id: stage.id, name: stage.name, position, kind: stage.kind },
         count: total?._count._all ?? 0,
         totalValue: total?._sum.value?.toNumber() ?? 0,
-        opportunities: cards.map((card) => toApiOpportunity(card)),
+        opportunities: cards.map((card) => toApiOpportunity(card, fields)),
       };
     }),
   );
 }
 
 export async function getOpportunity(actor: Actor, id: string): Promise<ApiOpportunity> {
-  return toApiOpportunity(await findOpportunity(actor, id));
+  return presentOpportunity(await findOpportunity(actor, id));
 }
 
 export async function createOpportunity(
@@ -241,16 +325,18 @@ export async function createOpportunity(
   input: CreateOpportunityBody,
 ): Promise<ApiOpportunity> {
   assertCanWrite(actor);
-  const { ownerId = actor.id, stageId, expectedCloseDate, ...fields } = input;
+  const { ownerId = actor.id, stageId, expectedCloseDate, customFields: sent, ...fields } = input;
   await assertAssignable(actor, ownerId, "opportunities");
   await assertLinksVisible(actor, fields);
   const stage = await findOpenStage(stageId);
+  const customFields = customFieldsForCreate(await listActiveCustomFields("OPPORTUNITY"), sent);
 
   // Every change the timeline records is made in one transaction with its entry.
   const opportunity = await prisma.$transaction(async (tx) => {
     const created = await tx.opportunity.create({
       data: {
         ...fields,
+        customFields,
         expectedCloseDate: toDate(expectedCloseDate),
         stageId: stage.id,
         ownerId,
@@ -276,12 +362,13 @@ export async function updateOpportunity(
   input: UpdateOpportunityBody,
 ): Promise<ApiOpportunity> {
   assertCanWrite(actor);
-  await findOpportunity(actor, id);
+  const opportunity = await findOpportunity(actor, id);
   await assertLinksVisible(actor, input);
-  const { expectedCloseDate, ...fields } = input;
+  const { expectedCloseDate, customFields: sent, ...fields } = input;
+  const customFields = await customFieldsForUpdate("OPPORTUNITY", opportunity.customFields, sent);
   await prisma.opportunity.update({
     where: { id },
-    data: { ...fields, expectedCloseDate: toDate(expectedCloseDate) },
+    data: { ...fields, customFields, expectedCloseDate: toDate(expectedCloseDate) },
   });
   return getOpportunity(actor, id);
 }
@@ -331,7 +418,7 @@ export async function moveOpportunity(
   const stage = await findOpenStage(stageId);
   // Moving an opportunity to the stage it is already in changes nothing, so it writes no entry.
   if (stage.id === opportunity.stageId) {
-    return toApiOpportunity(opportunity);
+    return presentOpportunity(opportunity);
   }
   return changeStage(actor, opportunity, stage);
 }
@@ -379,7 +466,7 @@ export async function assignOpportunity(
   await assertAssignable(actor, ownerId, "opportunities");
   // Assigning it to the owner it already has changes nothing, so it writes no entry.
   if (ownerId === opportunity.ownerId) {
-    return toApiOpportunity(opportunity);
+    return presentOpportunity(opportunity);
   }
 
   await prisma.$transaction(async (tx) => {

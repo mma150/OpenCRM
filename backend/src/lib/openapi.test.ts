@@ -9,7 +9,11 @@ import { buildOpenApiDocument } from "./openapi";
 import { prisma } from "./prisma";
 
 interface ResponseObject {
-  content: { "application/json": { schema: Record<string, unknown> } };
+  content: {
+    "application/json": { schema: Record<string, unknown> };
+    "text/csv"?: { schema: Record<string, unknown> };
+  };
+  headers?: Record<string, unknown>;
 }
 
 interface Operation {
@@ -88,6 +92,7 @@ describe("OpenAPI document content", () => {
     expect(operations.sort()).toEqual([
       "delete /companies/{id}",
       "delete /contacts/{id}",
+      "delete /custom-fields/{id}",
       "delete /leads/{id}",
       "delete /opportunities/{id}",
       "delete /pipeline-stages/{id}",
@@ -97,26 +102,33 @@ describe("OpenAPI document content", () => {
       "get /auth/me",
       "get /auth/setup-status",
       "get /companies",
+      "get /companies/export",
       "get /companies/industries",
       "get /companies/{id}",
       "get /companies/{id}/timeline",
       "get /contacts",
+      "get /contacts/export",
       "get /contacts/{id}",
       "get /contacts/{id}/timeline",
+      "get /custom-fields",
       "get /dashboard/me",
       "get /dashboard/team",
       "get /health",
+      "get /imports/fields",
       "get /leads",
+      "get /leads/export",
       "get /leads/{id}",
       "get /leads/{id}/timeline",
       "get /notifications",
       "get /notifications/unread-count",
       "get /opportunities",
       "get /opportunities/board",
+      "get /opportunities/export",
       "get /opportunities/{id}",
       "get /opportunities/{id}/timeline",
       "get /pipeline-stages",
       "get /tasks",
+      "get /tasks/export",
       "get /tasks/summary",
       "get /tasks/{id}",
       "get /users",
@@ -124,6 +136,7 @@ describe("OpenAPI document content", () => {
       "patch /auth/me",
       "patch /companies/{id}",
       "patch /contacts/{id}",
+      "patch /custom-fields/{id}",
       "patch /leads/{id}",
       "patch /opportunities/{id}",
       "patch /pipeline-stages/{id}",
@@ -145,6 +158,11 @@ describe("OpenAPI document content", () => {
       "post /contacts/{id}/assign",
       "post /contacts/{id}/conversations",
       "post /contacts/{id}/notes",
+      "post /custom-fields",
+      "post /custom-fields/{id}/archive",
+      "post /custom-fields/{id}/restore",
+      "post /imports",
+      "post /imports/preview",
       "post /leads",
       "post /leads/{id}/assign",
       "post /leads/{id}/conversations",
@@ -169,6 +187,7 @@ describe("OpenAPI document content", () => {
       "post /users/{id}/password-reset-link",
       "post /users/{id}/reactivate",
       "post /users/{id}/resend-invite",
+      "put /custom-fields/order",
       "put /leads/{id}/follow-up",
       "put /opportunities/{id}/follow-up",
       "put /pipeline-stages/order",
@@ -210,8 +229,43 @@ describe("OpenAPI document content", () => {
     expect(paths["/notifications/{id}/read"]?.post?.security).toEqual(session);
     expect(paths["/dashboard/me"]?.get.security).toEqual(session);
     expect(paths["/dashboard/team"]?.get.security).toEqual(session);
+    expect(paths["/custom-fields"]?.get.security).toEqual(session);
+    expect(paths["/custom-fields/order"]?.put?.security).toEqual(session);
+    expect(paths["/custom-fields/{id}/archive"]?.post?.security).toEqual(session);
+    expect(paths["/leads/export"]?.get.security).toEqual(session);
+    expect(paths["/tasks/export"]?.get.security).toEqual(session);
+    expect(paths["/imports/fields"]?.get.security).toEqual(session);
+    expect(paths["/imports/preview"]?.post?.security).toEqual(session);
+    expect(paths["/imports"]?.post?.security).toEqual(session);
     expect(paths["/auth/login"]?.post?.security).toBeUndefined();
     expect(paths["/health"]?.get.security).toBeUndefined();
+  });
+
+  it.each(["leads", "contacts", "companies", "opportunities", "tasks"])(
+    "describes /%s/export as a CSV download",
+    (records) => {
+      const ok = generated().paths[`/${records}/export`]?.get.responses["200"];
+
+      expect(Object.keys(ok?.content ?? {})).toEqual(["text/csv"]);
+      expect(ok?.content["text/csv"]?.schema).toEqual({ type: "string" });
+      expect(Object.keys(ok?.headers ?? {})).toEqual(["Content-Disposition", "X-Export-Truncated"]);
+    },
+  );
+
+  it("gives the four record types their custom field values", () => {
+    const schemas = generated().components.schemas as unknown as Record<
+      string,
+      { properties: Record<string, unknown> }
+    >;
+
+    for (const name of ["Lead", "Contact", "Company", "Opportunity"]) {
+      expect(schemas[name]?.properties.customFields, name).toEqual({
+        $ref: "#/components/schemas/CustomFieldValues",
+      });
+    }
+    for (const name of ["CreateLeadBody", "UpdateContactBody", "CreateCompanyBody"]) {
+      expect(schemas[name]?.properties.customFields, name).toBeDefined();
+    }
   });
 
   it("names the shared types and makes every request body strict", () => {
@@ -277,9 +331,33 @@ describe("OpenAPI document content", () => {
       "OPPORTUNITY_FOLLOW_UP",
       "TASK_ASSIGNED",
     ]);
+    expect(Object.keys(schemas)).toEqual(
+      expect.arrayContaining([
+        "CustomField",
+        "CustomFieldValues",
+        "CreateCustomFieldBody",
+        "UpdateCustomFieldBody",
+        "ReorderCustomFieldsBody",
+        "ImportField",
+        "ImportPreviewBody",
+        "ImportPreview",
+        "ImportBody",
+        "ImportResult",
+        "ImportRowError",
+      ]),
+    );
+    expect(schemas.CustomFieldRecordType?.enum).toEqual([
+      "LEAD",
+      "CONTACT",
+      "COMPANY",
+      "OPPORTUNITY",
+    ]);
+    expect(schemas.CustomFieldType?.enum).toEqual(["TEXT", "NUMBER", "DATE", "DROPDOWN"]);
+    expect(schemas.ImportType?.enum).toEqual(["LEAD", "CONTACT", "COMPANY"]);
+    expect(schemas.ImportFieldKind?.enum).toEqual(["TEXT", "EMAIL", "NUMBER", "DATE", "DROPDOWN"]);
     expect(schemas.Role?.enum).toEqual(["ADMIN", "SALES_MANAGER", "SALES_REP", "READ_ONLY"]);
     expect(schemas.UserStatus?.enum).toEqual(["ACTIVE", "INVITED", "DEACTIVATED"]);
-    expect(bodies.length).toBeGreaterThanOrEqual(30);
+    expect(bodies.length).toBeGreaterThanOrEqual(35);
     for (const name of bodies) {
       expect(schemas[name]?.additionalProperties, name).toBe(false);
     }

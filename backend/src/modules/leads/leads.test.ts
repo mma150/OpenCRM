@@ -36,6 +36,7 @@ interface ApiLead {
   followUpNote: string | null;
   convertedAt: string | null;
   convertedTo: { contact: Link | null; company: Link | null; opportunity: Link | null } | null;
+  customFields: Record<string, string | number | null>;
   createdAt: string;
   updatedAt: string;
 }
@@ -288,6 +289,7 @@ describe("create", () => {
       followUpNote: null,
       convertedAt: null,
       convertedTo: null,
+      customFields: {},
       createdAt: lead.createdAt,
       updatedAt: lead.updatedAt,
     });

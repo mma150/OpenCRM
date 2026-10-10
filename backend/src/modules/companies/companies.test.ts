@@ -23,6 +23,7 @@ interface ApiCompany {
   notes: string | null;
   owner: { id: string; name: string };
   contactCount: number;
+  customFields: Record<string, string | number | null>;
   createdAt: string;
   updatedAt: string;
 }
@@ -266,6 +267,7 @@ describe("create", () => {
       notes: "Met at the fair",
       owner: { id: ravi.id, name: "Ravi Rep" },
       contactCount: 0,
+      customFields: {},
       createdAt: company.createdAt,
       updatedAt: company.updatedAt,
     });

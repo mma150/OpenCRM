@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
 
+import { sendCsv } from "../../lib/csv-export";
+import { parseCustomFieldFilters } from "../../lib/custom-fields";
 import type { ListMeta } from "../../lib/list-query";
 import { followUpBodySchema, recordIdParamsSchema } from "../../lib/record-fields";
 import { getAuth } from "../../middleware/authenticate";
@@ -8,6 +10,7 @@ import {
   assignLeadBodySchema,
   convertLeadBodySchema,
   createLeadBodySchema,
+  leadExportQuerySchema,
   leadListQuerySchema,
   markLeadLostBodySchema,
   updateLeadBodySchema,
@@ -17,6 +20,7 @@ import {
   convertLead,
   createLead,
   deleteLead,
+  exportLeads,
   getLead,
   listLeads,
   markLeadLost,
@@ -26,9 +30,16 @@ import {
 
 export async function listLeadsHandler(req: Request, res: Response) {
   const query = leadListQuerySchema.parse(req.query);
-  const { items, total } = await listLeads(getAuth(req).user, query);
+  const filters = parseCustomFieldFilters(req.query);
+  const { items, total } = await listLeads(getAuth(req).user, query, filters);
   const meta: ListMeta = { page: query.page, pageSize: query.pageSize, total };
   res.json({ data: items, meta });
+}
+
+export async function exportLeadsHandler(req: Request, res: Response) {
+  const query = leadExportQuerySchema.parse(req.query);
+  const filters = parseCustomFieldFilters(req.query);
+  sendCsv(res, "leads", query.tz, await exportLeads(getAuth(req).user, query, filters));
 }
 
 export async function createLeadHandler(req: Request, res: Response) {

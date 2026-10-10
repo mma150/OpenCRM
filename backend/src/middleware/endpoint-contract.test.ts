@@ -23,18 +23,25 @@ const ROUTES_WITHOUT_INPUT = [
   "get /auth/me",
   "get /auth/setup-status",
   "get /companies",
+  "get /companies/export",
   "get /companies/industries",
   "get /contacts",
+  "get /contacts/export",
+  "get /custom-fields",
   "get /dashboard/me",
   "get /dashboard/team",
   "get /health",
+  "get /imports/fields",
   "get /leads",
+  "get /leads/export",
   "get /notifications",
   "get /notifications/unread-count",
   "get /opportunities",
   "get /opportunities/board",
+  "get /opportunities/export",
   "get /pipeline-stages",
   "get /tasks",
+  "get /tasks/export",
   "get /tasks/summary",
   "get /users",
   "get /users/assignable",
@@ -95,9 +102,9 @@ afterAll(async () => {
 });
 
 describe("endpoint contract", () => {
-  it("covers the auth, users, record, pipeline, timeline, activity, task, notification and dashboard routes", () => {
-    expect(routes.length).toBeGreaterThanOrEqual(86);
-    expect(signedInRoutes.length).toBeGreaterThanOrEqual(78);
+  it("covers the auth, users, record, pipeline, timeline, activity, task, notification, dashboard, custom field, export and import routes", () => {
+    expect(routes.length).toBeGreaterThanOrEqual(101);
+    expect(signedInRoutes.length).toBeGreaterThanOrEqual(93);
     expect(routes.map((route) => route.key)).toEqual(
       expect.arrayContaining([
         "get /leads/{id}/timeline",
@@ -159,6 +166,21 @@ describe("endpoint contract", () => {
         "post /notifications/{id}/read",
         "get /dashboard/me",
         "get /dashboard/team",
+        "get /custom-fields",
+        "post /custom-fields",
+        "put /custom-fields/order",
+        "patch /custom-fields/{id}",
+        "delete /custom-fields/{id}",
+        "post /custom-fields/{id}/archive",
+        "post /custom-fields/{id}/restore",
+        "get /leads/export",
+        "get /contacts/export",
+        "get /companies/export",
+        "get /opportunities/export",
+        "get /tasks/export",
+        "get /imports/fields",
+        "post /imports/preview",
+        "post /imports",
       ]),
     );
   });

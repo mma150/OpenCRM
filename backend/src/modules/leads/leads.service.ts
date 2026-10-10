@@ -1,5 +1,22 @@
-import type { Prisma } from "../../generated/prisma/client";
+import type { CustomField, Prisma } from "../../generated/prisma/client";
 import { AppError, fieldError } from "../../lib/app-error";
+import {
+  buildCsvExport,
+  type CsvExport,
+  customFieldColumns,
+  enumLabel,
+  type ExportColumn,
+  exportWindow,
+  momentFormatter,
+} from "../../lib/csv-export";
+import {
+  type CustomFieldFilter,
+  customFieldsForCreate,
+  customFieldsForUpdate,
+  customFieldWhere,
+  listActiveCustomFields,
+  toApiCustomFields,
+} from "../../lib/custom-fields";
 import { type Page, pageWindow, searchWords } from "../../lib/list-query";
 import { prisma } from "../../lib/prisma";
 import {
@@ -17,6 +34,7 @@ import type {
   ApiLead,
   ConvertLeadBody,
   CreateLeadBody,
+  LeadExportQuery,
   LeadListQuery,
   MarkLeadLostBody,
   UpdateLeadBody,
@@ -45,7 +63,7 @@ function fullName(person: { firstName: string; lastName: string }): string {
   return `${person.firstName} ${person.lastName}`;
 }
 
-function toApiLead(lead: LeadWithOwner): ApiLead {
+function toApiLead(lead: LeadWithOwner, fields: CustomField[]): ApiLead {
   const contact = lead.convertedContact;
   return {
     id: lead.id,
@@ -76,9 +94,15 @@ function toApiLead(lead: LeadWithOwner): ApiLead {
             opportunity: lead.convertedOpportunity,
           }
         : null,
+    customFields: toApiCustomFields(fields, lead.customFields),
     createdAt: lead.createdAt.toISOString(),
     updatedAt: lead.updatedAt.toISOString(),
   };
+}
+
+// A lead as the API answers with it: its custom fields are the ones in use right now.
+async function presentLead(lead: LeadWithOwner): Promise<ApiLead> {
+  return toApiLead(lead, await listActiveCustomFields("LEAD"));
 }
 
 // Every query starts here: the leads this user may see, never a deleted one.
@@ -122,7 +146,14 @@ function orderBy(query: LeadListQuery): Prisma.LeadOrderByWithRelationInput[] {
   return [{ [sort]: order }, tieBreak];
 }
 
-export async function listLeads(actor: Actor, query: LeadListQuery): Promise<Page<ApiLead>> {
+// What the list and the export share: the leads that match, in order, within `window`.
+async function findLeads(
+  actor: Actor,
+  query: LeadListQuery,
+  filters: CustomFieldFilter[],
+  fields: CustomField[],
+  window: { skip: number; take: number },
+): Promise<Page<ApiLead>> {
   // Every word typed must appear in the name, the company or the email.
   const search = searchWords(query.search).map((word) => {
     const contains = { contains: word, mode: "insensitive" } as const;
@@ -139,6 +170,7 @@ export async function listLeads(actor: Actor, query: LeadListQuery): Promise<Pag
     AND: [
       visibleLeads(actor),
       { status: query.status, source: query.source, ownerId: query.ownerId },
+      ...customFieldWhere(fields, filters),
       ...search,
     ],
   };
@@ -148,25 +180,69 @@ export async function listLeads(actor: Actor, query: LeadListQuery): Promise<Pag
       where,
       include: withOwnerAndConversion(actor),
       orderBy: orderBy(query),
-      ...pageWindow(query),
+      ...window,
     }),
     prisma.lead.count({ where }),
   ]);
-  return { items: leads.map((lead) => toApiLead(lead)), total };
+  return { items: leads.map((lead) => toApiLead(lead, fields)), total };
+}
+
+export async function listLeads(
+  actor: Actor,
+  query: LeadListQuery,
+  filters: CustomFieldFilter[],
+): Promise<Page<ApiLead>> {
+  const fields = await listActiveCustomFields("LEAD");
+  return findLeads(actor, query, filters, fields, pageWindow(query));
+}
+
+// DATA-03: the list as a CSV file, for everyone who can see the list.
+export async function exportLeads(
+  actor: Actor,
+  query: LeadExportQuery,
+  filters: CustomFieldFilter[],
+): Promise<CsvExport> {
+  const fields = await listActiveCustomFields("LEAD");
+  const moment = momentFormatter(query.tz);
+  const columns: ExportColumn<ApiLead>[] = [
+    { header: "First name", value: (lead) => lead.firstName },
+    { header: "Last name", value: (lead) => lead.lastName },
+    { header: "Company", value: (lead) => lead.company },
+    { header: "Job title", value: (lead) => lead.jobTitle },
+    { header: "Email", value: (lead) => lead.email },
+    { header: "Phone", value: (lead) => lead.phone },
+    { header: "Source", value: (lead) => enumLabel(lead.source) },
+    { header: "Status", value: (lead) => enumLabel(lead.status) },
+    { header: "Owner", value: (lead) => lead.owner.name },
+    { header: "Estimated value", value: (lead) => lead.estimatedValue },
+    { header: "Notes", value: (lead) => lead.notes },
+    { header: "Lost reason", value: (lead) => lead.lostReason && enumLabel(lead.lostReason) },
+    { header: "Lost note", value: (lead) => lead.lostNote },
+    { header: "Last contact", value: (lead) => moment(lead.lastContactAt) },
+    { header: "Follow-up", value: (lead) => moment(lead.followUpAt) },
+    { header: "Follow-up note", value: (lead) => lead.followUpNote },
+    { header: "Created", value: (lead) => moment(lead.createdAt) },
+    { header: "Updated", value: (lead) => moment(lead.updatedAt) },
+    ...customFieldColumns<ApiLead>(fields),
+  ];
+  return buildCsvExport(columns, await findLeads(actor, query, filters, fields, exportWindow));
 }
 
 export async function getLead(actor: Actor, id: string): Promise<ApiLead> {
-  return toApiLead(await findLead(actor, id));
+  return presentLead(await findLead(actor, id));
 }
 
 export async function createLead(actor: Actor, input: CreateLeadBody): Promise<ApiLead> {
   assertCanWrite(actor);
-  const { ownerId = actor.id, ...fields } = input;
+  const { ownerId = actor.id, customFields: sent, ...fields } = input;
   await assertAssignable(actor, ownerId, "leads");
+  const customFields = customFieldsForCreate(await listActiveCustomFields("LEAD"), sent);
 
   // Every change the timeline records is made in one transaction with its entry.
   const lead = await prisma.$transaction(async (tx) => {
-    const created = await tx.lead.create({ data: { ...fields, ownerId, createdById: actor.id } });
+    const created = await tx.lead.create({
+      data: { ...fields, customFields, ownerId, createdById: actor.id },
+    });
     await addTimelineEntry(tx, {
       kind: "CREATED",
       authorId: actor.id,
@@ -186,13 +262,19 @@ export async function updateLead(
   assertCanWrite(actor);
   const lead = await findLead(actor, id);
   assertNotConverted(lead);
+  const { customFields: sent, ...fields } = input;
+  const customFields = await customFieldsForUpdate("LEAD", lead.customFields, sent);
   // Moving a lost lead back to an open status reopens it.
   const reopen = input.status && lead.status === "LOST";
 
   await prisma.$transaction(async (tx) => {
     const changed = await tx.lead.update({
       where: { id },
-      data: { ...input, ...(reopen ? { lostReason: null, lostNote: null, lostAt: null } : {}) },
+      data: {
+        ...fields,
+        customFields,
+        ...(reopen ? { lostReason: null, lostNote: null, lostAt: null } : {}),
+      },
     });
     // Only a change of status is history; editing the other fields writes nothing.
     if (changed.status !== lead.status) {
@@ -240,7 +322,7 @@ export async function assignLead(actor: Actor, id: string, ownerId: string): Pro
   await assertAssignable(actor, ownerId, "leads");
   // Assigning a lead to the owner it already has changes nothing, so it writes no entry.
   if (ownerId === lead.ownerId) {
-    return toApiLead(lead);
+    return presentLead(lead);
   }
 
   await prisma.$transaction(async (tx) => {

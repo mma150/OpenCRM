@@ -1,3 +1,4 @@
+import { customFieldInputSchema, customFieldValuesSchema } from "../../lib/custom-fields";
 import { listEnvelope, listQuerySchema } from "../../lib/list-query";
 import { envelope, z } from "../../lib/openapi";
 import {
@@ -6,6 +7,7 @@ import {
   recordLinkSchema,
   recordOwnerSchema,
 } from "../../lib/record-fields";
+import { timeZoneSchema } from "../../lib/time-zone";
 import { nameSchema } from "../../lib/user-fields";
 
 export const contactSchema = z
@@ -27,6 +29,8 @@ export const contactSchema = z
     convertedFromLead: recordLinkSchema.nullable(),
     // When the latest logged conversation happened; null until the first one.
     lastContactAt: z.string().nullable(),
+    // One key per custom field of contacts that is in use; null where there is no value.
+    customFields: customFieldValuesSchema,
     createdAt: z.string(),
     updatedAt: z.string(),
   })
@@ -42,6 +46,8 @@ const contactFields = {
   // Must be a company the caller may see. null means no company.
   companyId: z.uuid().nullable().optional(),
   notes: optionalText(10_000),
+  // { "<custom field id>": value }. On PATCH only the keys sent change; null clears one.
+  customFields: customFieldInputSchema,
 };
 
 export const createContactBodySchema = z
@@ -83,6 +89,12 @@ export const contactListQuerySchema = listQuerySchema(
 });
 
 export type ContactListQuery = z.infer<typeof contactListQuerySchema>;
+
+// The export takes what the list takes (paging is ignored), and the viewer's time zone for
+// the times in the file.
+export const contactExportQuerySchema = contactListQuerySchema.extend({ tz: timeZoneSchema });
+
+export type ContactExportQuery = z.infer<typeof contactExportQuerySchema>;
 
 export const contactResponseSchema = envelope(contactSchema);
 export const contactListResponseSchema = listEnvelope(contactSchema);

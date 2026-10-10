@@ -1,5 +1,13 @@
 import type { Prisma } from "../../generated/prisma/client";
 import { AppError, fieldError } from "../../lib/app-error";
+import {
+  buildCsvExport,
+  type CsvExport,
+  enumLabel,
+  type ExportColumn,
+  exportWindow,
+  momentFormatter,
+} from "../../lib/csv-export";
 import { type Page, pageWindow, searchWords } from "../../lib/list-query";
 import { addNotification, notificationLinks } from "../../lib/notifications";
 import { prisma } from "../../lib/prisma";
@@ -225,7 +233,12 @@ function recordIs(actor: Actor, type: TaskRecordInput["type"], id: string): Pris
   }
 }
 
-export async function listTasks(actor: Actor, query: TaskListQuery): Promise<Page<ApiTask>> {
+// What the list and the export share: the tasks that match, in order, within `window`.
+async function findTasks(
+  actor: Actor,
+  query: TaskListQuery,
+  window: { skip: number; take: number },
+): Promise<Page<ApiTask>> {
   // Every word typed must appear in the title.
   const search = searchWords(query.search).map((word) => ({
     title: { contains: word, mode: "insensitive" as const },
@@ -245,11 +258,36 @@ export async function listTasks(actor: Actor, query: TaskListQuery): Promise<Pag
       where,
       include: withDetails(actor),
       orderBy: orderBy(query),
-      ...pageWindow(query),
+      ...window,
     }),
     prisma.task.count({ where }),
   ]);
   return { items: tasks.map((task) => toApiTask(task)), total };
+}
+
+export function listTasks(actor: Actor, query: TaskListQuery): Promise<Page<ApiTask>> {
+  return findTasks(actor, query, pageWindow(query));
+}
+
+// DATA-03: the list as a CSV file, for everyone who can see the list. The record is named
+// only when the caller may see it, as in the list.
+export async function exportTasks(actor: Actor, query: TaskListQuery): Promise<CsvExport> {
+  const moment = momentFormatter(query.tz);
+  const columns: ExportColumn<ApiTask>[] = [
+    { header: "Title", value: (task) => task.title },
+    { header: "Description", value: (task) => task.description },
+    { header: "Due", value: (task) => moment(task.dueAt) },
+    { header: "Status", value: (task) => enumLabel(task.status) },
+    { header: "Completed", value: (task) => moment(task.completedAt) },
+    { header: "Assignee", value: (task) => task.assignee.name },
+    { header: "Created by", value: (task) => task.createdBy.name },
+    { header: "Record type", value: (task) => task.record && enumLabel(task.record.type) },
+    { header: "Record", value: (task) => task.record?.name ?? null },
+    { header: "Reminder", value: (task) => moment(task.reminderAt) },
+    { header: "Created", value: (task) => moment(task.createdAt) },
+    { header: "Updated", value: (task) => moment(task.updatedAt) },
+  ];
+  return buildCsvExport(columns, await findTasks(actor, query, exportWindow));
 }
 
 // A person's own open tasks: the ones assigned to them that are not done.

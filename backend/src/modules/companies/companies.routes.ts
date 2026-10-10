@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+  csvResponse,
   errorResponse,
   jsonBody,
   jsonResponse,
@@ -8,11 +9,13 @@ import {
   sessionSecurity,
 } from "../../lib/openapi";
 import { deletedResponseSchema, recordIdParamsSchema } from "../../lib/record-fields";
+import { CSV_EXPORT, CUSTOM_FIELD_FILTERS } from "../../lib/route-docs";
 import { authenticate } from "../../middleware/authenticate";
 import {
   assignCompanyHandler,
   createCompanyHandler,
   deleteCompanyHandler,
+  exportCompaniesHandler,
   getCompanyHandler,
   listCompaniesHandler,
   listIndustriesHandler,
@@ -20,6 +23,7 @@ import {
 } from "./companies.controller";
 import {
   assignCompanyBodySchema,
+  companyExportQuerySchema,
   companyListQuerySchema,
   companyListResponseSchema,
   companyResponseSchema,
@@ -36,8 +40,9 @@ companiesRouter.use(authenticate);
 
 companiesRouter.get("/", listCompaniesHandler);
 companiesRouter.post("/", createCompanyHandler);
-// Above /:id, or "industries" would be read as an id.
+// Above /:id, or "industries" and "export" would be read as ids.
 companiesRouter.get("/industries", listIndustriesHandler);
+companiesRouter.get("/export", exportCompaniesHandler);
 companiesRouter.get("/:id", getCompanyHandler);
 companiesRouter.patch("/:id", updateCompanyHandler);
 companiesRouter.delete("/:id", deleteCompanyHandler);
@@ -62,8 +67,7 @@ registry.registerPath({
   path: "/companies",
   tags,
   summary: "List the companies the caller may see, with search, filters, sorting and paging",
-  description:
-    "search matches the name, website and industry. industry matches the whole value, whatever the case. Sorted by name, A to Z, unless asked otherwise; a company without an industry sorts last.",
+  description: `search matches the name, website and industry. industry matches the whole value, whatever the case. Sorted by name, A to Z, unless asked otherwise; a company without an industry sorts last. ${CUSTOM_FIELD_FILTERS}`,
   security,
   request: { query: companyListQuerySchema },
   responses: {
@@ -84,6 +88,21 @@ registry.registerPath({
   security,
   responses: {
     200: jsonResponse("The industries, A to Z", industriesResponseSchema),
+    401: unauthenticated,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/companies/export",
+  tags,
+  summary: "Download the companies the caller may see as a CSV file",
+  description: CSV_EXPORT,
+  security,
+  request: { query: companyExportQuerySchema },
+  responses: {
+    200: csvResponse("The CSV file"),
+    400: validationFailed,
     401: unauthenticated,
   },
 });
