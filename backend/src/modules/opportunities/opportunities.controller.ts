@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 
 import type { ListMeta } from "../../lib/list-query";
-import { recordIdParamsSchema } from "../../lib/record-fields";
+import { followUpBodySchema, recordIdParamsSchema } from "../../lib/record-fields";
 import { getAuth } from "../../middleware/authenticate";
 import {
   type ApiOpportunity,
@@ -25,6 +25,7 @@ import {
   listOpportunities,
   moveOpportunity,
   reopenOpportunity,
+  setOpportunityFollowUp,
   updateOpportunity,
 } from "./opportunities.service";
 
@@ -86,6 +87,13 @@ export async function assignOpportunityHandler(req: Request, res: Response) {
   const { id } = recordIdParamsSchema.parse(req.params);
   const { ownerId } = assignOpportunityBodySchema.parse(req.body);
   const data: ApiOpportunity = await assignOpportunity(getAuth(req).user, id, ownerId);
+  res.json({ data, meta: {} });
+}
+
+export async function setOpportunityFollowUpHandler(req: Request, res: Response) {
+  const { id } = recordIdParamsSchema.parse(req.params);
+  const input = followUpBodySchema.parse(req.body);
+  const data: ApiOpportunity = await setOpportunityFollowUp(getAuth(req).user, id, input);
   res.json({ data, meta: {} });
 }
 

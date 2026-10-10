@@ -38,7 +38,7 @@ The layering is routes, then controller, then service, then Prisma.
 | Nothing outside `src/env.ts`, `prisma.config.ts` and `test/global-setup.ts` reads `process.env`. | ESLint `no-restricted-properties` |
 | Services never touch `req` or `res`; they take plain arguments and return plain data. | Code review (a service that imports Express types is wrong) |
 | Services call Prisma directly. There is **no repository layer**. | Convention; revisit only if a service becomes untestable |
-| Besides services, only the shared session and link helpers in `src/lib/` (`sessions.ts`, `account-links.ts`), `addTimelineEntry` in `lib/timeline.ts` and `assertAssignable` in `lib/record-owner.ts` call Prisma, because the `authenticate` middleware and several modules need them. | Code review |
+| Besides services, only the shared session and link helpers in `src/lib/` (`sessions.ts`, `account-links.ts`), `addTimelineEntry` in `lib/timeline.ts`, `assertAssignable` in `lib/record-owner.ts`, `addNotification` in `lib/notifications.ts` and the reminder runner in `lib/reminders.ts` call Prisma, because the `authenticate` middleware, several modules and the server's timer need them. | Code review |
 | Expected failures are thrown as `AppError`; everything else is allowed to throw. | Code review and `error-handler.test.ts` |
 
 Express 5 specifics: an async handler needs no `try/catch`, because a rejected promise is forwarded to the error handler; and `req.query` is a read-only getter, so never assign to it. Validate by calling `schema.parse(req.query)` at the top of the controller instead of writing middleware that rewrites the request.
@@ -175,7 +175,7 @@ The API describes itself from the same Zod schemas it validates with, so documen
 
 ## Prisma and the database
 
-PostgreSQL is reached through Prisma 7 with the `pg` driver adapter ([`backend/src/lib/prisma.ts`](../../backend/src/lib/prisma.ts)). Only services import it. The schema is [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma); its models are `User`, `Session`, `AuthToken` (invite and password-reset links), the owned records `Lead`, `Contact`, `Company` and `Opportunity`, `PipelineStage` (see [The pipeline and opportunities](#the-pipeline-and-opportunities)) and `TimelineEntry` (see [The timeline](#the-timeline)). Ids are UUID version 7 (`@default(uuid(7))`). The generated client goes to `backend/src/generated/prisma/`, which is git-ignored and recreated by `prisma generate`.
+PostgreSQL is reached through Prisma 7 with the `pg` driver adapter ([`backend/src/lib/prisma.ts`](../../backend/src/lib/prisma.ts)). Only services import it. The schema is [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma); its models are `User`, `Session`, `AuthToken` (invite and password-reset links), the owned records `Lead`, `Contact`, `Company` and `Opportunity`, `PipelineStage` (see [The pipeline and opportunities](#the-pipeline-and-opportunities)), `TimelineEntry` (see [The timeline](#the-timeline)), `Task` (see [Tasks](#tasks)) and `Notification` (see [Notifications](#notifications)). Ids are UUID version 7 (`@default(uuid(7))`). The generated client goes to `backend/src/generated/prisma/`, which is git-ignored and recreated by `prisma generate`.
 
 Run Prisma inside the API container, where the database host and credentials are already set:
 
@@ -234,7 +234,7 @@ Production note: the cookie is `SameSite=Lax`, so the web app and the API must b
 
 ## Record access
 
-Leads, contacts, companies and opportunities (and later tasks) are **owned records**: each has an `ownerId` column and an `owner` relation to `User`, and who may see or change one depends on the caller's role and on who the owner is (ROLE-04 to ROLE-08).
+Leads, contacts, companies and opportunities are **owned records** (a task is not; see [Tasks](#tasks)): each has an `ownerId` column and an `owner` relation to `User`, and who may see or change one depends on the caller's role and on who the owner is (ROLE-04 to ROLE-08).
 
 | Role | Sees | Changes |
 | --- | --- | --- |
@@ -286,12 +286,12 @@ Rules that follow from it, each pinned in `leads.test.ts`, `contacts.test.ts`, `
 - **A record shown inside another follows the same rules.** A contact answers with its `company` only when the caller may see that company, and `null` otherwise; a company's `contactCount` counts only the contacts the caller may see. The contacts service gets the company from an `include` built with the company's own visible function (`company: { where: visibleCompanies(actor), ... }`), and applies the same fragment wherever a request names a company: the `companyId` filter, the search on the company name, and the `companyId` in a body, where a company the caller cannot see is `VALIDATION_FAILED` on `companyId`, exactly like one that does not exist. An opportunity's `contact` and `company`, a lead's `convertedTo` and the `convertedFromLead` of a contact and an opportunity follow the same rule, with `visibleLiveRecords(actor)` in the `include`.
 - **Deleting a record that others point at unlinks them in the same transaction.** Deleting a company sets `companyId` to null on its contacts and its opportunities (every one, not only those the caller can see) together with the soft delete; deleting a contact does the same for `contactId` on its opportunities. The contacts and opportunities stay.
 - **A write answers with a fresh read.** Once a record's `include` names three or more relations (a lead, a contact, an opportunity), Prisma would read them side by side on the one connection of the write's transaction, and the `pg` driver warns about that. So a function that changes such a record writes without the `include` and ends with `return getLead(actor, id)` (or `getContact`, `getOpportunity`). Inside a transaction, include at most `withOwner`.
-- **Shared field rules** for owned records are in [`lib/record-fields.ts`](../../backend/src/lib/record-fields.ts): `optionalText(max)` (trimmed, `""` stored as null), `optionalEmailSchema`, `moneySchema` (a number from 0 with at most two decimals, sent and answered as a JSON number), `daySchema` (a day such as `"2026-11-15"`), `recordLinkSchema` (`{ id, name }`, how one record names another), `recordIdParamsSchema`, `recordOwnerSchema` and `deletedResponseSchema`. Use them instead of writing the rule again.
+- **Shared field rules** for owned records are in [`lib/record-fields.ts`](../../backend/src/lib/record-fields.ts): `optionalText(max)` (trimmed, `""` stored as null), `optionalEmailSchema`, `moneySchema` (a number from 0 with at most two decimals, sent and answered as a JSON number), `daySchema` (a day such as `"2026-11-15"`), `momentSchema` (an exact moment with its offset, such as `"2026-11-15T09:30:00Z"` or `"2026-11-15T15:00:00+05:30"`), `followUpBodySchema` (see [Reminders](#reminders)), `recordLinkSchema` (`{ id, name }`, how one record names another), `recordIdParamsSchema`, `recordOwnerSchema` and `deletedResponseSchema`. Use them instead of writing the rule again.
 - A new owned model names its columns `ownerId` / `owner` so that `visibleRecords` fits without change, uses `onDelete: Restrict` on the owner (users are never deleted), and has its rows deleted in `resetRecords()` in `backend/test/helpers.ts`.
 
 ## List endpoints
 
-Every list that can grow (leads, contacts, companies, opportunities) has the same query string and the same `meta`, defined once in [`backend/src/lib/list-query.ts`](../../backend/src/lib/list-query.ts):
+Every list that can grow (leads, contacts, companies, opportunities, tasks) has the same query string and the same `meta`, defined once in [`backend/src/lib/list-query.ts`](../../backend/src/lib/list-query.ts):
 
 | Query | Meaning | Default |
 | --- | --- | --- |
@@ -300,7 +300,7 @@ Every list that can grow (leads, contacts, companies, opportunities) has the sam
 | `order` | `asc` or `desc`. | `desc`, or `asc` when the module says so (a list that opens sorted by name) |
 | `page` | 1 or more. | 1 |
 | `pageSize` | 1 to 100. | 25 |
-| filters | Named after the field (`status`, `source`, `ownerId`, `companyId`, `contactId`, `stageId`, `industry`), added by the module. | none |
+| filters | Named after the field (`status`, `source`, `ownerId`, `companyId`, `contactId`, `stageId`, `industry`, `assigneeId`), added by the module. | none |
 
 The answer is `{ data: [...], meta: { page, pageSize, total } }`, where `total` counts every match the caller may see, not only this page. A page past the end is an empty list, not an error. A bad value (`page=0`, `pageSize=101`, an unknown `sort` or filter value) is `VALIDATION_FAILED` naming the parameter. An unknown query parameter is ignored (only request bodies are strict).
 
@@ -327,7 +327,7 @@ export const leadListResponseSchema = listEnvelope(leadSchema);
 - Always end `orderBy` with the id, so rows with equal values keep one fixed place across pages.
 - Add an index for each column the list filters or sorts on.
 - A short list that cannot grow (users, pipeline stages) may stay unpaged, as `GET /users` does.
-- A list with one fixed order (a timeline, the activity feed) takes only the paging half: start from `pageQuerySchema` instead of `listQuerySchema(...)`.
+- A list with one fixed order (a timeline, the activity feed, a user's notifications) takes only the paging half: start from `pageQuerySchema` instead of `listQuerySchema(...)`.
 
 ## The timeline
 
@@ -432,6 +432,95 @@ There is one sales pipeline. Its stages are rows of `PipelineStage` ([`modules/p
 - **The link is in the API both ways:** a lead answers with `convertedTo: { contact, company, opportunity }` (null until it is converted), a contact and an opportunity with `convertedFromLead`. Each is `{ id, name }`, or null when there is none or the caller may not see it.
 - **A converted lead is final.** `PATCH`, mark-lost, delete and a second convert answer `409 LEAD_CONVERTED`. It can still be read, reassigned, and written on (conversations and notes). A lost lead must be reopened before it can be converted (`VALIDATION_FAILED`, `details: null`).
 - If any step fails, nothing is kept: `leads.test.ts` makes the third timeline entry fail and finds no contact, company or opportunity and an unconverted lead.
+
+## Time zones
+
+Times are stored and answered in UTC (`"2026-11-15T09:30:00.000Z"`), and a request sends an exact moment with its offset (`momentSchema`). "Today" and "this month" are different moments for different people, so the routes that count by day (`GET /tasks`, `GET /tasks/summary`, `GET /dashboard/me`, `GET /dashboard/team`) take the viewer's time zone as the query parameter **`tz`**: an IANA name such as `Asia/Kolkata`, checked by `timeZoneSchema`, `UTC` when it is left out, and `VALIDATION_FAILED` on `tz` when it is not a time zone. The web app sends the browser's zone. Nothing about a user's zone is stored.
+
+[`backend/src/lib/time-zone.ts`](../../backend/src/lib/time-zone.ts) turns a zone into moments with the time zone data built into Node, without a library: `todayIn(tz, now)` gives `{ day, start, end }` (the viewer's calendar day, its first moment and the first moment of the next day), `startOfDay(tz, day, addDays)` the moment a day starts, clock changes included. `time-zone.test.ts` pins them with fixed dates. A test of a route cannot fake the clock ([testing](testing.md#backend-tests)); `zoneOnAnotherDay()` in `backend/test/helpers.ts` picks a zone where it is another calendar day than in UTC right now.
+
+## Tasks
+
+A task ([`modules/tasks/`](../../backend/src/modules/tasks/)) is something to do, for one person (`assignee`), by a moment (`dueAt`, optional). It is `OPEN` or `DONE`, and it may belong to **at most one record** (a lead, a contact, a company or an opportunity) or to none: `record` is `{ type, id, name }` or null. The table has one nullable column per record type, like `TimelineEntry`, and the check constraint `Task_one_record` refuses a second one.
+
+A task is **not an owned record**. Who may see one follows the assignee and the person who made it (`visibleTasks` in `tasks.service.ts`):
+
+| Role | Sees |
+| --- | --- |
+| Admin, Read-only | every task (a Read-only user changes nothing: `FORBIDDEN`) |
+| Sales Manager | tasks assigned to them or made by them, and tasks assigned to a user whose `managerId` is the manager |
+| Sales Rep | tasks assigned to them or made by them |
+
+- **Whoever may see a task may change, complete, reopen and delete it.** Outside the caller's reach is `NOT_FOUND`, as for a record. Deleting is a soft delete.
+- **The assignee** must be someone the caller may give work to, the same people as `assignableUsers(actor)`: a Sales Rep only themselves, a Sales Manager themselves and their team, an Admin any active user who is not Read-only. Anyone else is `VALIDATION_FAILED` on `assigneeId`. On `PATCH` only a *new* assignee is checked. The default is the caller.
+- **The record** must be one the caller may see (`VALIDATION_FAILED` on `record.id` otherwise, exactly like an id that does not exist). A task answers with `record: null` when the reader may not see its record or the record was deleted; the task itself stays. The `recordType` + `recordId` filter (sent together) never matches a record the caller cannot see.
+- **Status** changes only through `POST /tasks/:id/complete` and `/reopen`, which set and clear `completedAt`. Completing a task that is done, or reopening an open one, answers with the task as it is.
+- **A task writes nothing on its record's timeline**, on create or on complete: the timeline is the history of what was discussed, and a record's tasks are read with the list filter.
+- **When someone else gives a user a task** (create or a new assignee on `PATCH`), the assignee gets a `TASK_ASSIGNED` notification in the same transaction. Nobody is told about a task they gave themselves.
+- **Due buckets** (the `due` filter, `GET /tasks/summary` and the dashboard) go by the viewer's calendar day (see [Time zones](#time-zones)): `overdue` is due before their today began, `today` is due within it, `upcoming` is due after it, `none` has no due date. The four never overlap. The filter is independent of `status`; the summary counts the caller's **own open** tasks, which means assigned to them.
+- The list sorts by `dueAt` (the default, soonest first, tasks without one last in both directions), `createdAt` or `title`, and searches the title.
+
+## Reminders
+
+One mechanism serves a task's reminder and the follow-up on a lead or an opportunity (TASK-03 to TASK-05), in [`backend/src/lib/reminders.ts`](../../backend/src/lib/reminders.ts): a time on the row, and beside it the time the reminder fired.
+
+| On | Time | Fired | Set with | Goes to |
+| --- | --- | --- | --- | --- |
+| `Task` | `reminderAt` | `reminderSentAt` | `reminderAt` in `POST /tasks` and `PATCH /tasks/:id` | the assignee |
+| `Lead` | `followUpAt` (+ `followUpNote`, up to 500 characters) | `followUpNotifiedAt` | `PUT /leads/:id/follow-up` `{ at, note }` | the owner |
+| `Opportunity` | the same | the same | `PUT /opportunities/:id/follow-up` `{ at, note }` | the owner |
+
+- **`PUT .../follow-up`** replaces the follow-up: `at` is a moment or null, and `at: null` clears the time and the note. A converted lead answers `LEAD_CONVERTED`, and a lost lead or a closed opportunity `VALIDATION_FAILED` with `details: null`, when a time is set (the reminder would never fire); clearing always works. It writes nothing on the timeline. `followUpAt` and `followUpNote` are part of the `Lead` and `Opportunity` answers, and both lists sort by `followUpAt`.
+- **The runner.** `runDueReminders(now)` finds the rows whose time is at or before `now` and that have not fired. For each it claims the row (one `UPDATE ... WHERE <fired> IS NULL`, the conditional write of [Check-then-write rules](#prisma-and-the-database)), writes the notification with `addNotification` in the same transaction, and then sends the email. `startReminderLoop()` calls it once a minute; it is started by `server.ts` after the API listens, never by `createApp`, and does nothing when `NODE_ENV` is `test`. There is no queue and no cron library.
+- **It fires once.** Because of the claim, two API processes running at the same moment send one notification and one email between them (`reminders.test.ts` runs three at once). The claim is raw SQL so that `updatedAt` does not move: the record was not edited.
+- **Moving the time arms it again.** A write that changes the time clears the "fired" column; saving the same time again (a form saved without touching it) does not.
+- **What does not fire:** a done or deleted task, a deleted, converted or lost lead, a deleted or closed opportunity, and anything of a deactivated user. The reminder stays armed, so it fires on the next run after that stops being true (the task is reopened, the user is reactivated).
+- **Email** goes through [`sendMail`](#email): the notification's title as the subject, its body, and a link built from `APP_URL`. It is sent after the notification is committed, so a mail server that fails, or email that is off, loses nothing: the failure is logged by the mailer and the email is not retried. One reminder that fails never stops the others.
+- A time in the past is accepted and fires on the next run. One run handles at most 200 reminders of each kind; the rest wait a minute.
+
+## Notifications
+
+A notification is a message for one user inside the app: `{ id, kind, title, body, link, readAt, createdAt }`. `addNotification(tx, ...)` in [`backend/src/lib/notifications.ts`](../../backend/src/lib/notifications.ts) is the only code that writes one, and it takes the transaction client so that a notification is written together with what it reports.
+
+| Kind | When | `title` | `body` | `link` |
+| --- | --- | --- | --- | --- |
+| `TASK_REMINDER` | a task's reminder comes due | `Reminder: <task title>` | the task's description, or null | `/tasks?open=<task id>` |
+| `LEAD_FOLLOW_UP` | a lead's follow-up comes due | `Follow up with <lead name>` | the follow-up note, or null | `/leads/<lead id>` |
+| `OPPORTUNITY_FOLLOW_UP` | an opportunity's follow-up comes due | `Follow up on <opportunity name>` | the follow-up note, or null | `/opportunities/<opportunity id>` |
+| `TASK_ASSIGNED` | someone else assigns the user a task | `<name> assigned you a task` | the task's title | `/tasks?open=<task id>` |
+
+- `link` is a path in the web app, never a full address; the helpers are `notificationLinks`. Only the three reminder kinds are also emailed.
+- The routes ([`modules/notifications/`](../../backend/src/modules/notifications/)) only ever reach the caller's own rows, whatever the role: `GET /notifications` (newest first, paged, `unread=true` leaves out the read ones), `GET /notifications/unread-count` (`{ count }`), `POST /notifications/:id/read` (another user's is `NOT_FOUND`; one already read keeps its first `readAt`) and `POST /notifications/read-all` (`{ marked }`). Marking as read is not a change to a record, so a Read-only user may do it.
+- A new kind is a new value in the `NotificationKind` enum and in `notificationKindSchema`, plus an `addNotification` call in the transaction that does the thing.
+
+## The dashboard
+
+[`modules/dashboard/`](../../backend/src/modules/dashboard/) stores nothing: every figure is counted from the records when it is asked for. Deleted records never count.
+
+**`GET /dashboard/me?tz=`** (DASH-01) is for every signed-in user and is about the caller's **own** work: records they own and tasks assigned to them. That is the same for every role, so a Sales Manager's or an Admin's page does not include their team, and a rep can never see another rep's numbers here (DASH-03). A Read-only user owns nothing and gets zeros.
+
+| Field | What it counts |
+| --- | --- |
+| `openLeads` | Own leads with the status `NEW`, `CONTACTED` or `QUALIFIED`: `total`, and `byStatus` with all three statuses. |
+| `pipeline` | Own open opportunities per open stage, in pipeline order (every open stage is listed): `count` and `totalValue` per stage, and the `totalValue` of all. |
+| `tasks` | Own open tasks: `overdue`, `today`, `upcoming` (see [Tasks](#tasks)). |
+| `tasksDue` | Up to 10 own open tasks that are overdue or due today, the longest overdue first, each a full `Task`. |
+| `followUps` | Up to 10 own open leads and open opportunities whose `followUpAt` is before the end of today, the longest overdue first: `{ type, id, name, at, note }`. One stays listed after its reminder fired, until the follow-up is cleared or moved. |
+| `wonThisMonth` | Own opportunities in the Won stage whose `closedAt` is in the viewer's current month: `count` and `totalValue`. |
+
+**`GET /dashboard/team?from=&to=&tz=`** (DASH-02) is for Admins and Sales Managers; a Sales Rep and a Read-only user get `FORBIDDEN`, as on the activity feed. An Admin gets a row for every user who is not Read-only, a Sales Manager for themselves and the users whose `managerId` is the manager. A deactivated person is listed only while one of their figures is not zero. Rows are in name order; `totals` adds up the rows.
+
+`from` and `to` are days in the zone `tz`, both included. Left out, `from` is the first day of the viewer's current month and `to` is their today. A `to` before `from`, or a range of more than 366 days, is `VALIDATION_FAILED` on `to`. The answer repeats the days in `range`.
+
+| Figure | What it counts |
+| --- | --- |
+| `leadsCreated` | Leads the person created (`createdById`) with `createdAt` in the range, whoever owns them now. |
+| `leadsHandled` | Leads the person owns now that have at least one `CONVERSATION` or `STATUS_CHANGE` timeline entry with `occurredAt` in the range, written by anyone. Each lead counts once. |
+| `conversationsLogged` | `CONVERSATION` timeline entries the person wrote with `occurredAt` in the range, on any kind of record. |
+| `opportunitiesWon`, `opportunitiesLost` | Opportunities the person owns now that are in the Won or the Lost stage with `closedAt` in the range. |
+| `wonValue` | The summed `value` of those won opportunities. |
+| `openPipelineValue` | The summed `value` of the open opportunities the person owns **now**; the range does not apply. |
+| `overdueTasks` | Open tasks assigned to the person that are overdue **now** (due before the viewer's today); the range does not apply. |
 
 ## Email
 

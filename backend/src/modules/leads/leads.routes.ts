@@ -7,7 +7,11 @@ import {
   registry,
   sessionSecurity,
 } from "../../lib/openapi";
-import { deletedResponseSchema, recordIdParamsSchema } from "../../lib/record-fields";
+import {
+  deletedResponseSchema,
+  followUpBodySchema,
+  recordIdParamsSchema,
+} from "../../lib/record-fields";
 import { authenticate } from "../../middleware/authenticate";
 import {
   assignLeadHandler,
@@ -17,6 +21,7 @@ import {
   getLeadHandler,
   listLeadsHandler,
   markLeadLostHandler,
+  setLeadFollowUpHandler,
   updateLeadHandler,
 } from "./leads.controller";
 import {
@@ -44,6 +49,7 @@ leadsRouter.delete("/:id", deleteLeadHandler);
 leadsRouter.post("/:id/mark-lost", markLeadLostHandler);
 leadsRouter.post("/:id/assign", assignLeadHandler);
 leadsRouter.post("/:id/convert", convertLeadHandler);
+leadsRouter.put("/:id/follow-up", setLeadFollowUpHandler);
 
 // Documented beside the routes so the two cannot drift apart.
 const tags = ["Leads"];
@@ -187,6 +193,25 @@ registry.registerPath({
     400: errorResponse(
       "VALIDATION_FAILED: bad input, a company.id or contact.id the caller may not see, an opportunity.stageId that is not an open stage, or a lost lead (details null)",
     ),
+    401: unauthenticated,
+    403: readOnly,
+    404: notFound,
+    409: converted,
+  },
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/leads/{id}/follow-up",
+  tags,
+  summary: "Set, move or clear the follow-up reminder on a lead",
+  description:
+    "When the time comes the lead's owner gets a LEAD_FOLLOW_UP notification and, if email is on, an email; it fires once, and moving the time arms it again. at: null clears the follow-up and its note. A lost lead must be reopened before a follow-up can be set.",
+  security,
+  request: { params, body: jsonBody(followUpBodySchema) },
+  responses: {
+    200: jsonResponse("The lead with followUpAt and followUpNote as set", leadResponseSchema),
+    400: errorResponse("VALIDATION_FAILED: bad input, or a lost lead (details null)"),
     401: unauthenticated,
     403: readOnly,
     404: notFound,

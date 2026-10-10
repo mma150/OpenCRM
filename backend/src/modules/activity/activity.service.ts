@@ -68,7 +68,8 @@ function toActivityEntry(entry: EntryWithRecord): ActivityEntry {
 }
 
 // Entries of a deleted record stay in the table but are never shown.
-const ofLiveRecords: Prisma.TimelineEntryWhereInput = {
+// Exported for the dashboard, which counts the same entries.
+export const ofLiveRecords: Prisma.TimelineEntryWhereInput = {
   OR: [
     { lead: { deletedAt: null } },
     { contact: { deletedAt: null } },

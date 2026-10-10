@@ -6,10 +6,13 @@ import { activityRouter } from "./modules/activity/activity.routes";
 import { createAuthRouter } from "./modules/auth/auth.routes";
 import { companiesRouter } from "./modules/companies/companies.routes";
 import { contactsRouter } from "./modules/contacts/contacts.routes";
+import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
 import { healthRouter } from "./modules/health/health.routes";
 import { leadsRouter } from "./modules/leads/leads.routes";
+import { notificationsRouter } from "./modules/notifications/notifications.routes";
 import { opportunitiesRouter } from "./modules/opportunities/opportunities.routes";
 import { pipelineStagesRouter } from "./modules/pipeline-stages/pipeline-stages.routes";
+import { tasksRouter } from "./modules/tasks/tasks.routes";
 import { timelineRouter } from "./modules/timeline/timeline.routes";
 import { usersRouter } from "./modules/users/users.routes";
 
@@ -40,6 +43,9 @@ export function createV1Router(limiters: AuthLimiters) {
   router.use("/pipeline-stages", pipelineStagesRouter);
   router.use("/opportunities", opportunitiesRouter);
   router.use("/activity", activityRouter);
+  router.use("/tasks", tasksRouter);
+  router.use("/notifications", notificationsRouter);
+  router.use("/dashboard", dashboardRouter);
 
   return router;
 }

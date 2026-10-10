@@ -32,6 +32,8 @@ interface ApiLead {
   lostNote: string | null;
   lostAt: string | null;
   lastContactAt: string | null;
+  followUpAt: string | null;
+  followUpNote: string | null;
   convertedAt: string | null;
   convertedTo: { contact: Link | null; company: Link | null; opportunity: Link | null } | null;
   createdAt: string;
@@ -282,6 +284,8 @@ describe("create", () => {
       lostNote: null,
       lostAt: null,
       lastContactAt: null,
+      followUpAt: null,
+      followUpNote: null,
       convertedAt: null,
       convertedTo: null,
       createdAt: lead.createdAt,
@@ -1518,5 +1522,151 @@ describe("POST /leads/:id/convert", () => {
     expect(
       (tarasContact.body as Envelope<{ convertedFromLead: Link | null }>).data.convertedFromLead,
     ).toBeNull();
+  });
+});
+
+describe("follow-up", () => {
+  const AT = "2026-11-15T09:30:00.000Z";
+
+  function followUp(agent: Agent, id: string, body: object) {
+    return agent.put(`${LEADS}/${id}/follow-up`).send(body);
+  }
+
+  it("sets the time and the note, and answers with the lead", async () => {
+    const lead = await makeLead(ravi);
+
+    // 15:00 in India is 09:30 UTC.
+    const response = await followUp(asRavi, lead.id, {
+      at: "2026-11-15T15:00:00+05:30",
+      note: "  Send the price list  ",
+    });
+
+    expect(response.status).toBe(200);
+    expect(Object.keys(response.body as object).sort()).toEqual(["data", "meta"]);
+    expect(leadOf(response)).toMatchObject({
+      id: lead.id,
+      followUpAt: AT,
+      followUpNote: "Send the price list",
+    });
+    expect(leadOf(await asRavi.get(`${LEADS}/${lead.id}`)).followUpAt).toBe(AT);
+  });
+
+  it("replaces the note: a follow-up sent without one has none", async () => {
+    const lead = await makeLead(ravi, { followUpAt: new Date(AT), followUpNote: "Old note" });
+
+    const response = await followUp(asRavi, lead.id, { at: AT });
+
+    expect(leadOf(response)).toMatchObject({ followUpAt: AT, followUpNote: null });
+  });
+
+  it("clears the time and the note with at: null", async () => {
+    const lead = await makeLead(ravi, {
+      followUpAt: new Date(AT),
+      followUpNote: "Call back",
+      followUpNotifiedAt: new Date(),
+    });
+
+    const response = await followUp(asRavi, lead.id, { at: null });
+
+    expect(response.status).toBe(200);
+    expect(leadOf(response)).toMatchObject({ followUpAt: null, followUpNote: null });
+    expect((await stored(lead.id)).followUpNotifiedAt).toBeNull();
+  });
+
+  it("arms a reminder that has fired again when the time moves, not when it stays", async () => {
+    const firedAt = new Date("2026-11-15T09:31:00Z");
+    const lead = await makeLead(ravi, { followUpAt: new Date(AT), followUpNotifiedAt: firedAt });
+
+    await followUp(asRavi, lead.id, { at: AT, note: "Only the note changed" });
+    const afterSameTime = await stored(lead.id);
+    await followUp(asRavi, lead.id, { at: "2026-11-20T09:30:00Z" });
+    const afterMove = await stored(lead.id);
+
+    expect(afterSameTime.followUpNotifiedAt).toEqual(firedAt);
+    expect(afterSameTime.followUpNote).toBe("Only the note changed");
+    expect(afterMove.followUpNotifiedAt).toBeNull();
+  });
+
+  it.each([
+    ["no time", {}, "at"],
+    ["a day without a time", { at: "2026-11-15" }, "at"],
+    ["a time without an offset", { at: "2026-11-15T09:30:00" }, "at"],
+    ["a note over 500 characters", { at: AT, note: "x".repeat(501) }, "note"],
+  ])("answers VALIDATION_FAILED for %s", async (_name, body, path) => {
+    const lead = await makeLead(ravi);
+
+    const response = await followUp(asRavi, lead.id, body);
+
+    expect(response.status).toBe(400);
+    expect(errorOf(response).code).toBe("VALIDATION_FAILED");
+    expect(detailPaths(response)).toEqual([path]);
+  });
+
+  it("lets a Sales Manager set it for their team and an Admin for anyone", async () => {
+    const lead = await makeLead(ravi);
+
+    expect((await followUp(asMeera, lead.id, { at: AT })).status).toBe(200);
+    expect((await followUp(asAdmin, lead.id, { at: AT })).status).toBe(200);
+  });
+
+  it("answers FORBIDDEN for a Read-only user", async () => {
+    const lead = await makeLead(ravi);
+
+    const response = await followUp(asViewer, lead.id, { at: AT });
+
+    expect(response.status).toBe(403);
+    expect(errorOf(response).code).toBe("FORBIDDEN");
+    expect((await stored(lead.id)).followUpAt).toBeNull();
+  });
+
+  it("answers NOT_FOUND for a lead outside the caller's reach, a deleted one and an unknown id", async () => {
+    const ofTara = await makeLead(tara);
+    const deleted = await makeLead(ravi, { deletedAt: new Date() });
+
+    for (const [agent, id] of [
+      [asRavi, ofTara.id],
+      [asMeera, ofTara.id],
+      [asRavi, deleted.id],
+      [asAdmin, UNKNOWN_ID],
+    ] as const) {
+      const response = await followUp(agent, id, { at: AT });
+
+      expect(response.status).toBe(404);
+      expect(errorOf(response).code).toBe("NOT_FOUND");
+    }
+    expect((await stored(ofTara.id)).followUpAt).toBeNull();
+  });
+
+  it("refuses a new follow-up on a converted or a lost lead, but still clears one", async () => {
+    const converted = await makeLead(ravi, { status: "CONVERTED", followUpAt: new Date(AT) });
+    const lost = await makeLead(ravi, { status: "LOST", followUpAt: new Date(AT) });
+
+    const onConverted = await followUp(asRavi, converted.id, { at: AT });
+    const onLost = await followUp(asRavi, lost.id, { at: AT });
+    const clearConverted = await followUp(asRavi, converted.id, { at: null });
+    const clearLost = await followUp(asRavi, lost.id, { at: null });
+
+    expect(onConverted.status).toBe(409);
+    expect(errorOf(onConverted).code).toBe("LEAD_CONVERTED");
+    expect(onLost.status).toBe(400);
+    expect(errorOf(onLost)).toMatchObject({ code: "VALIDATION_FAILED", details: null });
+    expect(leadOf(clearConverted).followUpAt).toBeNull();
+    expect(leadOf(clearLost).followUpAt).toBeNull();
+  });
+
+  it("sorts the list by followUpAt, with leads without one last in both directions", async () => {
+    await makeLead(ravi, { firstName: "No", lastName: "Follow-up" });
+    await makeLead(ravi, { firstName: "Later", lastName: "L", followUpAt: new Date(AT) });
+    await makeLead(ravi, {
+      firstName: "Sooner",
+      lastName: "S",
+      followUpAt: new Date("2026-11-01T09:00:00Z"),
+    });
+
+    const soonest = await asRavi.get(LEADS).query({ sort: "followUpAt", order: "asc" });
+    const latest = await asRavi.get(LEADS).query({ sort: "followUpAt", order: "desc" });
+
+    expect(namesOf(soonest)).toEqual(["Sooner S", "Later L", "No Follow-up"]);
+    expect(namesOf(latest)).toEqual(["Later L", "Sooner S", "No Follow-up"]);
   });
 });

@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 
 import type { ListMeta } from "../../lib/list-query";
-import { recordIdParamsSchema } from "../../lib/record-fields";
+import { followUpBodySchema, recordIdParamsSchema } from "../../lib/record-fields";
 import { getAuth } from "../../middleware/authenticate";
 import {
   type ApiLead,
@@ -20,6 +20,7 @@ import {
   getLead,
   listLeads,
   markLeadLost,
+  setLeadFollowUp,
   updateLead,
 } from "./leads.service";
 
@@ -67,6 +68,13 @@ export async function convertLeadHandler(req: Request, res: Response) {
   const { id } = recordIdParamsSchema.parse(req.params);
   const input = convertLeadBodySchema.parse(req.body);
   const data: ApiLead = await convertLead(getAuth(req).user, id, input);
+  res.json({ data, meta: {} });
+}
+
+export async function setLeadFollowUpHandler(req: Request, res: Response) {
+  const { id } = recordIdParamsSchema.parse(req.params);
+  const input = followUpBodySchema.parse(req.body);
+  const data: ApiLead = await setLeadFollowUp(getAuth(req).user, id, input);
   res.json({ data, meta: {} });
 }
 

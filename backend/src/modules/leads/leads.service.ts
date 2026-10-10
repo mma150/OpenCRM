@@ -8,7 +8,9 @@ import {
   assertCanWrite,
   visibleLiveRecords,
 } from "../../lib/record-access";
+import type { FollowUpBody } from "../../lib/record-fields";
 import { assertAssignable, withOwner } from "../../lib/record-owner";
+import { followUpChange } from "../../lib/reminders";
 import { addTimelineEntry } from "../../lib/timeline";
 import { findOpenStage } from "../pipeline-stages/pipeline-stages.service";
 import type {
@@ -63,6 +65,8 @@ function toApiLead(lead: LeadWithOwner): ApiLead {
     lostNote: lead.lostNote,
     lostAt: lead.lostAt?.toISOString() ?? null,
     lastContactAt: lead.lastContactAt?.toISOString() ?? null,
+    followUpAt: lead.followUpAt?.toISOString() ?? null,
+    followUpNote: lead.followUpNote,
     convertedAt: lead.convertedAt?.toISOString() ?? null,
     convertedTo:
       lead.status === "CONVERTED"
@@ -112,7 +116,7 @@ function orderBy(query: LeadListQuery): Prisma.LeadOrderByWithRelationInput[] {
     return [{ firstName: order }, { lastName: order }, tieBreak];
   }
   // A lead without the value sorts last in both directions.
-  if (sort === "company" || sort === "lastContactAt") {
+  if (sort === "company" || sort === "lastContactAt" || sort === "followUpAt") {
     return [{ [sort]: { sort: order, nulls: "last" } }, tieBreak];
   }
   return [{ [sort]: order }, tieBreak];
@@ -252,6 +256,26 @@ export async function assignLead(actor: Actor, id: string, ownerId: string): Pro
       details: { fromOwner: lead.owner, toOwner: changed.owner },
     });
   });
+  return getLead(actor, id);
+}
+
+// TASK-03: when to remind the owner about the lead, or (`at: null`) not at all. Moving the
+// time arms the reminder again. A converted or lost lead takes no new follow-up, because its
+// reminder would never fire (lib/reminders.ts); clearing one always works.
+export async function setLeadFollowUp(
+  actor: Actor,
+  id: string,
+  input: FollowUpBody,
+): Promise<ApiLead> {
+  assertCanWrite(actor);
+  const lead = await findLead(actor, id);
+  if (input.at !== null) {
+    assertNotConverted(lead);
+    if (lead.status === "LOST") {
+      throw new AppError("VALIDATION_FAILED", 400, "Reopen the lead before setting a follow-up");
+    }
+  }
+  await prisma.lead.update({ where: { id }, data: followUpChange(lead, input) });
   return getLead(actor, id);
 }
 

@@ -25,14 +25,21 @@ const ROUTES_WITHOUT_INPUT = [
   "get /companies",
   "get /companies/industries",
   "get /contacts",
+  "get /dashboard/me",
+  "get /dashboard/team",
   "get /health",
   "get /leads",
+  "get /notifications",
+  "get /notifications/unread-count",
   "get /opportunities",
   "get /opportunities/board",
   "get /pipeline-stages",
+  "get /tasks",
+  "get /tasks/summary",
   "get /users",
   "get /users/assignable",
   "post /auth/logout",
+  "post /notifications/read-all",
 ];
 
 // Routes whose body may be left out, because every key in it is optional. They still
@@ -88,9 +95,9 @@ afterAll(async () => {
 });
 
 describe("endpoint contract", () => {
-  it("covers the auth, users, record, pipeline, timeline and activity routes", () => {
-    expect(routes.length).toBeGreaterThanOrEqual(70);
-    expect(signedInRoutes.length).toBeGreaterThanOrEqual(62);
+  it("covers the auth, users, record, pipeline, timeline, activity, task, notification and dashboard routes", () => {
+    expect(routes.length).toBeGreaterThanOrEqual(86);
+    expect(signedInRoutes.length).toBeGreaterThanOrEqual(78);
     expect(routes.map((route) => route.key)).toEqual(
       expect.arrayContaining([
         "get /leads/{id}/timeline",
@@ -136,6 +143,22 @@ describe("endpoint contract", () => {
         "get /opportunities/{id}/timeline",
         "post /opportunities/{id}/conversations",
         "post /opportunities/{id}/notes",
+        "put /leads/{id}/follow-up",
+        "put /opportunities/{id}/follow-up",
+        "get /tasks",
+        "get /tasks/summary",
+        "post /tasks",
+        "get /tasks/{id}",
+        "patch /tasks/{id}",
+        "delete /tasks/{id}",
+        "post /tasks/{id}/complete",
+        "post /tasks/{id}/reopen",
+        "get /notifications",
+        "get /notifications/unread-count",
+        "post /notifications/read-all",
+        "post /notifications/{id}/read",
+        "get /dashboard/me",
+        "get /dashboard/team",
       ]),
     );
   });

@@ -30,11 +30,14 @@ export function createTestApp() {
   return createApp({ rateLimit: { ipLimit: 100_000, emailLimit: 100_000, statusLimit: 100_000 } });
 }
 
-// Every record and its timeline, keeping the users and the pipeline stages: for a test file
-// that makes its users once and wants a clean slate before each test. Entries go before the
-// records they belong to, leads before what they were converted into, and opportunities and
-// contacts before the contacts and companies they are linked to.
+// Every record, its timeline, every task and every notification, keeping the users and the
+// pipeline stages: for a test file that makes its users once and wants a clean slate before
+// each test. Entries and tasks go before the records they belong to, leads before what they
+// were converted into, and opportunities and contacts before the contacts and companies
+// they are linked to.
 export async function resetRecords(): Promise<void> {
+  await prisma.notification.deleteMany();
+  await prisma.task.deleteMany();
   await prisma.timelineEntry.deleteMany();
   await prisma.lead.deleteMany();
   await prisma.opportunity.deleteMany();
@@ -150,4 +153,40 @@ export function linkFromMail(message: mailer.MailMessage | undefined): string {
     throw new Error("No link in the email");
   }
   return link;
+}
+
+const HOUR_MS = 60 * 60 * 1000;
+
+// Noon (UTC) today, or so many days from today: a moment that is safely inside its UTC day.
+export function utcNoon(daysFromToday = 0): Date {
+  const now = new Date();
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysFromToday, 12),
+  );
+}
+
+// For tests of the `tz` parameter without faking the clock: a time zone in which it is
+// another calendar day than in UTC right now, and a moment that therefore falls in a
+// different due bucket there than it does in UTC.
+export function zoneOnAnotherDay() {
+  const now = new Date();
+  const midnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  if (now.getUTCHours() >= 10) {
+    // Kiritimati is 14 hours ahead of UTC, so it is already tomorrow there: 05:00 UTC
+    // today was yesterday evening on their calendar.
+    return {
+      timeZone: "Pacific/Kiritimati",
+      moment: new Date(midnight + 5 * HOUR_MS),
+      inUtc: "today",
+      inZone: "overdue",
+    } as const;
+  }
+  // Pago Pago is 11 hours behind UTC, so it is still yesterday there: 19:00 UTC yesterday
+  // is this morning on their calendar.
+  return {
+    timeZone: "Pacific/Pago_Pago",
+    moment: new Date(midnight - 5 * HOUR_MS),
+    inUtc: "overdue",
+    inZone: "today",
+  } as const;
 }

@@ -67,6 +67,18 @@ enum ConversationType {
   MESSAGE
 }
 
+enum TaskStatus {
+  OPEN
+  DONE
+}
+
+enum NotificationKind {
+  TASK_REMINDER
+  LEAD_FOLLOW_UP
+  OPPORTUNITY_FOLLOW_UP
+  TASK_ASSIGNED
+}
+
 // Account status is derived, not stored: not active = deactivated, no password yet = invited.
 // Users are never deleted, so their history survives deactivation.
 model User {
@@ -98,6 +110,9 @@ model User {
   ownedOpportunities   Opportunity[]   @relation("OpportunityOwner")
   createdOpportunities Opportunity[]   @relation("OpportunityCreator")
   timelineEntries      TimelineEntry[]
+  assignedTasks        Task[]          @relation("TaskAssignee")
+  createdTasks         Task[]          @relation("TaskCreator")
+  notifications        Notification[]
 
   @@index([managerId])
 }
@@ -164,12 +179,18 @@ model Lead {
   convertedCompany       Company?        @relation(fields: [convertedCompanyId], references: [id], onDelete: Restrict)
   convertedOpportunityId String?
   convertedOpportunity   Opportunity?    @relation(fields: [convertedOpportunityId], references: [id], onDelete: Restrict)
+  // The follow-up reminder (lib/reminders.ts): when to remind the owner, and about what.
+  // `followUpNotifiedAt` is set when the reminder has fired and cleared when the time changes.
+  followUpAt             DateTime?
+  followUpNote           String?
+  followUpNotifiedAt     DateTime?
   createdById            String
   createdBy              User            @relation("LeadCreator", fields: [createdById], references: [id], onDelete: Restrict)
   createdAt              DateTime        @default(now())
   updatedAt              DateTime        @updatedAt
   deletedAt              DateTime?
   timelineEntries        TimelineEntry[]
+  tasks                  Task[]
 
   // What the list filters on (owner, status, source) and sorts by.
   @@index([ownerId])
@@ -178,6 +199,7 @@ model Lead {
   @@index([createdAt])
   @@index([updatedAt])
   @@index([lastContactAt])
+  @@index([followUpAt])
   @@index([company])
   @@index([firstName, lastName])
   @@index([convertedContactId])
@@ -206,6 +228,7 @@ model Company {
   opportunities   Opportunity[]
   convertedLeads  Lead[]
   timelineEntries TimelineEntry[]
+  tasks           Task[]
 
   // What the list filters on (owner, industry) and sorts by.
   @@index([ownerId])
@@ -240,6 +263,7 @@ model Contact {
   // The leads that were converted into this contact.
   convertedLeads  Lead[]
   timelineEntries TimelineEntry[]
+  tasks           Task[]
 
   // What the list filters on (owner, company) and sorts by.
   @@index([ownerId])
@@ -269,34 +293,39 @@ model PipelineStage {
 // A possible sale. An owned record like a lead. Whether it is open, won or lost is the kind
 // of the stage it is in, so there is no status column to fall out of step with the stage.
 model Opportunity {
-  id                String          @id @default(uuid(7))
-  name              String
-  value             Decimal         @default(0) @db.Decimal(12, 2)
-  expectedCloseDate DateTime?       @db.Date
-  stageId           String
-  stage             PipelineStage   @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  id                 String          @id @default(uuid(7))
+  name               String
+  value              Decimal         @default(0) @db.Decimal(12, 2)
+  expectedCloseDate  DateTime?       @db.Date
+  stageId            String
+  stage              PipelineStage   @relation(fields: [stageId], references: [id], onDelete: Restrict)
   // Set together by closing (a won one may have no reason) and cleared together when the
   // opportunity is reopened.
-  closeReason       String?
-  closedAt          DateTime?
+  closeReason        String?
+  closedAt           DateTime?
   // Each is cleared (in the same transaction) when the contact or the company is deleted.
-  contactId         String?
-  contact           Contact?        @relation(fields: [contactId], references: [id], onDelete: Restrict)
-  companyId         String?
-  company           Company?        @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  notes             String?
+  contactId          String?
+  contact            Contact?        @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  companyId          String?
+  company            Company?        @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  notes              String?
   // When the latest logged conversation happened; null until the first one. Never moves back.
-  lastContactAt     DateTime?
-  ownerId           String
-  owner             User            @relation("OpportunityOwner", fields: [ownerId], references: [id], onDelete: Restrict)
-  createdById       String
-  createdBy         User            @relation("OpportunityCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  deletedAt         DateTime?
+  lastContactAt      DateTime?
+  // The follow-up reminder, as on a lead.
+  followUpAt         DateTime?
+  followUpNote       String?
+  followUpNotifiedAt DateTime?
+  ownerId            String
+  owner              User            @relation("OpportunityOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  createdById        String
+  createdBy          User            @relation("OpportunityCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  deletedAt          DateTime?
   // The lead this opportunity was made from, if any (never more than one).
-  convertedLeads    Lead[]
-  timelineEntries   TimelineEntry[]
+  convertedLeads     Lead[]
+  timelineEntries    TimelineEntry[]
+  tasks              Task[]
 
   // What the list and the board filter on (owner, stage, company, contact) and sort by.
   @@index([ownerId])
@@ -306,6 +335,7 @@ model Opportunity {
   @@index([name])
   @@index([value])
   @@index([expectedCloseDate])
+  @@index([followUpAt])
   @@index([createdAt])
   @@index([updatedAt])
 }
@@ -348,4 +378,67 @@ model TimelineEntry {
   @@index([authorId, occurredAt])
   @@index([occurredAt])
   @@index([kind])
+}
+
+// Something to do, for one person, by a date. Who may see it is decided by the assignee and
+// the creator (tasks.service.ts), not by an owner. It may belong to one record: at most one
+// of the four record columns is set (the Task_one_record check in the migration).
+model Task {
+  id             String       @id @default(uuid(7))
+  title          String
+  description    String?
+  dueAt          DateTime?
+  status         TaskStatus   @default(OPEN)
+  // Set when the task is completed and cleared when it is reopened.
+  completedAt    DateTime?
+  assigneeId     String
+  assignee       User         @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
+  createdById    String
+  createdBy      User         @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  leadId         String?
+  lead           Lead?        @relation(fields: [leadId], references: [id], onDelete: Restrict)
+  contactId      String?
+  contact        Contact?     @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  companyId      String?
+  company        Company?     @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  opportunityId  String?
+  opportunity    Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: Restrict)
+  // When to remind the assignee (lib/reminders.ts). `reminderSentAt` is set when the
+  // reminder has fired and cleared when the time changes.
+  reminderAt     DateTime?
+  reminderSentAt DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  // What the list filters on (assignee, status, due date, record) and what the reminder
+  // runner looks for.
+  @@index([assigneeId, status, dueAt])
+  @@index([createdById])
+  @@index([dueAt])
+  @@index([createdAt])
+  @@index([title])
+  @@index([reminderAt])
+  @@index([leadId])
+  @@index([contactId])
+  @@index([companyId])
+  @@index([opportunityId])
+}
+
+// A message for one user inside the app: a reminder that came due, or a task someone else
+// gave them. Written only by addNotification (lib/notifications.ts); the user marks it read.
+model Notification {
+  id        String           @id @default(uuid(7))
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      NotificationKind
+  title     String
+  body      String?
+  // A path in the web app, such as /leads/<id> or /tasks?open=<id>.
+  link      String
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
 }

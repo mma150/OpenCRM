@@ -32,6 +32,10 @@ export const opportunitySchema = z
     convertedFromLead: recordLinkSchema.nullable(),
     // When the latest logged conversation happened; null until the first one.
     lastContactAt: z.string().nullable(),
+    // The follow-up reminder for the owner (PUT /opportunities/:id/follow-up); null when
+    // none is set.
+    followUpAt: z.string().nullable(),
+    followUpNote: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string(),
   })
@@ -107,7 +111,7 @@ export const reopenOpportunityBodySchema = z
   .openapi("ReopenOpportunityBody");
 
 export const opportunityListQuerySchema = listQuerySchema(
-  ["name", "value", "expectedCloseDate", "createdAt", "stage"],
+  ["name", "value", "expectedCloseDate", "createdAt", "stage", "followUpAt"],
   "createdAt",
 ).extend({
   stageId: z.uuid().optional(),

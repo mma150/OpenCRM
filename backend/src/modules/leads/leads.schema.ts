@@ -51,6 +51,9 @@ export const leadSchema = z
     lostAt: z.string().nullable(),
     // When the latest logged conversation happened; null until the first one.
     lastContactAt: z.string().nullable(),
+    // The follow-up reminder for the owner (PUT /leads/:id/follow-up); null when none is set.
+    followUpAt: z.string().nullable(),
+    followUpNote: z.string().nullable(),
     convertedAt: z.string().nullable(),
     // What a converted lead became; null until then. Inside it, each is null when there is
     // none (a lead can be converted without a company or an opportunity) or it is one the
@@ -149,7 +152,7 @@ export const convertLeadBodySchema = z
 export type ConvertLeadBody = z.infer<typeof convertLeadBodySchema>;
 
 export const leadListQuerySchema = listQuerySchema(
-  ["name", "company", "status", "createdAt", "updatedAt", "lastContactAt"],
+  ["name", "company", "status", "createdAt", "updatedAt", "lastContactAt", "followUpAt"],
   "createdAt",
 ).extend({
   status: leadStatusSchema.optional(),

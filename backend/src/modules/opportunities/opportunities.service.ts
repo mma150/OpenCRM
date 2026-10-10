@@ -8,7 +8,9 @@ import {
   assertCanWrite,
   visibleLiveRecords,
 } from "../../lib/record-access";
+import type { FollowUpBody } from "../../lib/record-fields";
 import { assertAssignable, withOwner } from "../../lib/record-owner";
+import { followUpChange } from "../../lib/reminders";
 import { addTimelineEntry } from "../../lib/timeline";
 import {
   findClosedStage,
@@ -77,6 +79,8 @@ function toApiOpportunity(opportunity: OpportunityWithDetails): ApiOpportunity {
     owner: opportunity.owner,
     convertedFromLead: toLink(opportunity.convertedLeads[0]),
     lastContactAt: opportunity.lastContactAt?.toISOString() ?? null,
+    followUpAt: opportunity.followUpAt?.toISOString() ?? null,
+    followUpNote: opportunity.followUpNote,
     createdAt: opportunity.createdAt.toISOString(),
     updatedAt: opportunity.updatedAt.toISOString(),
   };
@@ -165,9 +169,10 @@ function orderBy(query: OpportunityListQuery): Prisma.OpportunityOrderByWithRela
     case "stage": {
       return [{ stage: { kind: order } }, { stage: { position: order } }, tieBreak];
     }
-    // An opportunity without a date sorts last in both directions.
-    case "expectedCloseDate": {
-      return [{ expectedCloseDate: { sort: order, nulls: "last" } }, tieBreak];
+    // An opportunity without the date sorts last in both directions.
+    case "expectedCloseDate":
+    case "followUpAt": {
+      return [{ [sort]: { sort: order, nulls: "last" } }, tieBreak];
     }
     default: {
       return [{ [sort]: order }, tieBreak];
@@ -390,6 +395,27 @@ export async function assignOpportunity(
       details: { fromOwner: opportunity.owner, toOwner: changed.owner },
     });
   });
+  return getOpportunity(actor, id);
+}
+
+// TASK-03: when to remind the owner about the opportunity, or (`at: null`) not at all. Moving
+// the time arms the reminder again. A won or lost opportunity takes no new follow-up,
+// because its reminder would never fire (lib/reminders.ts); clearing one always works.
+export async function setOpportunityFollowUp(
+  actor: Actor,
+  id: string,
+  input: FollowUpBody,
+): Promise<ApiOpportunity> {
+  assertCanWrite(actor);
+  const opportunity = await findOpportunity(actor, id);
+  if (input.at !== null && opportunity.stage.kind !== "OPEN") {
+    throw new AppError(
+      "VALIDATION_FAILED",
+      400,
+      "Reopen the opportunity before setting a follow-up",
+    );
+  }
+  await prisma.opportunity.update({ where: { id }, data: followUpChange(opportunity, input) });
   return getOpportunity(actor, id);
 }
 

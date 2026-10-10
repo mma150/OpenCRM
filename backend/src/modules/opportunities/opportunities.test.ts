@@ -43,6 +43,8 @@ interface ApiOpportunity {
   owner: Link;
   convertedFromLead: Link | null;
   lastContactAt: string | null;
+  followUpAt: string | null;
+  followUpNote: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -319,6 +321,8 @@ describe("create", () => {
       owner: { id: ravi.id, name: "Ravi Rep" },
       convertedFromLead: null,
       lastContactAt: null,
+      followUpAt: null,
+      followUpNote: null,
       createdAt: opportunity.createdAt,
       updatedAt: opportunity.updatedAt,
     });
@@ -1383,5 +1387,140 @@ describe("GET /opportunities/board", () => {
 
     expect(response.status).toBe(400);
     expect(detailPaths(response)).toEqual(["ownerId"]);
+  });
+});
+
+describe("follow-up", () => {
+  const AT = "2026-11-15T09:30:00.000Z";
+
+  function followUp(agent: Agent, id: string, body: object) {
+    return agent.put(`${OPPORTUNITIES}/${id}/follow-up`).send(body);
+  }
+
+  it("sets the time and the note, and answers with the opportunity", async () => {
+    const opportunity = await makeOpportunity(ravi);
+
+    // 15:00 in India is 09:30 UTC.
+    const response = await followUp(asRavi, opportunity.id, {
+      at: "2026-11-15T15:00:00+05:30",
+      note: "  Ask about the budget  ",
+    });
+
+    expect(response.status).toBe(200);
+    expect(Object.keys(response.body as object).sort()).toEqual(["data", "meta"]);
+    expect(opportunityOf(response)).toMatchObject({
+      id: opportunity.id,
+      followUpAt: AT,
+      followUpNote: "Ask about the budget",
+    });
+    // A follow-up is not history: nothing is written on the timeline.
+    expect(await storedEntries(opportunity.id)).toEqual([]);
+  });
+
+  it("clears the time and the note with at: null", async () => {
+    const opportunity = await makeOpportunity(ravi, {
+      followUpAt: new Date(AT),
+      followUpNote: "Call back",
+      followUpNotifiedAt: new Date(),
+    });
+
+    const response = await followUp(asRavi, opportunity.id, { at: null });
+
+    expect(response.status).toBe(200);
+    expect(opportunityOf(response)).toMatchObject({ followUpAt: null, followUpNote: null });
+    expect((await stored(opportunity.id)).followUpNotifiedAt).toBeNull();
+  });
+
+  it("arms a reminder that has fired again when the time moves, not when it stays", async () => {
+    const firedAt = new Date("2026-11-15T09:31:00Z");
+    const opportunity = await makeOpportunity(ravi, {
+      followUpAt: new Date(AT),
+      followUpNotifiedAt: firedAt,
+    });
+
+    await followUp(asRavi, opportunity.id, { at: AT, note: "Only the note changed" });
+    const afterSameTime = await stored(opportunity.id);
+    await followUp(asRavi, opportunity.id, { at: "2026-11-20T09:30:00Z" });
+    const afterMove = await stored(opportunity.id);
+
+    expect(afterSameTime.followUpNotifiedAt).toEqual(firedAt);
+    expect(afterSameTime.followUpNote).toBe("Only the note changed");
+    expect(afterMove.followUpNotifiedAt).toBeNull();
+  });
+
+  it.each([
+    ["no time", {}, "at"],
+    ["a day without a time", { at: "2026-11-15" }, "at"],
+    ["a note over 500 characters", { at: AT, note: "x".repeat(501) }, "note"],
+  ])("answers VALIDATION_FAILED for %s", async (_name, body, path) => {
+    const opportunity = await makeOpportunity(ravi);
+
+    const response = await followUp(asRavi, opportunity.id, body);
+
+    expect(response.status).toBe(400);
+    expect(errorOf(response).code).toBe("VALIDATION_FAILED");
+    expect(detailPaths(response)).toEqual([path]);
+  });
+
+  it("lets a Sales Manager set it for their team and an Admin for anyone", async () => {
+    const opportunity = await makeOpportunity(ravi);
+
+    expect((await followUp(asMeera, opportunity.id, { at: AT })).status).toBe(200);
+    expect((await followUp(asAdmin, opportunity.id, { at: AT })).status).toBe(200);
+  });
+
+  it("answers FORBIDDEN for a Read-only user", async () => {
+    const opportunity = await makeOpportunity(ravi);
+
+    const response = await followUp(asViewer, opportunity.id, { at: AT });
+
+    expect(response.status).toBe(403);
+    expect(errorOf(response).code).toBe("FORBIDDEN");
+    expect((await stored(opportunity.id)).followUpAt).toBeNull();
+  });
+
+  it("answers NOT_FOUND for one outside the caller's reach, a deleted one and an unknown id", async () => {
+    const ofTara = await makeOpportunity(tara);
+    const deleted = await makeOpportunity(ravi, { deletedAt: new Date() });
+
+    for (const [agent, id] of [
+      [asRavi, ofTara.id],
+      [asMeera, ofTara.id],
+      [asRavi, deleted.id],
+      [asAdmin, UNKNOWN_ID],
+    ] as const) {
+      const response = await followUp(agent, id, { at: AT });
+
+      expect(response.status).toBe(404);
+      expect(errorOf(response).code).toBe("NOT_FOUND");
+    }
+    expect((await stored(ofTara.id)).followUpAt).toBeNull();
+  });
+
+  it("refuses a new follow-up on a won or a lost opportunity, but still clears one", async () => {
+    const won = await makeOpportunity(ravi, { stageId: stages.Won.id, followUpAt: new Date(AT) });
+    const lost = await makeOpportunity(ravi, { stageId: stages.Lost.id });
+
+    const onWon = await followUp(asRavi, won.id, { at: AT });
+    const onLost = await followUp(asRavi, lost.id, { at: AT });
+    const cleared = await followUp(asRavi, won.id, { at: null });
+
+    for (const response of [onWon, onLost]) {
+      expect(response.status).toBe(400);
+      expect(errorOf(response)).toMatchObject({ code: "VALIDATION_FAILED", details: null });
+    }
+    expect(opportunityOf(cleared).followUpAt).toBeNull();
+  });
+
+  it("sorts the list by followUpAt, with opportunities without one last in both directions", async () => {
+    await makeOpportunity(ravi, { name: "None" });
+    await makeOpportunity(ravi, { name: "Later", followUpAt: new Date(AT) });
+    await makeOpportunity(ravi, { name: "Sooner", followUpAt: new Date("2026-11-01T09:00:00Z") });
+
+    const soonest = await asRavi.get(OPPORTUNITIES).query({ sort: "followUpAt", order: "asc" });
+    const latest = await asRavi.get(OPPORTUNITIES).query({ sort: "followUpAt", order: "desc" });
+
+    expect(namesOf(soonest)).toEqual(["Sooner", "Later", "None"]);
+    expect(namesOf(latest)).toEqual(["Later", "Sooner", "None"]);
   });
 });

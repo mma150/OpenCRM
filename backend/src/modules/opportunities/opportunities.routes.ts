@@ -7,7 +7,11 @@ import {
   registry,
   sessionSecurity,
 } from "../../lib/openapi";
-import { deletedResponseSchema, recordIdParamsSchema } from "../../lib/record-fields";
+import {
+  deletedResponseSchema,
+  followUpBodySchema,
+  recordIdParamsSchema,
+} from "../../lib/record-fields";
 import { authenticate } from "../../middleware/authenticate";
 import {
   assignOpportunityHandler,
@@ -19,6 +23,7 @@ import {
   listOpportunitiesHandler,
   moveOpportunityHandler,
   reopenOpportunityHandler,
+  setOpportunityFollowUpHandler,
   updateOpportunityHandler,
 } from "./opportunities.controller";
 import {
@@ -52,6 +57,7 @@ opportunitiesRouter.post("/:id/stage", moveOpportunityHandler);
 opportunitiesRouter.post("/:id/close", closeOpportunityHandler);
 opportunitiesRouter.post("/:id/reopen", reopenOpportunityHandler);
 opportunitiesRouter.post("/:id/assign", assignOpportunityHandler);
+opportunitiesRouter.put("/:id/follow-up", setOpportunityFollowUpHandler);
 
 // Documented beside the routes so the two cannot drift apart.
 const tags = ["Opportunities"];
@@ -248,6 +254,27 @@ registry.registerPath({
     ),
     401: unauthenticated,
     403: errorResponse("Not an Admin or a Sales Manager (FORBIDDEN)"),
+    404: notFound,
+  },
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/opportunities/{id}/follow-up",
+  tags,
+  summary: "Set, move or clear the follow-up reminder on an opportunity",
+  description:
+    "When the time comes the opportunity's owner gets an OPPORTUNITY_FOLLOW_UP notification and, if email is on, an email; it fires once, and moving the time arms it again. at: null clears the follow-up and its note. A won or lost opportunity must be reopened before a follow-up can be set.",
+  security,
+  request: { params, body: jsonBody(followUpBodySchema) },
+  responses: {
+    200: jsonResponse(
+      "The opportunity with followUpAt and followUpNote as set",
+      opportunityResponseSchema,
+    ),
+    400: errorResponse("VALIDATION_FAILED: bad input, or a closed opportunity (details null)"),
+    401: unauthenticated,
+    403: readOnly,
     404: notFound,
   },
 });

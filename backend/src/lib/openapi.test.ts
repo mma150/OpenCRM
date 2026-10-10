@@ -79,7 +79,7 @@ describe("OpenAPI document content", () => {
     );
   });
 
-  it("describes every auth, users, record, pipeline, timeline and activity route", () => {
+  it("describes every route", () => {
     const paths = generated().paths;
     const operations = Object.entries(paths).flatMap(([path, item]) =>
       Object.keys(item).map((method) => `${method} ${path}`),
@@ -91,6 +91,7 @@ describe("OpenAPI document content", () => {
       "delete /leads/{id}",
       "delete /opportunities/{id}",
       "delete /pipeline-stages/{id}",
+      "delete /tasks/{id}",
       "get /activity",
       "get /activity/authors",
       "get /auth/me",
@@ -102,15 +103,22 @@ describe("OpenAPI document content", () => {
       "get /contacts",
       "get /contacts/{id}",
       "get /contacts/{id}/timeline",
+      "get /dashboard/me",
+      "get /dashboard/team",
       "get /health",
       "get /leads",
       "get /leads/{id}",
       "get /leads/{id}/timeline",
+      "get /notifications",
+      "get /notifications/unread-count",
       "get /opportunities",
       "get /opportunities/board",
       "get /opportunities/{id}",
       "get /opportunities/{id}/timeline",
       "get /pipeline-stages",
+      "get /tasks",
+      "get /tasks/summary",
+      "get /tasks/{id}",
       "get /users",
       "get /users/assignable",
       "patch /auth/me",
@@ -119,6 +127,7 @@ describe("OpenAPI document content", () => {
       "patch /leads/{id}",
       "patch /opportunities/{id}",
       "patch /pipeline-stages/{id}",
+      "patch /tasks/{id}",
       "patch /users/{id}",
       "post /auth/accept-invite",
       "post /auth/change-password",
@@ -142,6 +151,8 @@ describe("OpenAPI document content", () => {
       "post /leads/{id}/convert",
       "post /leads/{id}/mark-lost",
       "post /leads/{id}/notes",
+      "post /notifications/read-all",
+      "post /notifications/{id}/read",
       "post /opportunities",
       "post /opportunities/{id}/assign",
       "post /opportunities/{id}/close",
@@ -150,11 +161,16 @@ describe("OpenAPI document content", () => {
       "post /opportunities/{id}/reopen",
       "post /opportunities/{id}/stage",
       "post /pipeline-stages",
+      "post /tasks",
+      "post /tasks/{id}/complete",
+      "post /tasks/{id}/reopen",
       "post /users",
       "post /users/{id}/deactivate",
       "post /users/{id}/password-reset-link",
       "post /users/{id}/reactivate",
       "post /users/{id}/resend-invite",
+      "put /leads/{id}/follow-up",
+      "put /opportunities/{id}/follow-up",
       "put /pipeline-stages/order",
     ]);
   });
@@ -183,6 +199,17 @@ describe("OpenAPI document content", () => {
     expect(paths["/opportunities/board"]?.get.security).toEqual(session);
     expect(paths["/opportunities/{id}/close"]?.post?.security).toEqual(session);
     expect(paths["/leads/{id}/convert"]?.post?.security).toEqual(session);
+    expect(paths["/leads/{id}/follow-up"]?.put?.security).toEqual(session);
+    expect(paths["/opportunities/{id}/follow-up"]?.put?.security).toEqual(session);
+    expect(paths["/tasks"]?.get.security).toEqual(session);
+    expect(paths["/tasks/summary"]?.get.security).toEqual(session);
+    expect(paths["/tasks/{id}/complete"]?.post?.security).toEqual(session);
+    expect(paths["/notifications"]?.get.security).toEqual(session);
+    expect(paths["/notifications/unread-count"]?.get.security).toEqual(session);
+    expect(paths["/notifications/read-all"]?.post?.security).toEqual(session);
+    expect(paths["/notifications/{id}/read"]?.post?.security).toEqual(session);
+    expect(paths["/dashboard/me"]?.get.security).toEqual(session);
+    expect(paths["/dashboard/team"]?.get.security).toEqual(session);
     expect(paths["/auth/login"]?.post?.security).toBeUndefined();
     expect(paths["/health"]?.get.security).toBeUndefined();
   });
@@ -224,9 +251,35 @@ describe("OpenAPI document content", () => {
     );
     expect(schemas.StageKind?.enum).toEqual(["OPEN", "WON", "LOST"]);
     expect(schemas.OpenLeadStatus?.enum).toEqual(["NEW", "CONTACTED", "QUALIFIED"]);
+    expect(Object.keys(schemas)).toEqual(
+      expect.arrayContaining([
+        "Task",
+        "TaskSummary",
+        "CreateTaskBody",
+        "UpdateTaskBody",
+        "FollowUpBody",
+        "Notification",
+        "UnreadCount",
+        "MarkedRead",
+        "MyDashboard",
+        "DashboardFollowUp",
+        "TeamDashboard",
+        "TeamFigures",
+        "TeamRep",
+      ]),
+    );
+    expect(schemas.TaskStatus?.enum).toEqual(["OPEN", "DONE"]);
+    expect(schemas.TaskRecordType?.enum).toEqual(["LEAD", "CONTACT", "COMPANY", "OPPORTUNITY"]);
+    expect(schemas.TaskDue?.enum).toEqual(["overdue", "today", "upcoming", "none"]);
+    expect(schemas.NotificationKind?.enum).toEqual([
+      "TASK_REMINDER",
+      "LEAD_FOLLOW_UP",
+      "OPPORTUNITY_FOLLOW_UP",
+      "TASK_ASSIGNED",
+    ]);
     expect(schemas.Role?.enum).toEqual(["ADMIN", "SALES_MANAGER", "SALES_REP", "READ_ONLY"]);
     expect(schemas.UserStatus?.enum).toEqual(["ACTIVE", "INVITED", "DEACTIVATED"]);
-    expect(bodies.length).toBeGreaterThanOrEqual(27);
+    expect(bodies.length).toBeGreaterThanOrEqual(30);
     for (const name of bodies) {
       expect(schemas[name]?.additionalProperties, name).toBe(false);
     }
