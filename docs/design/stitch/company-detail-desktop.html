@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenCRM - Company Detail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              DEFAULT: '#2563eb',
+              hover: '#1d4ed8',
+              50: '#eff6ff',
+              100: '#dbeafe',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+  </style>
+</head>
+<body class="h-full text-slate-900 antialiased overflow-x-hidden flex">
+
+  <!-- Left Sidebar (60 / 240px) -->
+  <aside class="w-60 h-screen fixed left-0 top-0 bg-white border-r border-slate-200 flex flex-col justify-between z-30 shrink-0">
+    <div>
+      <!-- Brand Logo Header -->
+      <div class="h-14 px-5 flex items-center gap-2.5 border-b border-slate-100">
+        <div class="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm">
+          <span class="material-symbols-outlined text-[18px]">hub</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="font-semibold text-slate-900 tracking-tight text-base">OpenCRM</span>
+          <span class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">OSS</span>
+        </div>
+      </div>
+
+      <!-- Main Navigation -->
+      <nav class="p-3 space-y-1">
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">home</span>
+          <span>Home</span>
+        </a>
+
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">filter_alt</span>
+          <span>Leads</span>
+        </a>
+
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">contacts</span>
+          <span>Contacts</span>
+        </a>
+
+        <!-- Active: Companies -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium">
+          <span class="material-symbols-outlined text-[20px] text-blue-600">domain</span>
+          <span>Companies</span>
+        </a>
+
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">monetization_on</span>
+          <span>Opportunities</span>
+        </a>
+
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">task_alt</span>
+          <span>Tasks</span>
+        </a>
+
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">history</span>
+          <span>Activity</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Bottom Nav Items -->
+    <div class="p-3 border-t border-slate-100 space-y-1">
+      <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-[20px] text-slate-400">settings</span>
+        <span>Settings</span>
+      </a>
+      <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-[20px] text-slate-400">menu_book</span>
+        <span>Documentation</span>
+      </a>
+      <div class="px-3 py-2 flex items-center gap-2 text-xs text-slate-500">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>v0.8.4 (Self-hosted)</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Right / Main Content Wrapper -->
+  <div class="pl-60 flex-1 flex flex-col min-w-0 min-h-screen bg-slate-50">
+    
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-20 h-14 bg-white border-b border-slate-200 px-8 flex items-center justify-between">
+      <!-- Breadcrumb -->
+      <nav class="flex items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
+        <a href="#" class="hover:text-slate-900 font-medium">Companies</a>
+        <span class="text-slate-400">/</span>
+        <span class="text-slate-900 font-semibold">Northwind Logistics</span>
+      </nav>
+
+      <!-- Right Header Actions -->
+      <div class="flex items-center gap-4">
+        <!-- Search bar input if needed or direct icons -->
+        <div class="relative hidden md:block w-64">
+          <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">search</span>
+          <input type="text" placeholder="Search OpenCRM... (⌘K)" class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white transition-colors" />
+        </div>
+
+        <button class="relative p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" aria-label="Notifications">
+          <span class="material-symbols-outlined text-[20px]">notifications</span>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-blue-600 rounded-full ring-2 ring-white"></span>
+        </button>
+
+        <button class="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" aria-label="Help">
+          <span class="material-symbols-outlined text-[20px]">help</span>
+        </button>
+
+        <!-- User Menu Dropdown trigger -->
+        <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+          <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-medium text-xs flex items-center justify-center">
+            JS
+          </div>
+          <div class="hidden sm:flex flex-col text-left">
+            <span class="text-xs font-semibold text-slate-900 leading-tight">John Smith</span>
+            <span class="text-[11px] text-slate-500 leading-tight">Admin</span>
+          </div>
+          <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 px-8 py-6 max-w-7xl w-full mx-auto">
+      
+      <!-- Company Header Card -->
+      <div class="bg-white border border-slate-200 rounded-xl p-6 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+              <span class="material-symbols-outlined text-3xl">domain</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-3 flex-wrap">
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Northwind Logistics</h1>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                  Customer Account
+                </span>
+              </div>
+              <div class="flex items-center gap-4 mt-2 text-sm text-slate-500 flex-wrap">
+                <a href="https://northwindlogistics.com" target="_blank" class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 hover:underline">
+                  <span class="material-symbols-outlined text-[17px]">language</span>
+                  <span>northwindlogistics.com</span>
+                </a>
+                <span class="text-slate-300">•</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[17px] text-slate-400">category</span>
+                  <span>Logistics</span>
+                </div>
+                <span class="text-slate-300">•</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[17px] text-slate-400">location_on</span>
+                  <span>Chicago, IL</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Header Buttons -->
+          <div class="flex items-center gap-2.5 shrink-0">
+            <button type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+              <span class="material-symbols-outlined text-[18px]">person_add</span>
+              <span>Add contact</span>
+            </button>
+            <button type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+              <span class="material-symbols-outlined text-[18px]">edit</span>
+              <span>Edit</span>
+            </button>
+            <button type="button" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 border border-slate-300 rounded-lg transition-colors" title="More options">
+              <span class="material-symbols-outlined text-[18px]">more_vert</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="mt-6 border-b border-slate-200 flex gap-6">
+          <button class="pb-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-600 flex items-center gap-2">
+            <span>Overview</span>
+          </button>
+          <button class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center gap-2 transition-colors">
+            <span>Contacts</span>
+            <span class="px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">4</span>
+          </button>
+          <button class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center gap-2 transition-colors">
+            <span>Opportunities</span>
+            <span class="px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">3</span>
+          </button>
+          <button class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center gap-2 transition-colors">
+            <span>Timeline</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Overview Content Grid: 2 columns (2/3 and 1/3) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left 2 Cols: Contacts & Opportunities -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Contacts Card with Compact Table (4 linked contacts) -->
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <h2 class="text-base font-semibold text-slate-900">Contacts</h2>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">4 total</span>
+              </div>
+              <button class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">add</span>
+                <span>Add contact</span>
+              </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                    <th class="py-3 px-6">Name</th>
+                    <th class="py-3 px-6">Job Title</th>
+                    <th class="py-3 px-6">Email</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr class="hover:bg-slate-50/70 transition-colors">
+                    <td class="py-3 px-6">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold text-xs flex items-center justify-center">
+                          MC
+                        </div>
+                        <div>
+                          <a href="#" class="font-medium text-slate-900 hover:text-blue-600">Marcus Chen</a>
+                          <span class="block text-xs text-slate-400">Primary Contact</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3 px-6 text-slate-600 font-medium text-xs">Director of Operations</td>
+                    <td class="py-3 px-6 text-xs text-slate-600">
+                      <a href="mailto:m.chen@northwindlogistics.com" class="hover:text-blue-600">m.chen@northwindlogistics.com</a>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                      <button class="p-1 text-slate-400 hover:text-slate-600 rounded">
+                        <span class="material-symbols-outlined text-[18px]">more_horiz</span>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr class="hover:bg-slate-50/70 transition-colors">
+                    <td class="py-3 px-6">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-semibold text-xs flex items-center justify-center">
+                          TH
+                        </div>
+                        <div>
+                          <a href="#" class="font-medium text-slate-900 hover:text-blue-600">Tom Harrison</a>
+                          <span class="block text-xs text-slate-400">Operations</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3 px-6 text-slate-600 font-medium text-xs">Lead Dispatcher</td>
+                    <td class="py-3 px-6 text-xs text-slate-600">
+                      <a href="mailto:t.harrison@northwindlogistics.com" class="hover:text-blue-600">t.harrison@northwindlogistics.com</a>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                      <button class="p-1 text-slate-400 hover:text-slate-600 rounded">
+                        <span class="material-symbols-outlined text-[18px]">more_horiz</span>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr class="hover:bg-slate-50/70 transition-colors">
+                    <td class="py-3 px-6">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-semibold text-xs flex items-center justify-center">
+                          RL
+                        </div>
+                        <div>
+                          <a href="#" class="font-medium text-slate-900 hover:text-blue-600">Rachel Lin</a>
+                          <span class="block text-xs text-slate-400">Finance</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3 px-6 text-slate-600 font-medium text-xs">VP of Procurement</td>
+                    <td class="py-3 px-6 text-xs text-slate-600">
+                      <a href="mailto:r.lin@northwindlogistics.com" class="hover:text-blue-600">r.lin@northwindlogistics.com</a>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                      <button class="p-1 text-slate-400 hover:text-slate-600 rounded">
+                        <span class="material-symbols-outlined text-[18px]">more_horiz</span>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr class="hover:bg-slate-50/70 transition-colors">
+                    <td class="py-3 px-6">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-violet-100 text-violet-700 font-semibold text-xs flex items-center justify-center">
+                          DK
+                        </div>
+                        <div>
+                          <a href="#" class="font-medium text-slate-900 hover:text-blue-600">David Kowalski</a>
+                          <span class="block text-xs text-slate-400">Technology</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3 px-6 text-slate-600 font-medium text-xs">CTO</td>
+                    <td class="py-3 px-6 text-xs text-slate-600">
+                      <a href="mailto:d.kowalski@northwindlogistics.com" class="hover:text-blue-600">d.kowalski@northwindlogistics.com</a>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                      <button class="p-1 text-slate-400 hover:text-slate-600 rounded">
+                        <span class="material-symbols-outlined text-[18px]">more_horiz</span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Opportunities Card with 3 rows (name, stage badge, value USD, expected close) -->
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <h2 class="text-base font-semibold text-slate-900">Opportunities</h2>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">3 active • $106,500 total</span>
+              </div>
+              <button class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">add</span>
+                <span>New opportunity</span>
+              </button>
+            </div>
+
+            <div class="divide-y divide-slate-100">
+              
+              <!-- Opp Row 1 -->
+              <div class="p-5 flex items-center justify-between hover:bg-slate-50/70 transition-colors">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2.5">
+                    <a href="#" class="font-medium text-sm text-slate-900 hover:text-blue-600">Fleet Dispatcher Expansion (Phase 2)</a>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                      Proposal
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3 text-xs text-slate-500">
+                    <span class="flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[14px] text-slate-400">calendar_today</span>
+                      Expected close: Nov 15, 2025
+                    </span>
+                    <span>•</span>
+                    <span>Owner: Sarah Jenkins</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-base font-semibold text-slate-900">$48,000</div>
+                  <div class="text-[11px] text-slate-400">Confidence: 75%</div>
+                </div>
+              </div>
+
+              <!-- Opp Row 2 -->
+              <div class="p-5 flex items-center justify-between hover:bg-slate-50/70 transition-colors">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2.5">
+                    <a href="#" class="font-medium text-sm text-slate-900 hover:text-blue-600">Telematics API Integration Add-on</a>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                      Negotiation
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3 text-xs text-slate-500">
+                    <span class="flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[14px] text-slate-400">calendar_today</span>
+                      Expected close: Nov 28, 2025
+                    </span>
+                    <span>•</span>
+                    <span>Owner: Sarah Jenkins</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-base font-semibold text-slate-900">$34,500</div>
+                  <div class="text-[11px] text-slate-400">Confidence: 60%</div>
+                </div>
+              </div>
+
+              <!-- Opp Row 3 -->
+              <div class="p-5 flex items-center justify-between hover:bg-slate-50/70 transition-colors">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2.5">
+                    <a href="#" class="font-medium text-sm text-slate-900 hover:text-blue-600">Annual SLA & 24/7 Driver Support License</a>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                      Qualified
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3 text-xs text-slate-500">
+                    <span class="flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[14px] text-slate-400">calendar_today</span>
+                      Expected close: Dec 12, 2025
+                    </span>
+                    <span>•</span>
+                    <span>Owner: Sarah Jenkins</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-base font-semibold text-slate-900">$24,000</div>
+                  <div class="text-[11px] text-slate-400">Confidence: 40%</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right 1 Col: Details card & Recent Activity -->
+        <div class="space-y-6">
+          
+          <!-- Details Card (address, phone, website, owner) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+              <h2 class="text-base font-semibold text-slate-900">Details</h2>
+              <button class="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px]">edit</span>
+                <span>Edit</span>
+              </button>
+            </div>
+
+            <div class="space-y-4 pt-4 text-xs">
+              <div>
+                <span class="text-slate-400 block uppercase tracking-wider font-semibold text-[10px] mb-1">Company Website</span>
+                <a href="https://northwindlogistics.com" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1.5 font-medium text-xs">
+                  <span>https://northwindlogistics.com</span>
+                  <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+                </a>
+              </div>
+
+              <div>
+                <span class="text-slate-400 block uppercase tracking-wider font-semibold text-[10px] mb-1">Phone Number</span>
+                <span class="text-slate-800 font-medium text-xs">+1 (555) 234-8900</span>
+              </div>
+
+              <div>
+                <span class="text-slate-400 block uppercase tracking-wider font-semibold text-[10px] mb-1">Corporate Address</span>
+                <address class="text-slate-800 not-italic leading-relaxed font-medium text-xs">
+                  4200 S Michigan Ave, Suite 600<br>
+                  Chicago, IL 60653<br>
+                  United States
+                </address>
+              </div>
+
+              <div>
+                <span class="text-slate-400 block uppercase tracking-wider font-semibold text-[10px] mb-1">Account Owner</span>
+                <div class="flex items-center gap-2 mt-1">
+                  <div class="w-6 h-6 rounded-full bg-blue-600 text-white font-medium text-[11px] flex items-center justify-center">
+                    SJ
+                  </div>
+                  <div>
+                    <span class="text-slate-900 font-medium block">Sarah Jenkins</span>
+                    <span class="text-slate-400 text-[10px]">Sales Manager</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-3">
+                <div>
+                  <span class="text-slate-400 block uppercase tracking-wider font-semibold text-[10px] mb-1">Fleet Size</span>
+                  <span class="text-slate-800 font-medium">120 vehicles</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block uppercase tracking-wider font-semibold text-[10px] mb-1">Created Date</span>
+                  <span class="text-slate-800 font-medium">Oct 5, 2025</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity List (3 timeline entries: icon, title, author, date) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+              <h2 class="text-base font-semibold text-slate-900">Recent activity</h2>
+              <a href="#" class="text-xs font-semibold text-blue-600 hover:text-blue-700">View all</a>
+            </div>
+
+            <div class="space-y-4 pt-4">
+              
+              <!-- Timeline entry 1 -->
+              <div class="flex items-start gap-3">
+                <div class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100 mt-0.5">
+                  <span class="material-symbols-outlined text-[15px]">call</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-xs font-medium text-slate-900 leading-snug">Introductory Discovery Call</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">
+                    Logged by <span class="font-medium text-slate-700">Sarah Jenkins</span>
+                  </p>
+                  <span class="text-[10px] text-slate-400 mt-0.5 block">Today, 11:30 AM</span>
+                </div>
+              </div>
+
+              <!-- Timeline entry 2 -->
+              <div class="flex items-start gap-3">
+                <div class="w-7 h-7 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100 mt-0.5">
+                  <span class="material-symbols-outlined text-[15px]">note</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-xs font-medium text-slate-900 leading-snug">Internal Procurement Note</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">
+                    Author <span class="font-medium text-slate-700">Sarah Jenkins</span>
+                  </p>
+                  <span class="text-[10px] text-slate-400 mt-0.5 block">Yesterday, 3:45 PM</span>
+                </div>
+              </div>
+
+              <!-- Timeline entry 3 -->
+              <div class="flex items-start gap-3">
+                <div class="w-7 h-7 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100 mt-0.5">
+                  <span class="material-symbols-outlined text-[15px]">videocam</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-xs font-medium text-slate-900 leading-snug">Technical Architecture Demo</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">
+                    Led by <span class="font-medium text-slate-700">Sarah Jenkins</span>
+                  </p>
+                  <span class="text-[10px] text-slate-400 mt-0.5 block">Oct 8, 2:00 PM</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

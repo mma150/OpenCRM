@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-background text-on-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Home Dashboard</title>
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration verbatim from Design System -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-secondary-container": "#fffbff",
+            "on-error-container": "#93000a",
+            "primary-container": "#2563eb",
+            "on-primary-fixed": "#00174b",
+            "inverse-primary": "#b4c5ff",
+            "secondary": "#4b41e1",
+            "on-secondary-fixed-variant": "#3323cc",
+            "primary-fixed": "#dbe1ff",
+            "on-primary": "#ffffff",
+            "inverse-on-surface": "#f1effa",
+            "inverse-surface": "#2f3038",
+            "surface-variant": "#e3e1ec",
+            "outline-variant": "#c3c6d7",
+            "error-container": "#ffdad6",
+            "tertiary-fixed-dim": "#ffb596",
+            "secondary-container": "#645efb",
+            "surface-container-high": "#e8e7f1",
+            "surface-bright": "#fbf8ff",
+            "on-surface": "#1a1b22",
+            "surface-container": "#eeedf7",
+            "outline": "#737686",
+            "tertiary-container": "#bc4800",
+            "on-tertiary": "#ffffff",
+            "error": "#ba1a1a",
+            "surface-dim": "#dad9e3",
+            "primary": "#004ac6",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "on-secondary-fixed": "#0f0069",
+            "surface-container-low": "#f4f2fd",
+            "on-surface-variant": "#434655",
+            "on-tertiary-container": "#ffede6",
+            "on-background": "#1a1b22",
+            "surface-container-lowest": "#ffffff",
+            "primary-fixed-dim": "#b4c5ff",
+            "surface-tint": "#0053db",
+            "tertiary": "#943700",
+            "secondary-fixed": "#e2dfff",
+            "surface-container-highest": "#e3e1ec",
+            "surface": "#fbf8ff",
+            "on-primary-container": "#eeefff",
+            "background": "#fbf8ff",
+            "tertiary-fixed": "#ffdbcd",
+            "on-error": "#ffffff",
+            "on-tertiary-fixed": "#360f00",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-secondary": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-2xl": "2rem",
+            "margin-lg": "2rem",
+            "margin": "1rem",
+            "gutter": "1rem",
+            "space-sm": "0.5rem",
+            "space-xl": "1.5rem",
+            "space-lg": "1rem",
+            "space-xs": "0.25rem",
+            "margin-md": "1.5rem",
+            "space-md": "0.75rem",
+            "gutter-lg": "1.5rem"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "headline-xl": ["Inter"],
+            "metric-mono": ["Inter"],
+            "headline-sm": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-lg": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="h-full antialiased font-body-md text-on-surface bg-background">
+<div class="flex h-screen overflow-hidden">
+<!-- ========================================== -->
+<!-- 1. LEFT SIDEBAR (Shared Component: SideNavBar) -->
+<!-- ========================================== -->
+<aside class="fixed top-0 left-0 h-screen w-60 bg-surface-container-lowest border-r border-outline-variant shadow-sm z-30 flex flex-col justify-between p-4 shrink-0">
+<!-- Top Section: Brand & Nav Links -->
+<div class="flex flex-col gap-4">
+<!-- Logo & OSS Badge -->
+<div class="flex items-center justify-between px-2 pt-1 pb-2">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="business_center">business_center</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-headline-sm font-headline-sm font-semibold text-on-surface tracking-tight">OpenCRM</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-medium bg-surface-container-high text-on-surface-variant border border-outline-variant/60">OSS</span>
+</div>
+</div>
+</div>
+<!-- Primary CTA from JSON -->
+<div class="px-1">
+<button class="w-full h-9 px-3 rounded-lg bg-primary hover:bg-primary/90 text-on-primary font-label-md text-label-md flex items-center justify-center gap-1.5 shadow-sm transition-colors duration-150 ease-in-out">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+<span>New Record</span>
+</button>
+</div>
+<!-- Navigation items list strictly mapped from JSON -->
+<nav class="flex flex-col gap-1 mt-2">
+<!-- Home (ACTIVE STATE) -->
+<a class="flex items-center gap-3 px-3 py-2 text-primary font-label-md text-label-md bg-surface-container-low rounded-lg transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-primary" data-icon="home" data-weight="fill">home</span>
+<span>Home</span>
+</a>
+<!-- Leads -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="person_search">person_search</span>
+<span>Leads</span>
+</a>
+<!-- Contacts -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="contacts">contacts</span>
+<span>Contacts</span>
+</a>
+<!-- Companies -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="business">business</span>
+<span>Companies</span>
+</a>
+<!-- Opportunities -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="monetization_on">monetization_on</span>
+<span>Opportunities</span>
+</a>
+<!-- Tasks -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+<span>Tasks</span>
+</a>
+<!-- Activity -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span>Activity</span>
+</a>
+</nav>
+</div>
+<!-- Bottom of Sidebar: Settings, Docs, Version -->
+<div class="flex flex-col gap-1 pt-3 border-t border-outline-variant/60">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>Documentation</span>
+</a>
+<div class="px-3 pt-3 text-[11px] text-on-surface-variant/70 font-mono">
+          v0.8.4 (Self-hosted)
+        </div>
+</div>
+</aside>
+<!-- ========================================== -->
+<!-- 2. MAIN VIEWPORT & TOP BAR                 -->
+<!-- ========================================== -->
+<div class="flex-1 flex flex-col ml-60 h-screen overflow-y-auto">
+<!-- TopNavBar (Shared Component: TopNavBar) -->
+<header class="sticky top-0 w-full z-20 h-14 bg-surface-container-lowest border-b border-outline-variant shadow-sm flex items-center justify-between px-6 shrink-0">
+<!-- Left: Organization / Breadcrumb -->
+<div class="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant">
+<span class="text-on-surface-variant">Acme Sales Org</span>
+<span class="text-outline-variant">/</span>
+<span class="font-semibold text-on-surface">Home</span>
+</div>
+<!-- Right: Actions & User Avatar -->
+<div class="flex items-center gap-3">
+<!-- Help Button -->
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" title="Help &amp; Support">
+<span class="material-symbols-outlined text-[20px]" data-icon="help_outline">help_outline</span>
+</button>
+<!-- Notification Bell with Badge '3' -->
+<button class="relative w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" title="Notifications">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white ring-2 ring-white">
+              3
+            </span>
+</button>
+<div class="h-5 w-[1px] bg-outline-variant/60 mx-1"></div>
+<!-- User Menu Avatar -->
+<button class="flex items-center gap-2.5 py-1 px-1.5 rounded-lg hover:bg-surface-container-low transition-colors duration-150 text-left">
+<div class="w-7 h-7 rounded-full bg-primary-fixed text-on-primary-fixed font-semibold text-xs flex items-center justify-center ring-1 ring-outline-variant">
+              MC
+            </div>
+<div class="flex items-center gap-1">
+<span class="text-label-md font-label-md font-medium text-on-surface">Marcus Chen</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant" data-icon="expand_more">expand_more</span>
+</div>
+</button>
+</div>
+</header>
+<!-- ========================================== -->
+<!-- 3. PAGE CONTENT CANVAS (Max-w 1280px Grid) -->
+<!-- ========================================== -->
+<main class="flex-1 p-6 max-w-[1280px] w-full mx-auto">
+<!-- Greeting Banner -->
+<section class="mb-6">
+<h1 class="text-headline-lg font-headline-lg text-on-surface tracking-tight font-semibold">Good morning, Marcus</h1>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5">Sales Rep · Thursday 8 October</p>
+</section>
+<!-- Stat Cards Row (4 Columns) -->
+<section class="grid grid-cols-4 gap-4 mb-6">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col justify-between">
+<span class="text-[11px] font-medium uppercase tracking-wider text-on-surface-variant font-label-sm">Open leads</span>
+<div class="text-headline-lg font-headline-lg text-on-surface font-semibold mt-2">18</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col justify-between">
+<span class="text-[11px] font-medium uppercase tracking-wider text-on-surface-variant font-label-sm">Pipeline value</span>
+<div class="text-headline-lg font-headline-lg text-on-surface font-semibold mt-2">$84,500</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col justify-between">
+<span class="text-[11px] font-medium uppercase tracking-wider text-on-surface-variant font-label-sm">Tasks due today</span>
+<div class="text-headline-lg font-headline-lg text-on-surface font-semibold mt-2">5</div>
+</div>
+<!-- Card 4: Overdue Warning Tone Callout -->
+<div class="bg-amber-50/70 border border-amber-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+<span class="text-[11px] font-medium uppercase tracking-wider text-amber-800 font-label-sm">Overdue tasks</span>
+<div class="text-headline-lg font-headline-lg text-amber-800 font-semibold mt-2">2</div>
+</div>
+</section>
+<!-- Two Columns Layout (col-span-7 and col-span-5) -->
+<div class="grid grid-cols-12 gap-6 items-start">
+<!-- LEFT COLUMN (col-span-7) -->
+<div class="col-span-7 flex flex-col gap-6">
+<!-- Pipeline by stage -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div>
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold">Pipeline by stage</h2>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5">18 active deals · $84,500 weighted value</p>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant bg-surface-container-low px-2 py-1 rounded">Q4 Active</span>
+</div>
+<!-- Bar items list -->
+<div class="space-y-4 pt-1">
+<!-- New -->
+<div>
+<div class="flex justify-between items-center text-label-md font-label-md mb-1.5">
+<span class="font-medium text-on-surface">New</span>
+<span class="text-on-surface-variant text-body-sm">6 deals · <span class="font-semibold text-on-surface">$14,000</span></span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 25%"></div>
+</div>
+</div>
+<!-- Qualified -->
+<div>
+<div class="flex justify-between items-center text-label-md font-label-md mb-1.5">
+<span class="font-medium text-on-surface">Qualified</span>
+<span class="text-on-surface-variant text-body-sm">5 deals · <span class="font-semibold text-on-surface">$22,500</span></span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 40%"></div>
+</div>
+</div>
+<!-- Proposal -->
+<div>
+<div class="flex justify-between items-center text-label-md font-label-md mb-1.5">
+<span class="font-medium text-on-surface">Proposal</span>
+<span class="text-on-surface-variant text-body-sm">4 deals · <span class="font-semibold text-on-surface">$31,000</span></span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 55%"></div>
+</div>
+</div>
+<!-- Negotiation -->
+<div>
+<div class="flex justify-between items-center text-label-md font-label-md mb-1.5">
+<span class="font-medium text-on-surface">Negotiation</span>
+<span class="text-on-surface-variant text-body-sm">3 deals · <span class="font-semibold text-on-surface">$17,000</span></span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 30%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- My open leads Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold">My open leads</h2>
+<a class="text-label-md font-label-md text-primary font-medium hover:underline inline-flex items-center gap-1" href="#">
+                  View all leads <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<!-- Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/60 bg-surface text-[11px] font-medium uppercase tracking-wider text-on-surface-variant">
+<th class="py-2.5 px-3">Name</th>
+<th class="py-2.5 px-3">Company</th>
+<th class="py-2.5 px-3">Status</th>
+<th class="py-2.5 px-3 text-right">Last contact</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/40 text-body-md font-body-md">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-3 font-medium text-on-surface">Sarah Miller</td>
+<td class="py-3 px-3 text-on-surface-variant">Apex Global</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          Active
+                        </span>
+</td>
+<td class="py-3 px-3 text-right text-on-surface-variant text-body-sm">2 hours ago</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-3 font-medium text-on-surface">David Kim</td>
+<td class="py-3 px-3 text-on-surface-variant">Vantage Point</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                          Follow-up
+                        </span>
+</td>
+<td class="py-3 px-3 text-right text-on-surface-variant text-body-sm">Yesterday</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-3 font-medium text-on-surface">Elena Rostova</td>
+<td class="py-3 px-3 text-on-surface-variant">Horizon Media</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                          Proposal Sent
+                        </span>
+</td>
+<td class="py-3 px-3 text-right text-on-surface-variant text-body-sm">2 days ago</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-3 font-medium text-on-surface">Robert Vance</td>
+<td class="py-3 px-3 text-on-surface-variant">Pinnacle Systems</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                          New
+                        </span>
+</td>
+<td class="py-3 px-3 text-right text-on-surface-variant text-body-sm">3 days ago</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-3 font-medium text-on-surface">Clara Oswald</td>
+<td class="py-3 px-3 text-on-surface-variant">Gallifrey Tech</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                          Negotiation
+                        </span>
+</td>
+<td class="py-3 px-3 text-right text-on-surface-variant text-body-sm">4 days ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN (col-span-5) -->
+<div class="col-span-5 flex flex-col gap-6">
+<!-- Tasks Due Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between pb-1">
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold">Tasks due</h2>
+<span class="text-xs font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">5 Pending</span>
+</div>
+<!-- Overdue Section -->
+<div class="mt-4">
+<div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 font-label-sm mb-2.5">
+                  Overdue
+                </div>
+<div class="space-y-3">
+<!-- Task 1 -->
+<div class="flex items-start gap-3 p-2 rounded-lg hover:bg-surface-container-low/40 transition-colors">
+<input class="mt-1 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+<div class="flex-1 min-w-0">
+<p class="text-label-md font-label-md font-medium text-on-surface leading-snug">Send revised MSA pricing</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-body-sm font-body-sm text-on-surface-variant">Apex Global</span>
+<span class="text-[11px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60">Yesterday, 4:00 PM</span>
+</div>
+</div>
+</div>
+<!-- Task 2 -->
+<div class="flex items-start gap-3 p-2 rounded-lg hover:bg-surface-container-low/40 transition-colors">
+<input class="mt-1 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+<div class="flex-1 min-w-0">
+<p class="text-label-md font-label-md font-medium text-on-surface leading-snug">Follow up on legal review</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-body-sm font-body-sm text-on-surface-variant">Pinnacle Systems</span>
+<span class="text-[11px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60">Oct 6, 2:00 PM</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Today Section -->
+<div class="mt-5 pt-3 border-t border-outline-variant/50">
+<div class="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant font-label-sm mb-2.5">
+                  Today
+                </div>
+<div class="space-y-3">
+<!-- Task 3 -->
+<div class="flex items-start gap-3 p-2 rounded-lg hover:bg-surface-container-low/40 transition-colors">
+<input class="mt-1 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+<div class="flex-1 min-w-0">
+<p class="text-label-md font-label-md font-medium text-on-surface leading-snug">Product demo with CTO</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-body-sm font-body-sm text-on-surface-variant">Vantage Point</span>
+<span class="text-[11px] font-medium text-on-surface-variant bg-surface-container-low px-1.5 py-0.5 rounded">11:30 AM</span>
+</div>
+</div>
+</div>
+<!-- Task 4 -->
+<div class="flex items-start gap-3 p-2 rounded-lg hover:bg-surface-container-low/40 transition-colors">
+<input class="mt-1 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+<div class="flex-1 min-w-0">
+<p class="text-label-md font-label-md font-medium text-on-surface leading-snug">Prepare Q4 proposal deck</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-body-sm font-body-sm text-on-surface-variant">Horizon Media</span>
+<span class="text-[11px] font-medium text-on-surface-variant bg-surface-container-low px-1.5 py-0.5 rounded">2:00 PM</span>
+</div>
+</div>
+</div>
+<!-- Task 5 -->
+<div class="flex items-start gap-3 p-2 rounded-lg hover:bg-surface-container-low/40 transition-colors">
+<input class="mt-1 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/20" type="checkbox"/>
+<div class="flex-1 min-w-0">
+<p class="text-label-md font-label-md font-medium text-on-surface leading-snug">Call procurement officer</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-body-sm font-body-sm text-on-surface-variant">Gallifrey Tech</span>
+<span class="text-[11px] font-medium text-on-surface-variant bg-surface-container-low px-1.5 py-0.5 rounded">4:30 PM</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Conversations Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold">Recent conversations</h2>
+<button class="text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+<!-- Conversation Feed -->
+<div class="space-y-4">
+<!-- Conversation 1: Meeting -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-100">
+<span class="material-symbols-outlined text-[18px]" data-icon="video_camera_front">video_camera_front</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<p class="text-label-md font-label-md font-medium text-on-surface truncate">Sarah Miller (Apex Global)</p>
+<span class="text-[11px] text-on-surface-variant shrink-0 ml-2">Today, 9:15 AM</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5 line-clamp-2">
+                      Discussed security questionnaire and deployment timeline
+                    </p>
+</div>
+</div>
+<!-- Conversation 2: Call -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-100">
+<span class="material-symbols-outlined text-[18px]" data-icon="call">call</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<p class="text-label-md font-label-md font-medium text-on-surface truncate">David Kim (Vantage Point)</p>
+<span class="text-[11px] text-on-surface-variant shrink-0 ml-2">Yesterday</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5 line-clamp-2">
+                      Budget approved by finance team, awaiting signature
+                    </p>
+</div>
+</div>
+<!-- Conversation 3: Email -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center shrink-0 border border-purple-100">
+<span class="material-symbols-outlined text-[18px]" data-icon="mail">mail</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<p class="text-label-md font-label-md font-medium text-on-surface truncate">Elena Rostova (Horizon Media)</p>
+<span class="text-[11px] text-on-surface-variant shrink-0 ml-2">2 days ago</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5 line-clamp-2">
+                      Sent updated tier-2 enterprise contract draft
+                    </p>
+</div>
+</div>
+<!-- Conversation 4: Call -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-100">
+<span class="material-symbols-outlined text-[18px]" data-icon="call">call</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<p class="text-label-md font-label-md font-medium text-on-surface truncate">Robert Vance (Pinnacle Systems)</p>
+<span class="text-[11px] text-on-surface-variant shrink-0 ml-2">3 days ago</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5 line-clamp-2">
+                      Introductory discovery call regarding team seat licensing
+                    </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

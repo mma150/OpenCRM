@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notifications - OpenCRM</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed": "#dbe1ff",
+            "on-tertiary-fixed": "#360f00",
+            "inverse-primary": "#b4c5ff",
+            "on-surface-variant": "#434655",
+            "surface-tint": "#0053db",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-secondary-fixed-variant": "#3323cc",
+            "secondary-fixed": "#e2dfff",
+            "error": "#ba1a1a",
+            "on-tertiary-container": "#ffede6",
+            "surface-bright": "#fbf8ff",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-error": "#ffffff",
+            "tertiary-container": "#bc4800",
+            "surface-container-highest": "#e3e1ec",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "on-secondary-container": "#fffbff",
+            "on-secondary-fixed": "#0f0069",
+            "outline-variant": "#c3c6d7",
+            "surface-container-low": "#f4f2fd",
+            "surface-dim": "#dad9e3",
+            "surface-variant": "#e3e1ec",
+            "error-container": "#ffdad6",
+            "secondary": "#4b41e1",
+            "tertiary-fixed-dim": "#ffb596",
+            "on-secondary": "#ffffff",
+            "on-primary-fixed": "#00174b",
+            "on-error-container": "#93000a",
+            "tertiary": "#943700",
+            "on-tertiary": "#ffffff",
+            "background": "#fbf8ff",
+            "inverse-surface": "#2f3038",
+            "on-primary": "#ffffff",
+            "surface": "#fbf8ff",
+            "on-background": "#1a1b22",
+            "surface-container-high": "#e8e7f1",
+            "surface-container": "#eeedf7",
+            "primary-fixed-dim": "#b4c5ff",
+            "outline": "#737686",
+            "primary": "#004ac6",
+            "on-primary-container": "#eeefff",
+            "on-surface": "#1a1b22",
+            "primary-container": "#2563eb",
+            "inverse-on-surface": "#f1effa",
+            "tertiary-fixed": "#ffdbcd",
+            "secondary-container": "#645efb"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-md": "1.5rem",
+            "gutter": "1rem",
+            "space-xs": "0.25rem",
+            "margin-lg": "2rem",
+            "space-sm": "0.5rem",
+            "space-2xl": "2rem",
+            "gutter-lg": "1.5rem",
+            "space-xl": "1.5rem",
+            "space-lg": "1rem",
+            "margin": "1rem",
+            "space-md": "0.75rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "headline-xl": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "metric-mono": ["Inter"],
+            "body-md": ["Inter"],
+            "label-md": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-surface text-on-surface antialiased flex h-screen overflow-hidden selection:bg-primary-fixed selection:text-primary">
+<!-- ================= SIDEBAR (Shared Component: SideNavBar) ================= -->
+<!-- Contextual mapping: 'Users' is the exact active screen destination -->
+<aside class="fixed left-0 top-0 bottom-0 w-60 z-30 flex flex-col justify-between p-4 bg-surface-container-lowest border-r border-outline-variant shadow-sm shrink-0">
+<!-- Top Branding & Navigation -->
+<div class="flex flex-col gap-5">
+<!-- Wordmark & Logo Header -->
+<div class="flex items-center justify-between px-2 pt-1">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-bold text-headline-sm">
+<span class="material-symbols-outlined text-[18px]">view_quilt</span>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">OpenCRM</span>
+</div>
+</div>
+<span class="text-body-sm font-body-sm text-outline px-1.5 py-0.5 rounded border border-outline-variant">OSS</span>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex flex-col gap-1"><a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span>Home</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span>Users</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">filter_alt</span>
+<span>Leads</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">contact_page</span>
+<span>Contacts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">monetization_on</span>
+<span>Opportunities</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-low text-primary font-medium transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<span>Tasks</span>
+</a></nav>
+</div>
+<!-- Sidebar Bottom / Footer Tabs -->
+<div class="flex flex-col gap-1 border-t border-outline-variant pt-3">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">menu_book</span>
+<span>Documentation</span>
+</a>
+<div class="px-3 py-2 flex items-center justify-between text-body-sm font-body-sm text-outline">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>
+<span>v0.8.4 (Self-hosted)</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- ================= MAIN VIEWPORT ================= -->
+<div class="pl-60 flex-1 flex flex-col h-screen overflow-y-auto">
+<!-- Top Header Bar (Shared Component: TopNavBar execution) -->
+<header class="sticky top-0 z-20 flex justify-between items-center h-14 px-8 w-full bg-surface-container-lowest border-b border-outline-variant shadow-sm">
+<!-- Breadcrumb indicator -->
+<div class="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant"><span class="hover:text-on-surface cursor-pointer">Acme Sales Org</span>
+<span class="text-outline">/</span>
+<span class="text-on-surface font-medium">Tasks</span></div>
+<!-- Header Trailing Action & Profile Menu Area -->
+<div class="flex items-center gap-4 relative"><div class="flex items-center gap-1 border-r border-outline-variant pr-4 relative">
+<!-- Notification Bell Button (Active/Open State) -->
+<div class="relative">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-primary bg-surface-container-low shadow-xs transition-colors duration-150 relative" title="Notifications">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary-container text-on-primary text-[10px] font-bold flex items-center justify-center border-2 border-surface-container-lowest leading-none shadow-xs">3</span>
+</button>
+<!-- Notification Popover Menu -->
+<div class="absolute right-[-100px] top-11 w-[384px] bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg z-50 overflow-hidden text-left" style="max-height: calc(100vh - 70px);">
+<!-- Header -->
+<div class="px-4 py-3 border-b border-outline-variant flex items-center justify-between bg-surface-container-lowest">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-[15px] font-semibold text-on-surface tracking-tight">Notifications</h3>
+<span class="px-2 py-0.5 rounded-full bg-blue-50 text-primary text-[11px] font-semibold border border-blue-100">3 unread</span>
+</div>
+<button class="text-[12px] font-medium text-primary hover:underline transition-colors">
+          Mark all as read
+        </button>
+</div>
+<!-- Notification Items List -->
+<div class="divide-y divide-surface-container overflow-y-auto max-h-[460px]">
+<!-- 1. Overdue Task (unread) -->
+<div class="p-3.5 bg-blue-50/40 hover:bg-surface-container-low/60 transition-colors cursor-pointer flex items-start gap-3 relative">
+<div class="w-8 h-8 rounded-full bg-red-50 text-error flex items-center justify-center shrink-0 border border-red-100 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+</div>
+<div class="flex-1 min-w-0 pr-3">
+<p class="font-body-sm text-[13px] font-medium text-on-surface leading-snug">
+              Task overdue: <span class="font-normal text-on-surface-variant">Send revised MSA pricing tier matrix</span>
+</p>
+<p class="text-[11px] text-outline mt-1 font-medium">
+<span class="text-primary font-medium">[Opportunity]</span> Northwind Logistics - Fleet Expansion
+            </p>
+<span class="text-[11px] text-outline block mt-1">5m ago</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-primary-container shrink-0 mt-1.5" title="Unread"></span>
+</div>
+<!-- 2. Task Reminder (unread) -->
+<div class="p-3.5 bg-blue-50/40 hover:bg-surface-container-low/60 transition-colors cursor-pointer flex items-start gap-3 relative">
+<div class="w-8 h-8 rounded-full bg-blue-50 text-primary flex items-center justify-center shrink-0 border border-blue-100 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">alarm</span>
+</div>
+<div class="flex-1 min-w-0 pr-3">
+<p class="font-body-sm text-[13px] font-medium text-on-surface leading-snug">
+              Reminder: <span class="font-normal text-on-surface-variant">Call Marcus Chen about the fleet quote</span>
+</p>
+<p class="text-[11px] text-outline mt-1 font-medium">
+<span class="text-primary font-medium">[Lead]</span> Northwind Logistics
+            </p>
+<span class="text-[11px] text-outline block mt-1">24m ago</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-primary-container shrink-0 mt-1.5" title="Unread"></span>
+</div>
+<!-- 3. Task Assigned (unread) -->
+<div class="p-3.5 bg-blue-50/40 hover:bg-surface-container-low/60 transition-colors cursor-pointer flex items-start gap-3 relative">
+<div class="w-8 h-8 rounded-full bg-purple-50 text-secondary flex items-center justify-center shrink-0 border border-purple-100 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+</div>
+<div class="flex-1 min-w-0 pr-3">
+<p class="font-body-sm text-[13px] font-medium text-on-surface leading-snug">
+              Sarah Jenkins assigned a task to you: <span class="font-normal text-on-surface-variant">Product demo with CTO</span>
+</p>
+<p class="text-[11px] text-outline mt-1 font-medium">
+<span class="text-primary font-medium">[Lead]</span> Northwind Logistics
+            </p>
+<span class="text-[11px] text-outline block mt-1">1h ago</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-primary-container shrink-0 mt-1.5" title="Unread"></span>
+</div>
+<!-- 4. Task Reminder (read) -->
+<div class="p-3.5 bg-surface-container-lowest hover:bg-surface-container-low/60 transition-colors cursor-pointer flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0 border border-outline-variant mt-0.5">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+</div>
+<div class="flex-1 min-w-0 pr-3">
+<p class="font-body-sm text-[13px] text-on-surface leading-snug">
+              Reminder: <span class="text-on-surface-variant">Follow up on legal redline contract review</span>
+</p>
+<p class="text-[11px] text-outline mt-1 font-medium">
+<span class="text-outline font-medium">[Lead]</span> Liam Gallagher (Brightpath Dental)
+            </p>
+<span class="text-[11px] text-outline block mt-1">Yesterday, 4:00 PM</span>
+</div>
+</div>
+<!-- 5. Task Assigned (read) -->
+<div class="p-3.5 bg-surface-container-lowest hover:bg-surface-container-low/60 transition-colors cursor-pointer flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0 border border-outline-variant mt-0.5">
+<span class="material-symbols-outlined text-[18px]">assignment</span>
+</div>
+<div class="flex-1 min-w-0 pr-3">
+<p class="font-body-sm text-[13px] text-on-surface leading-snug">
+              Maya Patel assigned a task to you: <span class="text-on-surface-variant">Send custom API webhook spec</span>
+</p>
+<p class="text-[11px] text-outline mt-1 font-medium">
+<span class="text-outline font-medium">[Contact]</span> Devon Vance (Vance Industrial Supply)
+            </p>
+<span class="text-[11px] text-outline block mt-1">Oct 6, 2:00 PM</span>
+</div>
+</div>
+<!-- 6. Overdue Task (read) -->
+<div class="p-3.5 bg-surface-container-lowest hover:bg-surface-container-low/60 transition-colors cursor-pointer flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0 border border-outline-variant mt-0.5">
+<span class="material-symbols-outlined text-[18px]">timer</span>
+</div>
+<div class="flex-1 min-w-0 pr-3">
+<p class="font-body-sm text-[13px] text-on-surface leading-snug">
+              Task overdue: <span class="text-on-surface-variant">Prepare Q4 enterprise proposal deck</span>
+</p>
+<p class="text-[11px] text-outline mt-1 font-medium">
+<span class="text-outline font-medium">[Opportunity]</span> Aegis Cloud Architecture
+            </p>
+<span class="text-[11px] text-outline block mt-1">Oct 5, 10:00 AM</span>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="border-t border-outline-variant bg-surface-container-low/40 p-2.5 text-center">
+<a class="text-[12px] font-semibold text-primary hover:text-primary-container inline-flex items-center justify-center gap-1 transition-colors" href="#">
+<span>View all notifications</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Help Button -->
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" title="Help">
+<span class="material-symbols-outlined text-[20px]">help</span>
+</button>
+</div>
+<!-- Profile Button -->
+<div class="relative">
+<button class="flex items-center gap-2.5 p-1 rounded-lg hover:bg-surface-container-low transition-colors duration-150 cursor-pointer" id="profileDropdownBtn">
+<div aria-label="User avatar initials JS" class="w-7 h-7 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center font-label-sm text-label-sm text-on-surface font-medium">
+      JS
+    </div>
+<span class="font-label-md text-label-md text-on-surface font-medium">John Smith</span>
+<span class="material-symbols-outlined text-[18px] text-outline">expand_more</span>
+</button>
+</div></div>
+</header>
+<!-- Page Content Container -->
+<main class="flex-1 max-w-6xl w-full mx-auto p-8"><!-- Header Row -->
+<div class="flex items-center justify-between mb-6">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Tasks</h1>
+<p class="font-body-md text-body-md text-outline mt-1">Your follow-ups and to-dos.</p>
+</div>
+<button class="h-9 px-4 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-colors duration-150 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>New task</span>
+</button>
+</div>
+<!-- Filters & Search Toolbar -->
+<div class="flex items-center justify-between gap-4 mb-6">
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-outline">search</span>
+<input class="w-full h-9 pl-9 pr-3 rounded-lg border border-outline-variant text-body-md font-body-md placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container bg-surface-container-lowest text-on-surface" placeholder="Search tasks..." type="text"/>
+</div>
+<div class="flex items-center gap-2.5">
+<button class="h-9 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline">person</span>
+<span>Assigned to: Me</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</button>
+<button class="h-9 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline">filter_list</span>
+<span>All Statuses</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Tasks Sections -->
+<div class="flex flex-col gap-6">
+<!-- Section 1: Overdue (2) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden">
+<div class="px-4 py-3 bg-red-50/50 border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-error">error</span>
+<h2 class="font-label-md text-label-md font-semibold text-error">Overdue (2)</h2>
+</div>
+</div>
+<div class="divide-y divide-surface-container">
+<div class="px-4 py-3 flex items-center justify-between hover:bg-surface-container-low/50 transition-colors">
+<div class="flex items-center gap-3">
+<button class="w-5 h-5 rounded border border-outline-variant flex items-center justify-center hover:border-primary transition-colors"></button>
+<div>
+<p class="font-body-md text-body-md font-medium text-on-surface">Send revised MSA pricing tier matrix</p>
+<p class="font-body-sm text-body-sm text-outline mt-0.5">Opportunity: Northwind Logistics - Fleet Expansion</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-error border border-red-200">Due 2 days ago</span>
+<button class="w-7 h-7 rounded flex items-center justify-center text-outline hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]">more_horiz</span>
+</button>
+</div>
+</div>
+<div class="px-4 py-3 flex items-center justify-between hover:bg-surface-container-low/50 transition-colors">
+<div class="flex items-center gap-3">
+<button class="w-5 h-5 rounded border border-outline-variant flex items-center justify-center hover:border-primary transition-colors"></button>
+<div>
+<p class="font-body-md text-body-md font-medium text-on-surface">Prepare Q4 enterprise proposal deck</p>
+<p class="font-body-sm text-body-sm text-outline mt-0.5">Opportunity: Aegis Cloud Architecture</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-error border border-red-200">Due yesterday</span>
+<button class="w-7 h-7 rounded flex items-center justify-center text-outline hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Due today (5) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden">
+<div class="px-4 py-3 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">today</span>
+<h2 class="font-label-md text-label-md font-semibold text-on-surface">Due today (5)</h2>
+</div>
+</div>
+<div class="divide-y divide-surface-container">
+<div class="px-4 py-3 flex items-center justify-between hover:bg-surface-container-low/50 transition-colors">
+<div class="flex items-center gap-3">
+<button class="w-5 h-5 rounded border border-outline-variant flex items-center justify-center hover:border-primary transition-colors"></button>
+<div>
+<p class="font-body-md text-body-md font-medium text-on-surface">Call Marcus Chen about the fleet quote</p>
+<p class="font-body-sm text-body-sm text-outline mt-0.5">Lead: Northwind Logistics</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-primary border border-blue-200">Today 2:00 PM</span>
+<button class="w-7 h-7 rounded flex items-center justify-center text-outline hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]">more_horiz</span>
+</button>
+</div>
+</div>
+<div class="px-4 py-3 flex items-center justify-between hover:bg-surface-container-low/50 transition-colors">
+<div class="flex items-center gap-3">
+<button class="w-5 h-5 rounded border border-outline-variant flex items-center justify-center hover:border-primary transition-colors"></button>
+<div>
+<p class="font-body-md text-body-md font-medium text-on-surface">Product demo with CTO</p>
+<p class="font-body-sm text-body-sm text-outline mt-0.5">Lead: Northwind Logistics</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-primary border border-blue-200">Today 4:30 PM</span>
+<button class="w-7 h-7 rounded flex items-center justify-center text-outline hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: Upcoming (8) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden">
+<div class="px-4 py-3 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">calendar_month</span>
+<h2 class="font-label-md text-label-md font-semibold text-on-surface">Upcoming (8)</h2>
+</div>
+</div>
+<div class="px-4 py-3 flex items-center justify-between hover:bg-surface-container-low/50 transition-colors">
+<div class="flex items-center gap-3">
+<button class="w-5 h-5 rounded border border-outline-variant flex items-center justify-center hover:border-primary transition-colors"></button>
+<div>
+<p class="font-body-md text-body-md font-medium text-on-surface">Follow up on legal redline contract review</p>
+<p class="font-body-sm text-body-sm text-outline mt-0.5">Lead: Liam Gallagher (Brightpath Dental)</p></div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-surface-container-low text-on-surface-variant border border-outline-variant">Tomorrow</span>
+<button class="w-7 h-7 rounded flex items-center justify-center text-outline hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+</div></main>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const profileBtn = document.getElementById('profileDropdownBtn');
+      const profileMenu = document.getElementById('profileDropdownMenu');
+
+      if (profileBtn && profileMenu) {
+        profileBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          profileMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!profileMenu.contains(e.target) && !profileBtn.contains(e.target)) {
+            profileMenu.classList.add('hidden');
+          }
+        });
+      }
+    });
+  </script>
+</body></html>

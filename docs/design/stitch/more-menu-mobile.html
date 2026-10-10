@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenCRM - More Menu Mobile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              DEFAULT: '#2563eb',
+              hover: '#1d4ed8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-zinc-100 flex justify-center items-start min-h-screen py-0 sm:py-8">
+  <!-- Mobile Device Shell (375px width frame) -->
+  <div class="w-full max-w-[375px] bg-[#fbf8ff] min-h-screen flex flex-col relative shadow-xl sm:rounded-[24px] sm:overflow-hidden sm:border sm:border-zinc-200">
+    
+    <!-- Top Bar -->
+    <header class="sticky top-0 z-30 bg-[#fbf8ff] border-b border-zinc-200 px-4 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 bg-[#2563eb] rounded-lg flex items-center justify-center text-white shadow-sm">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zm-9 9h7v7H4v-7zm9 0h7v7h-7v-7z"/>
+          </svg>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="font-bold text-zinc-900 text-base tracking-tight">OpenCRM</span>
+          <span class="text-[10px] font-semibold bg-zinc-200/70 text-zinc-600 px-1.5 py-0.5 rounded tracking-wide">OSS</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-1">
+        <div class="w-8 h-8 rounded-full bg-zinc-200 border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700">
+          JS
+        </div>
+        <span class="material-symbols-outlined text-zinc-500 text-lg">arrow_drop_down</span>
+      </div>
+    </header>
+
+    <!-- Main Scrollable Content -->
+    <main class="flex-1 px-4 pt-4 pb-24 overflow-y-auto">
+      
+      <!-- Page Title -->
+      <div class="mb-4">
+        <h1 class="text-2xl font-bold text-zinc-900 tracking-tight">More</h1>
+        <p class="text-xs text-zinc-500 mt-0.5">Settings, records, and administration</p>
+      </div>
+
+      <!-- Group: Records -->
+      <div class="mb-5">
+        <div class="px-1 mb-1.5 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+          Records
+        </div>
+        <div class="bg-white rounded-lg border border-zinc-200 divide-y divide-zinc-100 overflow-hidden shadow-sm">
+          <!-- Contacts -->
+          <a href="#" class="flex items-center justify-between px-3.5 py-3 hover:bg-zinc-50 transition-colors min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-zinc-600 text-[20px]">contacts</span>
+              <span class="text-sm font-medium text-zinc-800">Contacts</span>
+            </div>
+            <span class="material-symbols-outlined text-zinc-400 text-lg">chevron_right</span>
+          </a>
+
+          <!-- Companies -->
+          <a href="#" class="flex items-center justify-between px-3.5 py-3 hover:bg-zinc-50 transition-colors min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-zinc-600 text-[20px]">domain</span>
+              <span class="text-sm font-medium text-zinc-800">Companies</span>
+            </div>
+            <span class="material-symbols-outlined text-zinc-400 text-lg">chevron_right</span>
+          </a>
+
+          <!-- Opportunities -->
+          <a href="#" class="flex items-center justify-between px-3.5 py-3 hover:bg-zinc-50 transition-colors min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-zinc-600 text-[20px]">monetization_on</span>
+              <span class="text-sm font-medium text-zinc-800">Opportunities</span>
+            </div>
+            <span class="material-symbols-outlined text-zinc-400 text-lg">chevron_right</span>
+          </a>
+
+          <!-- Activity -->
+          <a href="#" class="flex items-center justify-between px-3.5 py-3 hover:bg-zinc-50 transition-colors min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-zinc-600 text-[20px]">history</span>
+              <span class="text-sm font-medium text-zinc-800">Activity</span>
+            </div>
+            <span class="material-symbols-outlined text-zinc-400 text-lg">chevron_right</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Group: Admin (Admins only) -->
+      <div class="mb-5">
+        <div class="px-1 mb-1.5 flex items-center justify-between">
+          <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Admin</span>
+          <span class="text-[10px] font-medium bg-zinc-200/70 text-zinc-600 px-1.5 py-0.5 rounded">Admins only</span>
+        </div>
+        <div class="bg-white rounded-lg border border-zinc-200 divide-y divide-zinc-100 overflow-hidden shadow-sm">
+          <!-- Users -->
+          <a href="#" class="flex items-center justify-between px-3.5 py-3 hover:bg-zinc-50 transition-colors min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-zinc-600 text-[20px]">group</span>
+              <span class="text-sm font-medium text-zinc-800">Users</span>
+            </div>
+            <span class="material-symbols-outlined text-zinc-400 text-lg">chevron_right</span>
+          </a>
+
+          <!-- Pipeline stages -->
+          <a href="#" class="flex items-center justify-between px-3.5 py-3 hover:bg-zinc-50 transition-colors min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-zinc-600 text-[20px]">view_kanban</span>
+              <span class="text-sm font-medium text-zinc-800">Pipeline stages</span>
+            </div>
+            <span class="material-symbols-outlined text-zinc-400 text-lg">chevron_right</span>
+          </a>
+
+          <!-- Custom fields -->
+          <a href="#" class="flex items-center justify-between px-3.5 py-3 hover:bg-zinc-50 transition-colors min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-zinc-600 text-[20px]">tune</span>
+              <span class="text-sm font-medium text-zinc-800">Custom fields</span>
+            </div>
+            <span class="material-symbols-outlined text-zinc-400 text-lg">chevron_right</span>
+          </a>
+
+          <!-- Email -->
+          <a href="#" class="flex items-center justify-between px-3.5 py-3 hover:bg-zinc-50 transition-colors min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-zinc-600 text-[20px]">mail</span>
+              <span class="text-sm font-medium text-zinc-800">Email</span>
+            </div>
+            <span class="material-symbols-outlined text-zinc-400 text-lg">chevron_right</span>
+          </a>
+
+          <!-- Products -->
+          <a href="#" class="flex items-center justify-between px-3.5 py-3 hover:bg-zinc-50 transition-colors min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-zinc-600 text-[20px]">inventory_2</span>
+              <span class="text-sm font-medium text-zinc-800">Products</span>
+            </div>
+            <span class="material-symbols-outlined text-zinc-400 text-lg">chevron_right</span>
+          </a>
+
+          <!-- Import data -->
+          <a href="#" class="flex items-center justify-between px-3.5 py-3 hover:bg-zinc-50 transition-colors min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-zinc-600 text-[20px]">upload_file</span>
+              <span class="text-sm font-medium text-zinc-800">Import data</span>
+            </div>
+            <span class="material-symbols-outlined text-zinc-400 text-lg">chevron_right</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Group: Account -->
+      <div class="mb-4">
+        <div class="px-1 mb-1.5 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+          Account
+        </div>
+        <div class="bg-white rounded-lg border border-zinc-200 divide-y divide-zinc-100 overflow-hidden shadow-sm">
+          <!-- Profile -->
+          <a href="#" class="flex items-center justify-between px-3.5 py-3 hover:bg-zinc-50 transition-colors min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-zinc-600 text-[20px]">person</span>
+              <span class="text-sm font-medium text-zinc-800">Profile</span>
+            </div>
+            <span class="material-symbols-outlined text-zinc-400 text-lg">chevron_right</span>
+          </a>
+
+          <!-- Theme -->
+          <div class="flex items-center justify-between px-3.5 py-3 min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-zinc-600 text-[20px]">palette</span>
+              <span class="text-sm font-medium text-zinc-800">Theme</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-xs font-medium text-zinc-500">
+              <span>System</span>
+              <span class="material-symbols-outlined text-zinc-400 text-lg">chevron_right</span>
+            </div>
+          </div>
+
+          <!-- Log out -->
+          <button class="w-full flex items-center justify-between px-3.5 py-3 hover:bg-red-50/50 transition-colors min-h-[44px] text-left">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-red-600 text-[20px]">logout</span>
+              <span class="text-sm font-medium text-red-600">Log out</span>
+            </div>
+            <span class="material-symbols-outlined text-red-400 text-lg">chevron_right</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Version info -->
+      <div class="text-center text-[11px] text-zinc-400 py-2">
+        v0.8.4 (Self-hosted) • OpenCRM Open Source
+      </div>
+    </main>
+
+    <!-- Bottom Tab Bar (Fixed) -->
+    <nav class="fixed bottom-0 left-0 right-0 max-w-[375px] mx-auto bg-white border-t border-zinc-200 h-14 px-4 flex items-center justify-around z-40 shadow-sm sm:rounded-b-[24px]">
+      <!-- Home -->
+      <a href="#" class="flex flex-col items-center justify-center gap-0.5 text-zinc-500 hover:text-zinc-900 transition-colors flex-1 py-1">
+        <span class="material-symbols-outlined text-[20px]">home</span>
+        <span class="text-[10px] font-medium leading-none">Home</span>
+      </a>
+
+      <!-- Leads -->
+      <a href="#" class="flex flex-col items-center justify-center gap-0.5 text-zinc-500 hover:text-zinc-900 transition-colors flex-1 py-1">
+        <span class="material-symbols-outlined text-[20px]">filter_alt</span>
+        <span class="text-[10px] font-medium leading-none">Leads</span>
+      </a>
+
+      <!-- Tasks -->
+      <a href="#" class="flex flex-col items-center justify-center gap-0.5 text-zinc-500 hover:text-zinc-900 transition-colors flex-1 py-1">
+        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+        <span class="text-[10px] font-medium leading-none">Tasks</span>
+      </a>
+
+      <!-- More (Active) -->
+      <a href="#" class="flex flex-col items-center justify-center gap-0.5 text-[#2563eb] transition-colors flex-1 py-1">
+        <span class="material-symbols-outlined filled text-[20px]">more_horiz</span>
+        <span class="text-[10px] font-semibold leading-none">More</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>

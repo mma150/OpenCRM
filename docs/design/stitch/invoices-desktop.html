@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Invoices</title>
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration Verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-secondary-fixed": "#0f0069",
+            "surface-bright": "#fbf8ff",
+            "inverse-primary": "#b4c5ff",
+            "surface-container-high": "#e8e7f1",
+            "surface-container-lowest": "#ffffff",
+            "secondary-container": "#645efb",
+            "on-error": "#ffffff",
+            "surface-variant": "#e3e1ec",
+            "on-secondary-fixed-variant": "#3323cc",
+            "on-primary-container": "#eeefff",
+            "tertiary-fixed-dim": "#ffb596",
+            "on-error-container": "#93000a",
+            "on-tertiary-fixed": "#360f00",
+            "primary-container": "#2563eb",
+            "on-primary": "#ffffff",
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-tertiary": "#ffffff",
+            "on-surface-variant": "#434655",
+            "tertiary-container": "#bc4800",
+            "on-secondary-container": "#fffbff",
+            "on-tertiary-container": "#ffede6",
+            "surface": "#fbf8ff",
+            "surface-tint": "#0053db",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "on-surface": "#1a1b22",
+            "on-background": "#1a1b22",
+            "primary-fixed-dim": "#b4c5ff",
+            "on-secondary": "#ffffff",
+            "secondary-fixed": "#e2dfff",
+            "outline": "#737686",
+            "inverse-surface": "#2f3038",
+            "primary": "#004ac6",
+            "error-container": "#ffdad6",
+            "primary-fixed": "#dbe1ff",
+            "surface-container-highest": "#e3e1ec",
+            "surface-container-low": "#f4f2fd",
+            "surface-dim": "#dad9e3",
+            "background": "#fbf8ff",
+            "tertiary": "#943700",
+            "error": "#ba1a1a",
+            "tertiary-fixed": "#ffdbcd",
+            "surface-container": "#eeedf7",
+            "secondary": "#4b41e1",
+            "outline-variant": "#c3c6d7",
+            "inverse-on-surface": "#f1effa",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-primary-fixed": "#00174b"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "gutter-lg": "1.5rem",
+            "space-lg": "1rem",
+            "margin-lg": "2rem",
+            "margin-md": "1.5rem",
+            "gutter": "1rem",
+            "space-2xl": "2rem",
+            "margin": "1rem",
+            "space-xs": "0.25rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "headline-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "metric-mono": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-xl": ["Inter"],
+            "headline-md": ["Inter"]
+          },
+          "fontSize": {
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="h-full bg-surface-container-low text-on-surface font-body-md antialiased flex overflow-hidden">
+<!-- ==================== SIDEBAR ==================== -->
+<!-- Conforms to SideNavBar in JSON: w-60 fixed left, shadow-sm, exact tab labels and active state on Opportunities -->
+<aside class="fixed top-0 left-0 h-screen w-60 bg-surface-container-lowest border-r border-outline-variant shadow-sm z-30 flex flex-col justify-between p-4 select-none">
+<div class="flex flex-col gap-5">
+<!-- App Header & Workspace Selector -->
+<div class="flex flex-col px-2 pt-1 gap-1">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-headline-sm font-semibold shadow-sm">
+<span class="material-symbols-outlined text-[18px]">domain</span>
+</div>
+<div>
+<div class="text-headline-sm font-headline-sm font-semibold text-on-surface leading-tight">OpenCRM</div>
+<div class="text-body-sm font-body-sm text-outline">Sales Pipeline</div>
+</div>
+</div>
+<div class="mt-3 flex items-center justify-between p-1.5 px-2 bg-surface-container-low rounded-lg border border-outline-variant">
+<div class="truncate">
+<span class="block text-label-sm font-label-sm text-on-surface truncate">Acme Sales Org</span>
+<span class="block text-body-sm font-body-sm text-outline truncate text-[11px]">Acme Corp</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline">unfold_more</span>
+</div>
+</div>
+<!-- Main Navigation Links from JSON: Home, Leads, Contacts, Companies, Opportunities (ACTIVE), Tasks, Activity -->
+<nav class="flex flex-col gap-1">
+<!-- 1. Home -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span class="text-label-md font-label-md">Home</span>
+</a>
+<!-- 2. Leads -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+<span class="text-label-md font-label-md">Leads</span>
+</a>
+<!-- 3. Contacts -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px]">contacts</span>
+<span class="text-label-md font-label-md">Contacts</span>
+</a>
+<!-- 4. Companies -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px]">domain</span>
+<span class="text-label-md font-label-md">Companies</span>
+</a>
+<!-- 5. Opportunities (ACTIVE TAB) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-high text-primary font-medium transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px]">monetization_on</span>
+<span class="text-label-md font-label-md">Opportunities</span>
+</a>
+<!-- 6. Tasks -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<span class="text-label-md font-label-md">Tasks</span>
+</a>
+<!-- 7. Activity -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px]">history</span>
+<span class="text-label-md font-label-md">Activity</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="flex flex-col gap-1 pt-3 border-t border-outline-variant">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px]">description</span>
+<span class="text-label-md font-label-md">Documentation</span>
+</a>
+<div class="px-3 py-1.5 mt-1 flex items-center justify-between text-body-sm font-body-sm text-outline">
+<span>v0.8.4 (Self-hosted)</span>
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+</div>
+</div>
+</aside>
+<!-- ==================== MAIN VIEWPORT ==================== -->
+<div class="flex-1 ml-60 flex flex-col h-screen overflow-hidden">
+<!-- TopNavBar (Matches JSON & Guidance) -->
+<header class="h-14 bg-surface-container-lowest border-b border-outline-variant shadow-sm px-6 flex items-center justify-between z-20 shrink-0">
+<!-- Breadcrumbs & Quick Filter -->
+<div class="flex items-center gap-4">
+<nav class="flex items-center gap-1.5 text-body-sm font-body-sm text-outline">
+<span class="hover:text-on-surface transition-colors cursor-pointer">Acme Sales Org</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="hover:text-on-surface transition-colors cursor-pointer">Opportunities</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface font-label-sm font-medium">Invoices</span>
+</nav>
+</div>
+<!-- Center / Left Search Bar (Cmd+K) -->
+<div class="relative w-80">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</span>
+<input class="w-full h-9 pl-9 pr-8 text-body-sm font-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="Search deals, contacts... ⌘K" type="text"/>
+<kbd class="absolute right-2.5 top-2 px-1.5 py-0.5 text-[10px] font-metric-mono font-medium text-outline bg-surface-container-high rounded border border-outline-variant">⌘K</kbd>
+</div>
+<!-- Trailing Controls: Help, Notifications, Profile, Create Deal -->
+<div class="flex items-center gap-3">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Help &amp; Docs">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+</button>
+<button class="relative w-8 h-8 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Notifications">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary-container text-on-primary text-[10px] font-medium flex items-center justify-center">3</span>
+</button>
+<div class="h-5 w-px bg-outline-variant mx-1"></div>
+<!-- User Profile Pill -->
+<div class="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-surface-container-high cursor-pointer transition-colors">
+<div class="w-7 h-7 rounded-full bg-secondary text-on-secondary text-label-sm font-label-sm font-semibold flex items-center justify-center">
+            JS
+          </div>
+<div class="text-left hidden sm:block">
+<span class="block text-label-sm font-label-sm text-on-surface leading-tight">John Smith</span>
+<span class="block text-[11px] font-body-sm text-outline leading-none">Admin</span>
+</div>
+</div>
+<!-- Primary Action from JSON: "Create Deal" -->
+<button class="ml-2 h-9 px-3.5 bg-primary-container hover:bg-blue-700 text-on-primary text-label-md font-label-md font-medium rounded-lg flex items-center gap-1.5 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Create Deal</span>
+</button>
+</div>
+</header>
+<!-- ==================== MAIN CONTENT CANVAS ==================== -->
+<main class="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5 bg-surface-container-low">
+<!-- Content Header: Title + Primary Actions -->
+<div class="flex flex-col gap-4 shrink-0">
+<div class="flex items-center justify-between">
+<div>
+<h1 class="text-headline-lg font-headline-lg text-on-surface tracking-tight">Opportunities</h1>
+<p class="text-body-sm font-body-sm text-outline mt-0.5">Manage pipeline contracts, generated quotes, and official invoice billings.</p>
+</div>
+<!-- Top Action Buttons -->
+<div class="flex items-center gap-2.5">
+<button class="h-9 px-3.5 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-high text-on-surface text-label-md font-label-md font-medium rounded-lg flex items-center gap-2 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">file_download</span>
+<span>Export CSV</span>
+</button>
+<button class="h-9 px-3.5 bg-primary-container hover:bg-blue-700 text-on-primary text-label-md font-label-md font-medium rounded-lg flex items-center gap-1.5 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>+ New invoice</span>
+</button>
+</div>
+</div>
+<!-- Navigation Tabs: Board, List, Quotes, Invoices (Active) -->
+<div class="flex items-center border-b border-outline-variant gap-6 pt-1">
+<button class="pb-2.5 text-body-md font-body-md text-outline hover:text-on-surface transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px]">view_kanban</span>
+<span>Board</span>
+</button>
+<button class="pb-2.5 text-body-md font-body-md text-outline hover:text-on-surface transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px]">table_rows</span>
+<span>List</span>
+</button>
+<button class="pb-2.5 text-body-md font-body-md text-outline hover:text-on-surface transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px]">request_quote</span>
+<span>Quotes</span>
+</button>
+<button class="pb-2.5 text-body-md font-body-md text-primary font-medium border-b-2 border-primary-container flex items-center gap-1.5 -mb-px">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+<span>Invoices</span>
+<span class="px-1.5 py-0.2 rounded-full bg-blue-100 text-primary text-[11px] font-metric-mono font-medium">24</span>
+</button>
+</div>
+<!-- Informational banner / explanatory note -->
+<div class="p-3 bg-surface-container-lowest border border-outline-variant rounded-lg flex items-center gap-3 text-body-sm font-body-sm text-outline shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-primary">info</span>
+<span>Invoices are records only. OpenCRM does not take payments. Use accounting sync or record manual reconciliation below.</span>
+</div>
+</div>
+<!-- Invoices Toolbar: Filters & Search -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<!-- Search input -->
+<div class="relative w-full sm:w-80">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</span>
+<input class="w-full h-9 pl-9 pr-3 text-body-sm font-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20" placeholder="Search invoices by number, company..." type="text"/>
+</div>
+<!-- Status Dropdown Filter -->
+<div class="relative">
+<button class="h-9 px-3 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-high rounded-lg text-body-sm font-body-sm text-on-surface flex items-center gap-2 shadow-sm transition-colors">
+<span class="text-outline">Status:</span>
+<span class="font-medium">All statuses</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</button>
+</div>
+<!-- Issue Date Dropdown Filter -->
+<div class="relative">
+<button class="h-9 px-3 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-high rounded-lg text-body-sm font-body-sm text-on-surface flex items-center gap-2 shadow-sm transition-colors">
+<span class="text-outline">Issue date:</span>
+<span class="font-medium">All time</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-2 self-end sm:self-auto">
+<span class="text-body-sm font-body-sm text-outline">Showing <strong class="font-medium text-on-surface">7</strong> of 24</span>
+<button class="h-9 w-9 flex items-center justify-center bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-high rounded-lg text-outline hover:text-on-surface transition-colors" title="Refresh list">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+</div>
+<!-- Invoices Data Table Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm flex flex-col overflow-visible relative">
+<div class="overflow-x-auto min-h-[460px]">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="w-10 px-4 py-2.5 text-center">
+<input class="w-4 h-4 rounded border-outline-variant text-primary-container focus:ring-blue-500/20" type="checkbox"/>
+</th>
+<th class="px-4 py-2.5 text-label-sm font-label-sm text-outline uppercase tracking-wider text-[11px]">Invoice #</th>
+<th class="px-4 py-2.5 text-label-sm font-label-sm text-outline uppercase tracking-wider text-[11px]">Company</th>
+<th class="px-4 py-2.5 text-label-sm font-label-sm text-outline uppercase tracking-wider text-[11px]">Opportunity</th>
+<th class="px-4 py-2.5 text-label-sm font-label-sm text-outline uppercase tracking-wider text-[11px]">Issue Date</th>
+<th class="px-4 py-2.5 text-label-sm font-label-sm text-outline uppercase tracking-wider text-[11px]">Due Date</th>
+<th class="px-4 py-2.5 text-label-sm font-label-sm text-outline uppercase tracking-wider text-[11px] text-right">Total</th>
+<th class="px-4 py-2.5 text-label-sm font-label-sm text-outline uppercase tracking-wider text-[11px]">Status</th>
+<th class="w-16 px-4 py-2.5 text-label-sm font-label-sm text-outline uppercase tracking-wider text-[11px] text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high text-body-md font-body-md">
+<!-- ROW 1: Paid -->
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-4 py-3 text-center">
+<input class="w-4 h-4 rounded border-outline-variant text-primary-container focus:ring-blue-500/20" type="checkbox"/>
+</td>
+<td class="px-4 py-3 font-metric-mono font-medium text-on-surface">INV-2025-084</td>
+<td class="px-4 py-3 text-on-surface font-medium">Northwind Logistics</td>
+<td class="px-4 py-3">
+<a class="text-primary hover:underline font-body-md" href="#">Fleet Dispatcher Expansion</a>
+</td>
+<td class="px-4 py-3 text-outline">Oct 12, 2025</td>
+<td class="px-4 py-3 text-outline">Nov 12, 2025</td>
+<td class="px-4 py-3 text-right font-metric-mono font-medium text-on-surface">$48,000.00</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[12px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                    Paid
+                  </span>
+</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- ROW 2: Sent (WITH OPEN ACTIONS POPUP DROPDOWN MENU) -->
+<tr class="bg-blue-50/30 relative">
+<td class="px-4 py-3 text-center">
+<input class="w-4 h-4 rounded border-outline-variant text-primary-container focus:ring-blue-500/20" type="checkbox"/>
+</td>
+<td class="px-4 py-3 font-metric-mono font-medium text-on-surface">INV-2025-083</td>
+<td class="px-4 py-3 text-on-surface font-medium">Kestrel Robotics</td>
+<td class="px-4 py-3">
+<a class="text-primary hover:underline font-body-md" href="#">Vision Platform Expansion</a>
+</td>
+<td class="px-4 py-3 text-outline">Oct 14, 2025</td>
+<td class="px-4 py-3 text-outline">Nov 14, 2025</td>
+<td class="px-4 py-3 text-right font-metric-mono font-medium text-on-surface">$64,000.00</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[12px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                    Sent
+                  </span>
+</td>
+<td class="px-4 py-3 text-right relative">
+<!-- Active Trigger Button -->
+<button class="p-1 rounded bg-surface-container-high text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+<!-- OPEN ACTIONS POPUP DROPDOWN MENU -->
+<div class="absolute right-4 top-10 w-48 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg z-50 text-left py-1 text-body-sm font-body-sm">
+<button class="w-full px-3 py-1.5 text-left text-on-surface hover:bg-surface-container-high flex items-center gap-2.5 transition-colors">
+<span class="material-symbols-outlined text-[16px] text-outline">send</span>
+<span>Mark as sent</span>
+</button>
+<button class="w-full px-3 py-1.5 text-left text-on-surface hover:bg-surface-container-high flex items-center gap-2.5 transition-colors">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
+<span>Mark as paid</span>
+</button>
+<button class="w-full px-3 py-1.5 text-left text-on-surface hover:bg-surface-container-high flex items-center gap-2.5 transition-colors">
+<span class="material-symbols-outlined text-[16px] text-outline">download</span>
+<span>Download PDF</span>
+</button>
+<div class="my-1 border-t border-outline-variant"></div>
+<button class="w-full px-3 py-1.5 text-left text-error hover:bg-red-50 flex items-center gap-2.5 transition-colors">
+<span class="material-symbols-outlined text-[16px] text-error">cancel</span>
+<span>Void invoice</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 3: Overdue -->
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-4 py-3 text-center">
+<input class="w-4 h-4 rounded border-outline-variant text-primary-container focus:ring-blue-500/20" type="checkbox"/>
+</td>
+<td class="px-4 py-3 font-metric-mono font-medium text-on-surface">INV-2025-082</td>
+<td class="px-4 py-3 text-on-surface font-medium">Brightpath Dental</td>
+<td class="px-4 py-3">
+<a class="text-primary hover:underline font-body-md" href="#">Multi-clinic ERP System</a>
+</td>
+<td class="px-4 py-3 text-outline">Sep 20, 2025</td>
+<td class="px-4 py-3 text-red-600 font-medium">Oct 20, 2025</td>
+<td class="px-4 py-3 text-right font-metric-mono font-medium text-on-surface">$22,500.00</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[12px] font-medium bg-red-50 text-red-700 border border-red-200">
+<span class="material-symbols-outlined text-[13px] text-red-600">warning</span>
+                    Overdue
+                  </span>
+</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- ROW 4: Draft -->
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-4 py-3 text-center">
+<input class="w-4 h-4 rounded border-outline-variant text-primary-container focus:ring-blue-500/20" type="checkbox"/>
+</td>
+<td class="px-4 py-3 font-metric-mono font-medium text-on-surface">INV-2025-081</td>
+<td class="px-4 py-3 text-on-surface font-medium">Northwind Logistics</td>
+<td class="px-4 py-3">
+<a class="text-primary hover:underline font-body-md" href="#">Telematics API Integration</a>
+</td>
+<td class="px-4 py-3 text-outline">Oct 16, 2025</td>
+<td class="px-4 py-3 text-outline">Nov 16, 2025</td>
+<td class="px-4 py-3 text-right font-metric-mono font-medium text-on-surface">$34,500.00</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[12px] font-medium bg-zinc-100 text-zinc-700 border border-zinc-200">
+<span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
+                    Draft
+                  </span>
+</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- ROW 5: Paid -->
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-4 py-3 text-center">
+<input class="w-4 h-4 rounded border-outline-variant text-primary-container focus:ring-blue-500/20" type="checkbox"/>
+</td>
+<td class="px-4 py-3 font-metric-mono font-medium text-on-surface">INV-2025-080</td>
+<td class="px-4 py-3 text-on-surface font-medium">Aegis Cloud Architecture</td>
+<td class="px-4 py-3">
+<a class="text-primary hover:underline font-body-md" href="#">SOC2 Security Suite</a>
+</td>
+<td class="px-4 py-3 text-outline">Oct 01, 2025</td>
+<td class="px-4 py-3 text-outline">Nov 01, 2025</td>
+<td class="px-4 py-3 text-right font-metric-mono font-medium text-on-surface">$58,000.00</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[12px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                    Paid
+                  </span>
+</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- ROW 6: Sent -->
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-4 py-3 text-center">
+<input class="w-4 h-4 rounded border-outline-variant text-primary-container focus:ring-blue-500/20" type="checkbox"/>
+</td>
+<td class="px-4 py-3 font-metric-mono font-medium text-on-surface">INV-2025-079</td>
+<td class="px-4 py-3 text-on-surface font-medium">Pinnacle Retail Group</td>
+<td class="px-4 py-3">
+<a class="text-primary hover:underline font-body-md" href="#">POS Sync &amp; Omnichannel</a>
+</td>
+<td class="px-4 py-3 text-outline">Oct 05, 2025</td>
+<td class="px-4 py-3 text-outline">Nov 05, 2025</td>
+<td class="px-4 py-3 text-right font-metric-mono font-medium text-on-surface">$36,500.00</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[12px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                    Sent
+                  </span>
+</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- ROW 7: Draft -->
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-4 py-3 text-center">
+<input class="w-4 h-4 rounded border-outline-variant text-primary-container focus:ring-blue-500/20" type="checkbox"/>
+</td>
+<td class="px-4 py-3 font-metric-mono font-medium text-on-surface">INV-2025-078</td>
+<td class="px-4 py-3 text-on-surface font-medium">Brightpath Dental</td>
+<td class="px-4 py-3">
+<a class="text-primary hover:underline font-body-md" href="#">Additional User Seats Q4</a>
+</td>
+<td class="px-4 py-3 text-outline">Oct 15, 2025</td>
+<td class="px-4 py-3 text-outline">Nov 15, 2025</td>
+<td class="px-4 py-3 text-right font-metric-mono font-medium text-on-surface">$4,800.00</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[12px] font-medium bg-zinc-100 text-zinc-700 border border-zinc-200">
+<span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
+                    Draft
+                  </span>
+</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination Controls -->
+<div class="px-4 py-3 border-t border-outline-variant bg-surface-container-lowest flex items-center justify-between">
+<div class="text-body-sm font-body-sm text-outline">
+            Showing <span class="font-medium text-on-surface">1</span> to <span class="font-medium text-on-surface">7</span> of <span class="font-medium text-on-surface">24</span> invoices
+          </div>
+<div class="flex items-center gap-2">
+<button class="h-8 px-3 rounded-lg border border-outline-variant text-outline bg-surface-container-low text-label-sm font-label-sm cursor-not-allowed opacity-60" disabled="">
+              Previous
+            </button>
+<div class="flex items-center gap-1">
+<button class="h-8 w-8 rounded-lg bg-primary-container text-on-primary text-label-sm font-label-sm font-medium">1</button>
+<button class="h-8 w-8 rounded-lg hover:bg-surface-container-high text-on-surface text-label-sm font-label-sm font-medium transition-colors">2</button>
+<button class="h-8 w-8 rounded-lg hover:bg-surface-container-high text-on-surface text-label-sm font-label-sm font-medium transition-colors">3</button>
+<button class="h-8 w-8 rounded-lg hover:bg-surface-container-high text-on-surface text-label-sm font-label-sm font-medium transition-colors">4</button>
+</div>
+<button class="h-8 px-3 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-high text-label-sm font-label-sm font-medium shadow-sm transition-colors">
+              Next
+            </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

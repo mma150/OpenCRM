@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Log Conversation Mobile</title>
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration verbatim from Style Guidance -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "inverse-on-surface": "#f1effa",
+            "surface-variant": "#e3e1ec",
+            "surface-container-lowest": "#ffffff",
+            "tertiary": "#943700",
+            "primary": "#004ac6",
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-primary-container": "#eeefff",
+            "surface-container-low": "#f4f2fd",
+            "on-tertiary": "#ffffff",
+            "outline-variant": "#c3c6d7",
+            "tertiary-container": "#bc4800",
+            "on-primary-fixed": "#00174b",
+            "inverse-primary": "#b4c5ff",
+            "outline": "#737686",
+            "primary-fixed": "#dbe1ff",
+            "on-background": "#1a1b22",
+            "surface-bright": "#fbf8ff",
+            "error": "#ba1a1a",
+            "surface-container": "#eeedf7",
+            "secondary": "#4b41e1",
+            "on-error": "#ffffff",
+            "on-surface-variant": "#434655",
+            "error-container": "#ffdad6",
+            "tertiary-fixed-dim": "#ffb596",
+            "secondary-container": "#645efb",
+            "on-secondary-container": "#fffbff",
+            "on-primary-fixed-variant": "#003ea8",
+            "surface-dim": "#dad9e3",
+            "surface-tint": "#0053db",
+            "on-secondary-fixed": "#0f0069",
+            "surface-container-highest": "#e3e1ec",
+            "surface-container-high": "#e8e7f1",
+            "background": "#fbf8ff",
+            "on-primary": "#ffffff",
+            "on-secondary-fixed-variant": "#3323cc",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "inverse-surface": "#2f3038",
+            "on-surface": "#1a1b22",
+            "tertiary-fixed": "#ffdbcd",
+            "surface": "#fbf8ff",
+            "on-tertiary-fixed": "#360f00",
+            "on-error-container": "#93000a",
+            "on-tertiary-container": "#ffede6",
+            "on-secondary": "#ffffff",
+            "primary-fixed-dim": "#b4c5ff",
+            "secondary-fixed": "#e2dfff",
+            "primary-container": "#2563eb"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter-lg": "1.5rem",
+            "space-md": "0.75rem",
+            "margin-md": "1.5rem",
+            "margin-lg": "2rem",
+            "gutter": "1rem",
+            "space-lg": "1rem",
+            "space-2xl": "2rem",
+            "space-xs": "0.25rem",
+            "margin": "1rem",
+            "space-sm": "0.5rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "headline-sm": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "label-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "metric-mono": ["Inter"],
+            "headline-xl": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-lg": ["Inter"]
+          },
+          "fontSize": {
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="h-full bg-surface-container text-on-surface antialiased flex items-center justify-center p-0 sm:p-4">
+<!-- Mobile Viewport Container (Simulated Phone Canvas 375px max) -->
+<main class="w-full max-w-[375px] h-full sm:h-[812px] bg-surface-container-lowest flex flex-col relative sm:rounded-xl shadow-lg sm:border sm:border-outline-variant overflow-hidden">
+<!-- Top Sheet / App Bar Header (Modal Action Focus: Suppresses BottomNavBar & SideNav per Destination Rule) -->
+<header class="w-full bg-surface-container-lowest px-space-lg pt-space-lg pb-space-md border-b border-outline-variant flex items-start justify-between shrink-0">
+<div class="flex flex-col">
+<h1 class="text-headline-md font-headline-md text-on-surface">Log conversation</h1>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="inline-flex items-center text-label-sm font-label-sm text-on-surface-variant">
+            Marcus Chen
+          </span>
+<span class="inline-block w-1 h-1 rounded-full bg-outline"></span>
+<span class="inline-flex items-center text-label-sm font-label-sm text-outline">
+            Northwind Logistics
+          </span>
+</div>
+</div>
+<!-- Close Button (Touch target >= 44x44px) -->
+<button aria-label="Close dialog" class="w-11 h-11 -mr-2 -mt-1 flex items-center justify-center rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+</header>
+<!-- Scrollable Form Container -->
+<section class="flex-1 overflow-y-auto px-space-lg py-space-lg space-y-space-xl">
+<!-- Field 1: Activity Type -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-2">
+          TYPE
+        </label>
+<div class="grid grid-cols-4 gap-2">
+<!-- Call (Selected: Primary blue) -->
+<button class="min-h-[44px] py-2 px-1 flex flex-col items-center justify-center rounded-lg bg-primary-container text-on-primary border border-primary-container transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] mb-0.5" data-icon="call">call</span>
+<span class="text-label-sm font-label-sm leading-none">Call</span>
+</button>
+<!-- Meeting (Unselected) -->
+<button class="min-h-[44px] py-2 px-1 flex flex-col items-center justify-center rounded-lg bg-surface-container-lowest text-on-surface-variant border border-outline-variant hover:bg-surface-container transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] mb-0.5" data-icon="groups">groups</span>
+<span class="text-label-sm font-label-sm leading-none">Meeting</span>
+</button>
+<!-- Email (Unselected) -->
+<button class="min-h-[44px] py-2 px-1 flex flex-col items-center justify-center rounded-lg bg-surface-container-lowest text-on-surface-variant border border-outline-variant hover:bg-surface-container transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] mb-0.5" data-icon="mail">mail</span>
+<span class="text-label-sm font-label-sm leading-none">Email</span>
+</button>
+<!-- Message (Unselected) -->
+<button class="min-h-[44px] py-2 px-1 flex flex-col items-center justify-center rounded-lg bg-surface-container-lowest text-on-surface-variant border border-outline-variant hover:bg-surface-container transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] mb-0.5" data-icon="chat">chat</span>
+<span class="text-label-sm font-label-sm leading-none">Message</span>
+</button>
+</div>
+</div>
+<!-- Field 2: Date & Time -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface mb-1.5" for="datetime">
+          Date &amp; time
+        </label>
+<div class="relative flex items-center">
+<input class="w-full h-11 px-3 pr-10 text-body-md font-body-md text-on-surface bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary-container focus:outline-none focus:ring-1 focus:ring-primary-container" id="datetime" readonly="" type="text" value="Oct 16, 2025 · 2:30 PM"/>
+<span class="absolute right-3 pointer-events-none text-outline flex items-center">
+<span class="material-symbols-outlined text-[20px]" data-icon="calendar_today">calendar_today</span>
+</span>
+</div>
+</div>
+<!-- Field 3: What was discussed? -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface mb-1.5" for="summary">
+          What was discussed?
+        </label>
+<textarea class="w-full p-3 text-body-md font-body-md text-on-surface bg-surface-container-lowest border border-outline-variant rounded-lg resize-none focus:border-primary-container focus:outline-none focus:ring-1 focus:ring-primary-container leading-relaxed min-h-[120px]" id="summary" placeholder="Summary of conversation, key points, next steps..." rows="4">Marcus confirmed he has budget authority up to $50k. Primary decision criteria are API flexibility and offline driver app support. Next review scheduled for Friday.</textarea>
+</div>
+<!-- Field 4: Toggle Set a Follow-up Reminder -->
+<div class="p-space-md border border-outline-variant rounded-lg bg-surface-container-lowest space-y-space-md">
+<div class="flex items-center justify-between">
+<div class="pr-2">
+<p class="text-label-md font-label-md text-on-surface">Set a follow-up reminder</p>
+<p class="text-body-sm font-body-sm text-outline">Create a task linked to this lead</p>
+</div>
+<!-- Interactive Toggle (Switched ON) min touch target 44px -->
+<div class="w-11 h-11 flex items-center justify-end">
+<button aria-checked="true" class="w-11 h-6 bg-primary-container rounded-full p-0.5 transition-colors relative flex items-center justify-end" role="switch" type="button">
+<span class="w-5 h-5 bg-on-primary rounded-full shadow-sm block"></span>
+</button>
+</div>
+</div>
+<!-- Conditional Fields (Revealed when Switch ON) -->
+<div class="pt-space-sm border-t border-outline-variant space-y-3">
+<!-- Follow-up date -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface mb-1" for="followup-date">
+              Follow-up date
+            </label>
+<div class="relative flex items-center">
+<input class="w-full h-11 px-3 pr-10 text-body-md font-body-md text-on-surface bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary-container focus:outline-none" id="followup-date" readonly="" type="text" value="Oct 20, 2025"/>
+<span class="absolute right-3 pointer-events-none text-outline flex items-center">
+<span class="material-symbols-outlined text-[20px]" data-icon="event">event</span>
+</span>
+</div>
+</div>
+<!-- Reminder Note -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface mb-1" for="reminder-note">
+              Reminder note
+            </label>
+<input class="w-full h-11 px-3 text-body-md font-body-md text-on-surface bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary-container focus:outline-none" id="reminder-note" type="text" value="Send revised fleet pricing tier matrix and check in on telematics spec"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Sticky Bottom Action Bar -->
+<footer class="w-full bg-surface-container-lowest px-space-lg py-space-md border-t border-outline-variant shrink-0">
+<button class="w-full h-11 min-h-[44px] bg-primary-container hover:bg-primary text-on-primary text-label-md font-label-md rounded-lg flex items-center justify-center transition-colors shadow-sm" type="button">
+        Save conversation
+      </button>
+</footer>
+</main>
+</body></html>

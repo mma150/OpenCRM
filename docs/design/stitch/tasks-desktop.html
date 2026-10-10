@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Tasks</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration with Design System Tokens -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-highest": "#e3e1ec",
+            "on-surface": "#1a1b22",
+            "on-secondary-fixed": "#0f0069",
+            "on-tertiary": "#ffffff",
+            "error-container": "#ffdad6",
+            "on-primary": "#ffffff",
+            "on-secondary": "#ffffff",
+            "on-secondary-container": "#fffbff",
+            "tertiary-fixed-dim": "#ffb596",
+            "on-primary-fixed": "#00174b",
+            "surface-container-low": "#f4f2fd",
+            "error": "#ba1a1a",
+            "surface-container": "#eeedf7",
+            "secondary-fixed": "#e2dfff",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "on-tertiary-container": "#ffede6",
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-surface-variant": "#434655",
+            "secondary": "#4b41e1",
+            "primary-fixed-dim": "#b4c5ff",
+            "background": "#fbf8ff",
+            "surface-variant": "#e3e1ec",
+            "primary-container": "#2563eb",
+            "on-primary-container": "#eeefff",
+            "outline": "#737686",
+            "inverse-primary": "#b4c5ff",
+            "primary": "#004ac6",
+            "secondary-container": "#645efb",
+            "inverse-surface": "#2f3038",
+            "on-tertiary-fixed": "#360f00",
+            "surface-container-high": "#e8e7f1",
+            "surface-bright": "#fbf8ff",
+            "outline-variant": "#c3c6d7",
+            "on-secondary-fixed-variant": "#3323cc",
+            "tertiary": "#943700",
+            "surface-dim": "#dad9e3",
+            "primary-fixed": "#dbe1ff",
+            "inverse-on-surface": "#f1effa",
+            "tertiary-fixed": "#ffdbcd",
+            "surface": "#fbf8ff",
+            "on-background": "#1a1b22",
+            "on-error": "#ffffff",
+            "on-primary-fixed-variant": "#003ea8",
+            "tertiary-container": "#bc4800",
+            "surface-container-lowest": "#ffffff",
+            "surface-tint": "#0053db",
+            "on-error-container": "#93000a"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "margin-lg": "2rem",
+            "space-xl": "1.5rem",
+            "space-2xl": "2rem",
+            "space-xs": "0.25rem",
+            "space-lg": "1rem",
+            "margin-md": "1.5rem",
+            "margin": "1rem",
+            "space-md": "0.75rem",
+            "gutter-lg": "1.5rem",
+            "gutter": "1rem"
+          },
+          "fontFamily": {
+            "label-sm": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "metric-mono": ["Inter"],
+            "headline-lg": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-xl": ["Inter"]
+          },
+          "fontSize": {
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="h-full bg-surface text-on-surface antialiased overflow-x-hidden font-body-md text-body-md">
+<div class="flex min-h-screen">
+<!-- SHARED COMPONENT: SideNavBar (Strict JSON execution) -->
+<!-- JSON: fixed top-0 left-0 h-screen w-60, bg-surface-container-lowest, border-r border-outline-variant, shadow-sm -->
+<aside class="fixed top-0 left-0 h-screen w-60 bg-surface-container-lowest border-r border-outline-variant shadow-sm z-30 flex flex-col justify-between p-4 select-none">
+<!-- Top Portion: Brand Header + Nav Items -->
+<div class="flex flex-col gap-6">
+<!-- Logo / App Anchor -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-on-primary font-bold shadow-sm">
+<span class="material-symbols-outlined text-[18px]">hub</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="text-headline-sm font-headline-sm font-semibold text-on-surface">OpenCRM</span>
+<span class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant border border-outline-variant/60">OSS</span>
+</div>
+<p class="text-label-sm font-label-sm text-on-surface-variant text-[11px] leading-tight">Sales Pipeline</p>
+</div>
+</div>
+</div>
+<!-- Navigation Tabs: Exact array from JSON: ["Home", "Leads", "Contacts", "Companies", "Opportunities", "Tasks", "Activity"] -->
+<!-- Intent Lock: Active screen is Tasks -> Tasks receives style_active_navigation -->
+<nav class="flex flex-col gap-1">
+<!-- Home -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-outline">home</span>
+<span>Home</span>
+</a>
+<!-- Leads -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-outline">filter_list</span>
+<span>Leads</span>
+</a>
+<!-- Contacts -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-outline">contacts</span>
+<span>Contacts</span>
+</a>
+<!-- Companies -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-outline">domain</span>
+<span>Companies</span>
+</a>
+<!-- Opportunities -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-outline">monetization_on</span>
+<span>Opportunities</span>
+</a>
+<!-- Tasks (ACTIVE TAB) - JSON style_active_navigation -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-high text-primary font-medium text-label-md font-label-md transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>Tasks</span>
+</a>
+<!-- Activity -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-outline">history</span>
+<span>Activity</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Footer Nav: JSON footer_tab_labels Settings + version info -->
+<div class="flex flex-col gap-2 pt-4 border-t border-outline-variant/60">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-outline">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-outline">menu_book</span>
+<span>Documentation</span>
+</a>
+<!-- Status indicator / Version tag -->
+<div class="px-3 py-2 flex items-center justify-between text-label-sm font-label-sm text-outline">
+<span class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            v0.8.4 (Self-hosted)
+          </span>
+<span class="material-symbols-outlined text-[16px]">cloud_done</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas (Offset ml-60 for fixed sidebar) -->
+<div class="flex-1 ml-60 flex flex-col min-h-screen bg-surface">
+<!-- Top Bar: Shared Component mapped to header -->
+<header class="h-14 bg-surface-container-lowest border-b border-outline-variant shadow-sm px-6 flex items-center justify-between sticky top-0 z-20">
+<!-- Breadcrumb & Workspace context -->
+<div class="flex items-center gap-2 text-label-md font-label-md">
+<span class="text-on-surface-variant hover:text-on-surface cursor-pointer">Acme Sales Org</span>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface font-semibold">Tasks</span>
+</div>
+<!-- Top Bar Trailing Cluster -->
+<div class="flex items-center gap-3">
+<!-- Notification Bell with count -->
+<button class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors text-outline hover:text-on-surface" title="Notifications">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-error text-[10px] font-semibold text-on-error">3</span>
+</button>
+<!-- Help Icon -->
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors text-outline hover:text-on-surface" title="Documentation &amp; Help">
+<span class="material-symbols-outlined">help</span>
+</button>
+<!-- Divider -->
+<div class="h-5 w-px bg-outline-variant"></div>
+<!-- User Menu Dropdown -->
+<button class="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-surface-container-high transition-colors group">
+<div class="w-7 h-7 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center text-label-sm font-semibold text-on-surface">
+              JS
+            </div>
+<span class="text-label-md font-label-md text-on-surface font-medium">John Smith</span>
+<span class="material-symbols-outlined text-outline group-hover:text-on-surface text-[18px]">expand_more</span>
+</button>
+</div>
+</header>
+<!-- Main Body Container -->
+<main class="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
+<!-- Page Header & Action Controls -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
+<div>
+<h1 class="text-headline-lg font-headline-lg text-on-surface font-semibold tracking-tight">Tasks</h1>
+<p class="text-body-md font-body-md text-on-surface-variant mt-0.5">Your follow-ups and to-dos.</p>
+</div>
+<!-- Actions & Filter Bar -->
+<div class="flex items-center gap-2.5 flex-wrap">
+<!-- Filter Dropdown: Assigned to: Me -->
+<div class="relative inline-block text-left">
+<button class="inline-flex items-center gap-2 px-3 py-1.5 text-label-md font-label-md bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary-container transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-outline text-[18px]">person</span>
+<span>Assigned to: <strong class="font-semibold">Me</strong></span>
+<span class="material-symbols-outlined text-outline text-[16px]">expand_more</span>
+</button>
+</div>
+<!-- Filter Status Pill -->
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 text-label-md font-label-md bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors shadow-sm">
+<span class="material-symbols-outlined text-outline text-[18px]">filter_alt</span>
+<span>All Statuses</span>
+<span class="material-symbols-outlined text-outline text-[16px]">expand_more</span>
+</button>
+<!-- Search Quick Input -->
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-outline text-[18px]">search</span>
+<input class="h-9 pl-8 pr-3 text-body-sm font-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg placeholder-outline text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container w-48 shadow-sm" placeholder="Search tasks..." type="text"/>
+</div>
+<!-- Primary CTA: + New task (Solid blue #2563eb, 8px radius) -->
+<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 h-9 bg-primary-container hover:bg-primary text-on-primary text-label-md font-label-md font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary-container focus:ring-offset-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>New task</span>
+</button>
+</div>
+</div>
+<!-- Task Groups Container -->
+<div class="space-y-6">
+<!-- SECTION 1: Overdue (2) -->
+<section class="space-y-2">
+<!-- Section Header -->
+<div class="flex items-center gap-2 px-1">
+<h2 class="text-headline-sm font-headline-sm text-amber-900 font-semibold flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-amber-600"></span>
+<span>Overdue</span>
+</h2>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-label-sm font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+                2
+              </span>
+</div>
+<!-- Overdue Tasks Card Container -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm divide-y divide-outline-variant/60 overflow-hidden">
+<!-- Overdue Row 1 -->
+<div class="flex items-center justify-between p-3.5 hover:bg-surface-container-low/60 transition-colors group">
+<div class="flex items-center gap-3.5 min-w-0">
+<!-- Checkbox -->
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer transition" type="checkbox"/>
+<!-- Task Title & Link Badge -->
+<div class="flex items-center gap-2.5 truncate">
+<span class="text-label-md font-label-md font-medium text-on-surface truncate">Send revised MSA pricing tier matrix</span>
+<a class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors shrink-0" href="#">
+<span class="text-[11px] font-semibold text-blue-600">[Opportunity]</span>
+<span class="font-medium truncate max-w-[220px]">Northwind Logistics - Fleet Expansion</span>
+</a>
+</div>
+</div>
+<!-- Trailing info: Due date, Reminder, Assignee avatar, Menu -->
+<div class="flex items-center gap-4 shrink-0 pl-4">
+<!-- Due Date (Overdue warning) -->
+<div class="flex items-center gap-1.5 text-label-sm font-label-sm font-semibold text-error bg-red-50 border border-red-200 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[16px] text-error">schedule</span>
+<span>Yesterday, 4:00 PM</span>
+</div>
+<!-- Reminder Icon -->
+<button class="text-amber-600 hover:text-amber-700 p-1 rounded hover:bg-surface-container-high transition-colors" title="Reminder set">
+<span class="material-symbols-outlined text-[18px]">notifications_active</span>
+</button>
+<!-- Assignee Avatar -->
+<div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200 text-label-sm flex items-center justify-center font-semibold text-[11px]" title="Assigned to Sarah Jenkins (SJ)">
+                    SJ
+                  </div>
+<!-- Actions Three-dot -->
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors opacity-70 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Overdue Row 2 -->
+<div class="flex items-center justify-between p-3.5 hover:bg-surface-container-low/60 transition-colors group">
+<div class="flex items-center gap-3.5 min-w-0">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer transition" type="checkbox"/>
+<div class="flex items-center gap-2.5 truncate">
+<span class="text-label-md font-label-md font-medium text-on-surface truncate">Follow up on legal redline contract review</span>
+<a class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 transition-colors shrink-0" href="#">
+<span class="text-[11px] font-semibold text-purple-600">[Lead]</span>
+<span class="font-medium truncate max-w-[220px]">Liam Gallagher (Brightpath Dental)</span>
+</a>
+</div>
+</div>
+<div class="flex items-center gap-4 shrink-0 pl-4">
+<div class="flex items-center gap-1.5 text-label-sm font-label-sm font-semibold text-error bg-red-50 border border-red-200 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[16px] text-error">schedule</span>
+<span>Oct 6, 2:00 PM</span>
+</div>
+<button class="text-amber-600 hover:text-amber-700 p-1 rounded hover:bg-surface-container-high transition-colors" title="Reminder set">
+<span class="material-symbols-outlined text-[18px]">notifications_active</span>
+</button>
+<div class="w-6 h-6 rounded-full bg-surface-container-highest text-on-surface border border-outline-variant text-label-sm flex items-center justify-center font-semibold text-[11px]" title="Assigned to John Smith (JS)">
+                    JS
+                  </div>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors opacity-70 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 2: Due today (5) -->
+<section class="space-y-2">
+<!-- Section Header -->
+<div class="flex items-center gap-2 px-1">
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-blue-600"></span>
+<span>Due today</span>
+</h2>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-label-sm font-semibold bg-surface-container-high text-on-surface-variant border border-outline-variant">
+                5
+              </span>
+</div>
+<!-- Due Today Tasks Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm divide-y divide-outline-variant/60 overflow-hidden">
+<!-- Row 1 -->
+<div class="flex items-center justify-between p-3.5 hover:bg-surface-container-low/60 transition-colors group">
+<div class="flex items-center gap-3.5 min-w-0">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer transition" type="checkbox"/>
+<div class="flex items-center gap-2.5 truncate">
+<span class="text-label-md font-label-md font-medium text-on-surface truncate">Product demo with CTO &amp; lead dispatcher</span>
+<a class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 transition-colors shrink-0" href="#">
+<span class="text-[11px] font-semibold text-purple-600">[Lead]</span>
+<span class="font-medium truncate max-w-[220px]">Marcus Chen (Northwind Logistics)</span>
+</a>
+</div>
+</div>
+<div class="flex items-center gap-4 shrink-0 pl-4">
+<div class="flex items-center gap-1.5 text-label-sm font-label-sm font-medium text-blue-700 bg-blue-50/70 border border-blue-200/80 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[16px] text-blue-600">schedule</span>
+<span>Today, 11:30 AM</span>
+</div>
+<button class="text-outline hover:text-on-surface p-1 rounded hover:bg-surface-container-high transition-colors" title="Reminder set">
+<span class="material-symbols-outlined text-[18px]">notifications_active</span>
+</button>
+<div class="w-6 h-6 rounded-full bg-surface-container-highest text-on-surface border border-outline-variant text-label-sm flex items-center justify-center font-semibold text-[11px]" title="Assigned to John Smith (JS)">
+                    JS
+                  </div>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors opacity-70 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="flex items-center justify-between p-3.5 hover:bg-surface-container-low/60 transition-colors group">
+<div class="flex items-center gap-3.5 min-w-0">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer transition" type="checkbox"/>
+<div class="flex items-center gap-2.5 truncate">
+<span class="text-label-md font-label-md font-medium text-on-surface truncate">Call back about fleet pricing volume discounts</span>
+<a class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors shrink-0" href="#">
+<span class="text-[11px] font-semibold text-blue-600">[Opportunity]</span>
+<span class="font-medium truncate max-w-[220px]">Kestrel Robotics - Expansion</span>
+</a>
+</div>
+</div>
+<div class="flex items-center gap-4 shrink-0 pl-4">
+<div class="flex items-center gap-1.5 text-label-sm font-label-sm font-medium text-blue-700 bg-blue-50/70 border border-blue-200/80 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[16px] text-blue-600">schedule</span>
+<span>Today, 2:00 PM</span>
+</div>
+<button class="text-outline hover:text-on-surface p-1 rounded hover:bg-surface-container-high transition-colors" title="Reminder set">
+<span class="material-symbols-outlined text-[18px]">notifications_active</span>
+</button>
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 text-label-sm flex items-center justify-center font-semibold text-[11px]" title="Assigned to Alex Morgan (AM)">
+                    AM
+                  </div>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors opacity-70 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="flex items-center justify-between p-3.5 hover:bg-surface-container-low/60 transition-colors group">
+<div class="flex items-center gap-3.5 min-w-0">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer transition" type="checkbox"/>
+<div class="flex items-center gap-2.5 truncate">
+<span class="text-label-md font-label-md font-medium text-on-surface truncate">Send custom API webhook specification sheet</span>
+<a class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors shrink-0" href="#">
+<span class="text-[11px] font-semibold text-emerald-600">[Contact]</span>
+<span class="font-medium truncate max-w-[220px]">Devon Vance (Vance Industrial Supply)</span>
+</a>
+</div>
+</div>
+<div class="flex items-center gap-4 shrink-0 pl-4">
+<div class="flex items-center gap-1.5 text-label-sm font-label-sm font-medium text-blue-700 bg-blue-50/70 border border-blue-200/80 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[16px] text-blue-600">schedule</span>
+<span>Today, 4:30 PM</span>
+</div>
+<span class="w-[26px]"></span> <!-- Spacer matching reminder button -->
+<div class="w-6 h-6 rounded-full bg-surface-container-highest text-on-surface border border-outline-variant text-label-sm flex items-center justify-center font-semibold text-[11px]" title="Assigned to John Smith (JS)">
+                    JS
+                  </div>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors opacity-70 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Expand subtle link -->
+<div class="px-4 py-2.5 bg-surface-container-low/40 text-center hover:bg-surface-container-low transition-colors cursor-pointer border-t border-outline-variant/40">
+<button class="text-label-sm font-label-sm text-primary font-medium hover:underline inline-flex items-center gap-1">
+<span>Show 2 more tasks due today...</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+</div>
+</section>
+<!-- SECTION 3: Upcoming (8) -->
+<section class="space-y-2">
+<!-- Section Header -->
+<div class="flex items-center gap-2 px-1">
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span>Upcoming</span>
+</h2>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-label-sm font-semibold bg-surface-container-high text-on-surface-variant border border-outline-variant">
+                8
+              </span>
+</div>
+<!-- Upcoming Tasks Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm divide-y divide-outline-variant/60 overflow-hidden">
+<!-- Row 1 -->
+<div class="flex items-center justify-between p-3.5 hover:bg-surface-container-low/60 transition-colors group">
+<div class="flex items-center gap-3.5 min-w-0">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer transition" type="checkbox"/>
+<div class="flex items-center gap-2.5 truncate">
+<span class="text-label-md font-label-md font-medium text-on-surface truncate">Prepare Q4 enterprise proposal deck</span>
+<a class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors shrink-0" href="#">
+<span class="text-[11px] font-semibold text-blue-600">[Opportunity]</span>
+<span class="font-medium truncate max-w-[220px]">Aegis Cloud Architecture</span>
+</a>
+</div>
+</div>
+<div class="flex items-center gap-4 shrink-0 pl-4">
+<div class="flex items-center gap-1.5 text-label-sm font-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded border border-outline-variant/50">
+<span class="material-symbols-outlined text-[16px] text-outline">schedule</span>
+<span>Tomorrow, 10:00 AM</span>
+</div>
+<button class="text-outline hover:text-on-surface p-1 rounded hover:bg-surface-container-high transition-colors" title="Reminder set">
+<span class="material-symbols-outlined text-[18px]">notifications_active</span>
+</button>
+<div class="w-6 h-6 rounded-full bg-surface-container-highest text-on-surface border border-outline-variant text-label-sm flex items-center justify-center font-semibold text-[11px]" title="Assigned to John Smith (JS)">
+                    JS
+                  </div>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors opacity-70 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="flex items-center justify-between p-3.5 hover:bg-surface-container-low/60 transition-colors group">
+<div class="flex items-center gap-3.5 min-w-0">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer transition" type="checkbox"/>
+<div class="flex items-center gap-2.5 truncate">
+<span class="text-label-md font-label-md font-medium text-on-surface truncate">Introductory discovery follow-up call</span>
+<a class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 transition-colors shrink-0" href="#">
+<span class="text-[11px] font-semibold text-purple-600">[Lead]</span>
+<span class="font-medium truncate max-w-[220px]">Sophia Aris (Pinnacle Retail Group)</span>
+</a>
+</div>
+</div>
+<div class="flex items-center gap-4 shrink-0 pl-4">
+<div class="flex items-center gap-1.5 text-label-sm font-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded border border-outline-variant/50">
+<span class="material-symbols-outlined text-[16px] text-outline">calendar_today</span>
+<span>Oct 15, 11:00 AM</span>
+</div>
+<span class="w-[26px]"></span>
+<div class="w-6 h-6 rounded-full bg-amber-100 text-amber-800 border border-amber-200 text-label-sm flex items-center justify-center font-semibold text-[11px]" title="Assigned to Kevin Ray (KR)">
+                    KR
+                  </div>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors opacity-70 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="flex items-center justify-between p-3.5 hover:bg-surface-container-low/60 transition-colors group">
+<div class="flex items-center gap-3.5 min-w-0">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer transition" type="checkbox"/>
+<div class="flex items-center gap-2.5 truncate">
+<span class="text-label-md font-label-md font-medium text-on-surface truncate">Quarterly renewal check-in and health score review</span>
+<a class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 transition-colors shrink-0" href="#">
+<span class="text-[11px] font-semibold text-amber-700">[Company]</span>
+<span class="font-medium truncate max-w-[220px]">Helios Solar Energy</span>
+</a>
+</div>
+</div>
+<div class="flex items-center gap-4 shrink-0 pl-4">
+<div class="flex items-center gap-1.5 text-label-sm font-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded border border-outline-variant/50">
+<span class="material-symbols-outlined text-[16px] text-outline">calendar_today</span>
+<span>Oct 16, 3:00 PM</span>
+</div>
+<span class="w-[26px]"></span>
+<div class="w-6 h-6 rounded-full bg-surface-container-highest text-on-surface border border-outline-variant text-label-sm flex items-center justify-center font-semibold text-[11px]" title="Assigned to John Smith (JS)">
+                    JS
+                  </div>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors opacity-70 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Expand subtle link -->
+<div class="px-4 py-2.5 bg-surface-container-low/40 text-center hover:bg-surface-container-low transition-colors cursor-pointer border-t border-outline-variant/40">
+<button class="text-label-sm font-label-sm text-primary font-medium hover:underline inline-flex items-center gap-1">
+<span>Show 5 more upcoming tasks...</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+</div>
+</section>
+<!-- SECTION 4: Collapsed Completed Section -->
+<section class="pt-2">
+<button class="w-full flex items-center justify-between p-3.5 bg-surface-container-lowest border border-outline-variant rounded-lg text-left hover:bg-surface-container-low transition-colors shadow-sm group">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-outline group-hover:text-on-surface text-[20px] transition-transform">chevron_right</span>
+<span class="text-headline-sm font-headline-sm font-semibold text-on-surface">Completed</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-label-sm font-semibold bg-surface-container-high text-on-surface-variant border border-outline-variant">
+                  14
+                </span>
+</div>
+<span class="text-label-sm font-label-sm text-outline group-hover:text-on-surface-variant font-medium">Click to show completed items</span>
+</button>
+</section>
+</div>
+</main>
+</div>
+</div>
+</body></html>

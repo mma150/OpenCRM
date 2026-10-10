@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenCRM - Products</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              DEFAULT: '#2563eb',
+              hover: '#1d4ed8',
+              light: '#eff6ff',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+<body class="bg-[#f8fafc] text-slate-900 min-h-screen flex antialiased">
+
+  <!-- Primary Sidebar Navigation (w-60 / 240px) -->
+  <aside class="w-60 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 fixed inset-y-0 left-0 z-30">
+    <div class="flex flex-col">
+      <!-- Logo Header -->
+      <div class="h-16 flex items-center gap-2.5 px-6 border-b border-slate-100">
+        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <path d="M12 2a3 3 0 0 0-3 3c0 .35.06.68.17 1H6a3 3 0 0 0-3 3v2.17A3.001 3.001 0 0 0 3 14c0 .35.06.68.17 1H3a3 3 0 0 0-3 3v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a3 3 0 0 0-1-2.24V15h2.17c.32.58.94 1 1.66 1s1.34-.42 1.66-1H15v1.76a3 3 0 0 0-1 2.24v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a3 3 0 0 0-3-3h-.17c.11-.32.17-.65.17-1 0-.72-.42-1.34-1-1.66V11h2.17c.11.32.17.65.17 1a3 3 0 1 0 3-3h-2.17c-.11-.32-.17-.65-.17-1a3 3 0 0 0-3-3h-3.17c-.11-.32-.17-.65-.17-1a3 3 0 0 0-3-3zm0 2a1 1 0 1 1 0 2 1 1 0 0 1 0-2zM5 8a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm12 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0z"/>
+          </svg>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="font-semibold text-base tracking-tight text-slate-900">OpenCRM</span>
+          <span class="text-[10px] font-semibold tracking-wide uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">OSS</span>
+        </div>
+      </div>
+
+      <!-- Main Navigation Links -->
+      <nav class="p-3 space-y-0.5">
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors text-sm font-medium">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">home</span>
+          Home
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors text-sm font-medium">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">filter_alt</span>
+          Leads
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors text-sm font-medium">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">contact_page</span>
+          Contacts
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors text-sm font-medium">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">domain</span>
+          Companies
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors text-sm font-medium">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">monetization_on</span>
+          Opportunities
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors text-sm font-medium">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">task_alt</span>
+          Tasks
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors text-sm font-medium">
+          <span class="material-symbols-outlined text-[20px] text-slate-400">history</span>
+          Activity
+        </a>
+      </nav>
+    </div>
+
+    <!-- Sidebar Bottom / Footer Navigation (Settings ACTIVE) -->
+    <div class="p-3 border-t border-slate-100 space-y-1">
+      <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-blue-600 bg-blue-50/80 font-medium text-sm transition-colors">
+        <span class="material-symbols-outlined text-[20px] text-blue-600">settings</span>
+        Settings
+      </a>
+      <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors text-sm font-medium">
+        <span class="material-symbols-outlined text-[20px] text-slate-400">menu_book</span>
+        Documentation
+      </a>
+      <div class="px-3 pt-3 pb-1 flex items-center gap-2 text-xs text-slate-400">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>v0.8.4 (Self-hosted)</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Right Master Content Area (offset by w-60) -->
+  <div class="flex-1 ml-60 flex flex-col min-w-0">
+
+    <!-- Top Navigation Bar -->
+    <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-20">
+      <!-- Breadcrumbs -->
+      <nav class="flex items-center gap-2 text-sm text-slate-500 font-medium">
+        <span>Acme Sales Org</span>
+        <span class="text-slate-300">/</span>
+        <span>Settings</span>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-900 font-semibold">Products</span>
+      </nav>
+
+      <!-- Right Actions & Profile -->
+      <div class="flex items-center gap-4">
+        <!-- Notification Icon with Badge -->
+        <button class="relative p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-50 transition-colors">
+          <span class="material-symbols-outlined text-[20px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-4 h-4 bg-blue-600 text-[10px] font-bold text-white rounded-full flex items-center justify-center">3</span>
+        </button>
+
+        <!-- Help Icon -->
+        <button class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-50 transition-colors">
+          <span class="material-symbols-outlined text-[20px]">help</span>
+        </button>
+
+        <div class="h-5 w-px bg-slate-200"></div>
+
+        <!-- User Dropdown Menu Trigger -->
+        <button class="flex items-center gap-2.5 pl-1 py-1 rounded-lg hover:bg-slate-50 transition-colors">
+          <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-semibold text-xs text-slate-700">
+            JS
+          </div>
+          <span class="text-sm font-medium text-slate-700">John Smith</span>
+          <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace with Secondary Settings Nav -->
+    <div class="flex-1 p-8 max-w-[1340px] w-full mx-auto flex gap-8">
+
+      <!-- Secondary Vertical Settings Menu (220px) -->
+      <aside class="w-52 shrink-0">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 px-3 mb-2">Settings</h3>
+        <nav class="space-y-0.5">
+          <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 transition-colors text-sm font-medium">
+            <span class="material-symbols-outlined text-[19px] text-slate-400">group</span>
+            Users
+          </a>
+          <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 transition-colors text-sm font-medium">
+            <span class="material-symbols-outlined text-[19px] text-slate-400">view_kanban</span>
+            Pipeline stages
+          </a>
+          <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 transition-colors text-sm font-medium">
+            <span class="material-symbols-outlined text-[19px] text-slate-400">tune</span>
+            Custom fields
+          </a>
+          <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 transition-colors text-sm font-medium">
+            <span class="material-symbols-outlined text-[19px] text-slate-400">mail</span>
+            Email
+          </a>
+          <!-- ACTIVE: Products -->
+          <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-50/80 text-blue-600 font-semibold text-sm transition-colors">
+            <span class="material-symbols-outlined text-[19px] text-blue-600">inventory_2</span>
+            Products
+          </a>
+          <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 transition-colors text-sm font-medium">
+            <span class="material-symbols-outlined text-[19px] text-slate-400">cloud_upload</span>
+            Import data
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Content Area -->
+      <main class="flex-1 min-w-0">
+
+        <!-- Page Header -->
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Products</h1>
+            <p class="text-sm text-slate-500 mt-1">Items you can add to quotes.</p>
+          </div>
+          <!-- Primary CTA Button -->
+          <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm shadow-sm transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            New product
+          </button>
+        </div>
+
+        <!-- Table Card Container -->
+        <div class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+          
+          <!-- Toolbar / Filters -->
+          <div class="p-4 border-b border-slate-200 flex items-center justify-between gap-4 bg-white">
+            <!-- Search Input -->
+            <div class="relative flex-1 max-w-sm">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">search</span>
+              <input 
+                type="text" 
+                placeholder="Search products by name or SKU..." 
+                class="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg placeholder-slate-400 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+              />
+            </div>
+
+            <!-- Filter Status Dropdown -->
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
+                <label for="status-filter" class="text-xs font-medium text-slate-500">Status:</label>
+                <div class="relative">
+                  <select 
+                    id="status-filter"
+                    class="appearance-none bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-lg pl-3 pr-8 py-2 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer transition-colors"
+                  >
+                    <option value="all">All statuses</option>
+                    <option value="active" selected>Active only</option>
+                    <option value="inactive">Inactive only</option>
+                  </select>
+                  <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-[18px] text-slate-400 pointer-events-none">expand_more</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Products Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 bg-slate-50/75 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th scope="col" class="py-3 px-5">Name</th>
+                  <th scope="col" class="py-3 px-4">SKU</th>
+                  <th scope="col" class="py-3 px-4 text-right">Unit price</th>
+                  <th scope="col" class="py-3 px-4">Tax rate</th>
+                  <th scope="col" class="py-3 px-4 text-center">Active</th>
+                  <th scope="col" class="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700">
+
+                <!-- Row 1: Fleet tracking licence -->
+                <tr class="hover:bg-slate-50/60 transition-colors group">
+                  <td class="py-3.5 px-5">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[18px]">satellite_alt</span>
+                      </div>
+                      <div>
+                        <div class="font-medium text-slate-900">Fleet tracking licence</div>
+                        <div class="text-xs text-slate-400">Monthly subscription per registered vehicle</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-xs text-slate-500">LIC-FLT-001</td>
+                  <td class="py-3.5 px-4 text-right font-medium text-slate-900">$29.00 USD</td>
+                  <td class="py-3.5 px-4 text-slate-600">8.25%</td>
+                  <td class="py-3.5 px-4 text-center">
+                    <!-- Switch active -->
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" checked class="sr-only peer">
+                      <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </td>
+                  <td class="py-3.5 px-4 text-right">
+                    <button class="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                      <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 2: GPS tracker hardware -->
+                <tr class="hover:bg-slate-50/60 transition-colors group">
+                  <td class="py-3.5 px-5">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[18px]">device_hub</span>
+                      </div>
+                      <div>
+                        <div class="font-medium text-slate-900">GPS tracker hardware</div>
+                        <div class="text-xs text-slate-400">OBD-II telematics gateway unit</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-xs text-slate-500">HW-GPS-200</td>
+                  <td class="py-3.5 px-4 text-right font-medium text-slate-900">$149.00 USD</td>
+                  <td class="py-3.5 px-4 text-slate-600">8.25%</td>
+                  <td class="py-3.5 px-4 text-center">
+                    <!-- Switch active -->
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" checked class="sr-only peer">
+                      <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </td>
+                  <td class="py-3.5 px-4 text-right">
+                    <button class="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                      <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 3: Onboarding package -->
+                <tr class="hover:bg-slate-50/60 transition-colors group">
+                  <td class="py-3.5 px-5">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[18px]">rocket_launch</span>
+                      </div>
+                      <div>
+                        <div class="font-medium text-slate-900">Onboarding package</div>
+                        <div class="text-xs text-slate-400">Dedicated engineer setup &amp; fleet migration</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-xs text-slate-500">SRV-ONB-PRO</td>
+                  <td class="py-3.5 px-4 text-right font-medium text-slate-900">$1,200.00 USD</td>
+                  <td class="py-3.5 px-4 text-slate-600">0.00% (Exempt)</td>
+                  <td class="py-3.5 px-4 text-center">
+                    <!-- Switch active -->
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" checked class="sr-only peer">
+                      <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </td>
+                  <td class="py-3.5 px-4 text-right">
+                    <button class="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                      <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 4: Dental scheduling add-on -->
+                <tr class="hover:bg-slate-50/60 transition-colors group">
+                  <td class="py-3.5 px-5">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[18px]">medical_services</span>
+                      </div>
+                      <div>
+                        <div class="font-medium text-slate-900">Dental scheduling add-on</div>
+                        <div class="text-xs text-slate-400">Multi-chair patient sync module</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-xs text-slate-500">MOD-DNT-SCH</td>
+                  <td class="py-3.5 px-4 text-right font-medium text-slate-900">$450.00 USD</td>
+                  <td class="py-3.5 px-4 text-slate-600">8.25%</td>
+                  <td class="py-3.5 px-4 text-center">
+                    <!-- Switch active -->
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" checked class="sr-only peer">
+                      <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </td>
+                  <td class="py-3.5 px-4 text-right">
+                    <button class="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                      <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 5: Robotics sensor kit -->
+                <tr class="hover:bg-slate-50/60 transition-colors group">
+                  <td class="py-3.5 px-5">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[18px]">precision_manufacturing</span>
+                      </div>
+                      <div>
+                        <div class="font-medium text-slate-900">Robotics sensor kit</div>
+                        <div class="text-xs text-slate-400">LiDAR &amp; ultrasonic telemetry pack</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-xs text-slate-500">HW-ROB-SNS</td>
+                  <td class="py-3.5 px-4 text-right font-medium text-slate-900">$850.00 USD</td>
+                  <td class="py-3.5 px-4 text-slate-600">8.25%</td>
+                  <td class="py-3.5 px-4 text-center">
+                    <!-- Switch active -->
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" checked class="sr-only peer">
+                      <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </td>
+                  <td class="py-3.5 px-4 text-right">
+                    <button class="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                      <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 6: Annual support plan -->
+                <tr class="hover:bg-slate-50/60 transition-colors group">
+                  <td class="py-3.5 px-5">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[18px]">support_agent</span>
+                      </div>
+                      <div>
+                        <div class="font-medium text-slate-900">Annual support plan</div>
+                        <div class="text-xs text-slate-400">24/7 SLA with designated account technician</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-xs text-slate-500">SLA-ANN-247</td>
+                  <td class="py-3.5 px-4 text-right font-medium text-slate-900">$2,400.00 USD</td>
+                  <td class="py-3.5 px-4 text-slate-600">0.00% (Exempt)</td>
+                  <td class="py-3.5 px-4 text-center">
+                    <!-- Switch active -->
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" checked class="sr-only peer">
+                      <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </td>
+                  <td class="py-3.5 px-4 text-right">
+                    <button class="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                      <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                    </button>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Footer -->
+          <div class="px-5 py-3.5 border-t border-slate-200 bg-white flex items-center justify-between text-xs text-slate-500">
+            <div>
+              Showing <span class="font-medium text-slate-700">6</span> of <span class="font-medium text-slate-700">6</span> products
+            </div>
+            <div class="flex items-center gap-2">
+              <button disabled class="px-3 py-1.5 rounded border border-slate-200 text-slate-400 bg-slate-50 font-medium cursor-not-allowed">
+                Previous
+              </button>
+              <button disabled class="px-3 py-1.5 rounded border border-slate-200 text-slate-400 bg-slate-50 font-medium cursor-not-allowed">
+                Next
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

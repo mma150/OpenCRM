@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Contact Detail: Marcus Chen</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed": "#dbe1ff",
+            "surface-container-low": "#f4f2fd",
+            "background": "#fbf8ff",
+            "on-secondary-fixed-variant": "#3323cc",
+            "inverse-on-surface": "#f1effa",
+            "surface-container-high": "#e8e7f1",
+            "inverse-primary": "#b4c5ff",
+            "on-primary-fixed-variant": "#003ea8",
+            "tertiary-fixed": "#ffdbcd",
+            "on-secondary": "#ffffff",
+            "surface-tint": "#0053db",
+            "tertiary-container": "#bc4800",
+            "secondary-container": "#645efb",
+            "surface-container-lowest": "#ffffff",
+            "error": "#ba1a1a",
+            "on-secondary-fixed": "#0f0069",
+            "on-tertiary-fixed": "#360f00",
+            "on-primary-fixed": "#00174b",
+            "surface-variant": "#e3e1ec",
+            "primary-container": "#2563eb",
+            "on-tertiary": "#ffffff",
+            "inverse-surface": "#2f3038",
+            "surface-dim": "#dad9e3",
+            "surface-bright": "#fbf8ff",
+            "on-error": "#ffffff",
+            "tertiary-fixed-dim": "#ffb596",
+            "surface-container-highest": "#e3e1ec",
+            "primary-fixed-dim": "#b4c5ff",
+            "secondary": "#4b41e1",
+            "on-tertiary-container": "#ffede6",
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-surface": "#1a1b22",
+            "surface": "#fbf8ff",
+            "surface-container": "#eeedf7",
+            "outline": "#737686",
+            "tertiary": "#943700",
+            "on-surface-variant": "#434655",
+            "on-error-container": "#93000a",
+            "on-background": "#1a1b22",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "error-container": "#ffdad6",
+            "outline-variant": "#c3c6d7",
+            "on-primary-container": "#eeefff",
+            "secondary-fixed": "#e2dfff",
+            "on-secondary-container": "#fffbff",
+            "primary": "#004ac6",
+            "on-primary": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-md": "1.5rem",
+            "space-sm": "0.5rem",
+            "margin-lg": "2rem",
+            "space-xl": "1.5rem",
+            "space-md": "0.75rem",
+            "space-xs": "0.25rem",
+            "gutter": "1rem",
+            "margin": "1rem",
+            "gutter-lg": "1.5rem",
+            "space-lg": "1rem",
+            "space-2xl": "2rem"
+          },
+          "fontFamily": {
+            "label-sm": ["Inter"],
+            "headline-xl": ["Inter"],
+            "metric-mono": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-lg": ["Inter"]
+          },
+          "fontSize": {
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="h-full bg-surface text-on-surface antialiased overflow-hidden font-body-md text-body-md flex">
+<!-- Side Navigation Bar (from JSON: w-60 fixed, 7 main tabs, contacts active) -->
+<aside class="fixed top-0 left-0 h-screen w-60 bg-surface-container-lowest border-r border-outline-variant shadow-sm z-30 flex flex-col justify-between shrink-0">
+<div class="flex flex-col h-full">
+<!-- Brand Header -->
+<div class="p-4 border-b border-surface-container">
+<div class="flex items-center gap-2.5">
+<div aria-label="OpenCRM Logo" class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-headline-sm text-headline-sm shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="token">token</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">OpenCRM</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant font-label-sm text-[10px] uppercase tracking-wide">OSS</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant leading-none">Sales &amp; Operations</span>
+</div>
+</div>
+<!-- Action CTA from JSON: "New Record" -->
+<button class="mt-4 w-full h-9 px-3.5 bg-primary-container text-on-primary rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 hover:bg-primary transition-colors duration-150 ease-in-out shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+<span>New Record</span>
+</button>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 overflow-y-auto px-3 py-3 space-y-1">
+<!-- 1. Home -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="home">home</span>
+<span>Home</span>
+</a>
+<!-- 2. Leads -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="person_search">person_search</span>
+<span>Leads</span>
+</a>
+<!-- 3. Contacts (ACTIVE MATCH) -->
+<a class="flex items-center gap-3 px-3 py-2 text-primary font-label-md text-label-md bg-surface-container-low rounded-lg transition-colors duration-150 ease-in-out font-medium" href="#">
+<span class="material-symbols-outlined text-[20px] text-primary" data-icon="contacts" data-weight="fill" style="font-variation-settings: 'FILL' 1;">contacts</span>
+<span>Contacts</span>
+</a>
+<!-- 4. Companies -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="business">business</span>
+<span>Companies</span>
+</a>
+<!-- 5. Opportunities -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="monetization_on">monetization_on</span>
+<span>Opportunities</span>
+</a>
+<!-- 6. Tasks -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="check_circle">check_circle</span>
+<span>Tasks</span>
+</a>
+<!-- 7. Activity -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="history">history</span>
+<span>Activity</span>
+</a>
+</nav>
+<!-- Sidebar Footer (Settings & Version status) -->
+<div class="p-3 border-t border-surface-container space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="description">description</span>
+<span>Documentation</span>
+</a>
+<div class="px-3 pt-2 text-[11px] font-label-sm text-outline flex items-center justify-between">
+<span>v0.8.4 (Self-hosted)</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500" title="System operational"></span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Viewport Canvas (offset by sidebar w-60) -->
+<div class="ml-60 flex-1 flex flex-col h-screen overflow-hidden bg-background">
+<!-- TopNavBar (sticky h-14, matching TopNavBar JSON & requirements) -->
+<header class="sticky top-0 w-full z-20 h-14 bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between px-6 shrink-0 shadow-sm">
+<!-- Breadcrumb & Title Area -->
+<div class="flex items-center gap-2 font-label-md text-label-md">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Contacts</a>
+<span class="text-outline-variant font-body-sm text-body-sm">/</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Marcus Chen</span>
+<span class="ml-2 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-label-sm border border-emerald-200">Active</span>
+</div>
+<!-- Right Tool Cluster -->
+<div class="flex items-center gap-3">
+<!-- Quick Search Trigger -->
+<button class="hidden md:flex items-center gap-2 px-2.5 py-1 text-on-surface-variant bg-surface hover:bg-surface-container rounded-lg border border-outline-variant text-body-sm font-body-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="search">search</span>
+<span class="text-outline">Search contacts, deals...</span>
+<kbd class="ml-2 font-metric-mono text-label-sm px-1.5 py-0.5 bg-surface-container-lowest border border-outline-variant rounded text-[10px]">⌘K</kbd>
+</button>
+<!-- Help Action -->
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-lg transition-colors duration-150" title="Help &amp; Guides" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+</button>
+<!-- Notifications with badge count 3 -->
+<button class="relative p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-lg transition-colors duration-150" title="Notifications" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-primary-container text-on-primary rounded-full text-[10px] font-label-sm flex items-center justify-center leading-none">3</span>
+</button>
+<!-- Divider -->
+<div class="h-6 w-px bg-outline-variant mx-1"></div>
+<!-- User Profile Pill -->
+<div class="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-surface-container-low cursor-pointer transition-colors duration-150">
+<div class="w-7 h-7 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-medium">
+            JS
+          </div>
+<span class="font-label-md text-label-md text-on-surface hidden sm:inline">John Smith</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+</div>
+</div>
+</header>
+<!-- Scrollable Workspace -->
+<main class="flex-1 overflow-y-auto px-6 py-6 bg-surface">
+<div class="max-w-[1440px] mx-auto space-y-6">
+<!-- Entity Header Row -->
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-2 border-b border-surface-container">
+<div class="flex items-start gap-4">
+<!-- Contact Avatar Large -->
+<div class="w-14 h-14 rounded-xl bg-surface-container-low border border-outline-variant text-primary flex items-center justify-center font-headline-md text-headline-md font-semibold shrink-0 shadow-sm">
+              MC
+            </div>
+<div class="space-y-1">
+<div class="flex items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">Marcus Chen</h1>
+<span class="px-2 py-0.5 rounded text-[12px] font-label-sm bg-blue-50 text-blue-700 border border-blue-200">Decision Maker</span>
+</div>
+<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-on-surface-variant font-body-md text-body-md">
+<span class="font-medium text-on-surface">Director of Operations</span>
+<span class="text-outline-variant">•</span>
+<a class="text-primary hover:underline flex items-center gap-1 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[16px]" data-icon="business">business</span>
+                  Northwind Logistics
+                </a>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5 font-label-sm text-label-sm">
+<span class="text-outline">Owner:</span>
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container border border-outline-variant text-on-surface">
+<span class="w-4 h-4 rounded-full bg-secondary text-on-secondary text-[10px] flex items-center justify-center font-medium">SJ</span>
+<span>Sarah Jenkins</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Top Right Action Buttons -->
+<div class="flex items-center gap-2.5 self-start lg:self-center">
+<button class="h-9 px-3.5 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-lg font-label-md text-label-md flex items-center gap-1.5 transition-colors duration-150 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="mail">mail</span>
+<span>Send email</span>
+</button>
+<button class="h-9 px-4 bg-primary-container hover:bg-primary text-on-primary rounded-lg font-label-md text-label-md flex items-center gap-1.5 transition-colors duration-150 shadow-sm font-medium" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="call">call</span>
+<span>Log conversation</span>
+</button>
+<button class="h-9 w-9 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-lg flex items-center justify-center transition-colors duration-150 shadow-sm" title="More Actions" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+</div>
+<!-- Two Column Grid Layout (68% / 32%) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- LEFT COLUMN: Timeline & Activity Stream (~68%) -->
+<section class="lg:col-span-8 space-y-6">
+<!-- Timeline Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<!-- Timeline Header & Filter Pills -->
+<div class="p-4 sm:px-6 border-b border-surface-container flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-center gap-2.5">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Timeline</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">5 events</span>
+</div>
+<!-- Filter Pills -->
+<div class="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+<button class="px-3 py-1 rounded-md text-label-sm font-label-sm bg-primary-container text-on-primary font-medium transition-colors" type="button">
+                    All
+                  </button>
+<button class="px-3 py-1 rounded-md text-label-sm font-label-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button">
+                    Conversations
+                  </button>
+<button class="px-3 py-1 rounded-md text-label-sm font-label-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button">
+                    Notes
+                  </button>
+<button class="px-3 py-1 rounded-md text-label-sm font-label-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button">
+                    Tasks
+                  </button>
+<button class="px-3 py-1 rounded-md text-label-sm font-label-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button">
+                    Emails
+                  </button>
+</div>
+</div>
+<!-- Quick Activity Composer -->
+<div class="p-4 sm:p-5 bg-surface border-b border-surface-container">
+<div class="flex items-center gap-4 mb-3 border-b border-surface-container pb-2">
+<button class="flex items-center gap-1.5 pb-2 -mb-2 border-b-2 border-primary-container text-primary font-label-md text-label-md font-medium" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="forum">forum</span>
+                    Conversation
+                  </button>
+<button class="flex items-center gap-1.5 pb-2 -mb-2 text-on-surface-variant hover:text-on-surface font-label-md text-label-md" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="note_add">note_add</span>
+                    Note
+                  </button>
+</div>
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant p-3 focus-within:border-primary-container focus-within:ring-2 focus-within:ring-blue-500/10 transition-all">
+<textarea class="w-full text-body-md font-body-md border-0 p-0 focus:ring-0 resize-none placeholder:text-outline text-on-surface bg-transparent" placeholder="What was discussed with Marcus?" rows="2"></textarea>
+<div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-surface-container mt-2">
+<div class="flex items-center gap-2">
+<!-- Channel dropdown (Call) -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-outline-variant text-label-sm font-label-sm bg-surface text-on-surface cursor-pointer hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px] text-blue-600" data-icon="phone">phone</span>
+<span>Call</span>
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="expand_more">expand_more</span>
+</div>
+<!-- Date picker pill -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-outline-variant text-label-sm font-label-sm bg-surface text-on-surface cursor-pointer hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="calendar_today">calendar_today</span>
+<span>Today</span>
+</div>
+</div>
+<!-- Composer Save Button -->
+<button class="h-8 px-4 bg-primary-container hover:bg-primary text-on-primary rounded-md font-label-md text-label-md transition-colors shadow-sm font-medium" type="button">
+                      Save
+                    </button>
+</div>
+</div>
+</div>
+<!-- Vertical Chronological Timeline Entries (Strictly 5 items, Newest first, No edit buttons) -->
+<div class="p-4 sm:p-6">
+<div class="relative pl-6 space-y-8 before:absolute before:left-[19px] before:top-3 before:bottom-3 before:w-0.5 before:bg-surface-container-high">
+<!-- 1. Intro Call (Today, 11:30 AM) -->
+<div class="relative flex items-start gap-4">
+<!-- Icon badge -->
+<div class="absolute -left-6 mt-0.5 w-8 h-8 rounded-full bg-blue-100 text-blue-700 border-2 border-surface-container-lowest flex items-center justify-center shadow-sm shrink-0">
+<span class="material-symbols-outlined text-[16px]" data-icon="phone">phone</span>
+</div>
+<div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-sm ml-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Introductory Discovery Call</span>
+<span class="px-2 py-0.2 rounded text-[11px] font-label-sm bg-blue-50 text-blue-700">Call</span>
+</div>
+<span class="text-outline font-label-sm text-label-sm">Today, 11:30 AM</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm mb-2">
+<span>Logged by</span>
+<span class="font-medium text-on-surface">Sarah Jenkins</span>
+</div>
+<p class="text-on-surface font-body-md text-body-md leading-relaxed bg-surface p-3 rounded-md border border-surface-container">
+                        Discussed Northwind's current fleet dispatch bottleneck. They are evaluating replacing their legacy dispatch tool across 120 vehicles.
+                      </p>
+</div>
+</div>
+<!-- 2. Internal Note (Yesterday, 3:45 PM) -->
+<div class="relative flex items-start gap-4">
+<!-- Icon badge -->
+<div class="absolute -left-6 mt-0.5 w-8 h-8 rounded-full bg-amber-100 text-amber-800 border-2 border-surface-container-lowest flex items-center justify-center shadow-sm shrink-0">
+<span class="material-symbols-outlined text-[16px]" data-icon="sticky_note_2">sticky_note_2</span>
+</div>
+<div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-sm ml-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Internal Procurement Note</span>
+<span class="px-2 py-0.2 rounded text-[11px] font-label-sm bg-amber-50 text-amber-800">Note</span>
+</div>
+<span class="text-outline font-label-sm text-label-sm">Yesterday, 3:45 PM</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm mb-2">
+<span>Author:</span>
+<span class="font-medium text-on-surface">Sarah Jenkins</span>
+</div>
+<p class="text-on-surface font-body-md text-body-md leading-relaxed bg-surface p-3 rounded-md border border-surface-container">
+                        Marcus confirmed he has budget authority up to $50k. Primary decision criteria are API flexibility and offline driver app support.
+                      </p>
+</div>
+</div>
+<!-- 3. Technical Demo (Oct 8, 2:00 PM) -->
+<div class="relative flex items-start gap-4">
+<!-- Icon badge -->
+<div class="absolute -left-6 mt-0.5 w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 border-2 border-surface-container-lowest flex items-center justify-center shadow-sm shrink-0">
+<span class="material-symbols-outlined text-[16px]" data-icon="videocam">videocam</span>
+</div>
+<div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-sm ml-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Technical Demo &amp; Architecture Review</span>
+<span class="px-2 py-0.2 rounded text-[11px] font-label-sm bg-indigo-50 text-indigo-700">Meeting</span>
+</div>
+<span class="text-outline font-label-sm text-label-sm">Oct 8, 2:00 PM</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm mb-2">
+<span>Led by</span>
+<span class="font-medium text-on-surface">Sarah Jenkins</span>
+</div>
+<p class="text-on-surface font-body-md text-body-md leading-relaxed bg-surface p-3 rounded-md border border-surface-container">
+                        Showed live route optimization demo to Marcus and their lead dispatcher Tom. Very positive reception on the telematics integration.
+                      </p>
+</div>
+</div>
+<!-- 4. Email (Oct 6, 10:15 AM) -->
+<div class="relative flex items-start gap-4">
+<!-- Icon badge -->
+<div class="absolute -left-6 mt-0.5 w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 border-2 border-surface-container-lowest flex items-center justify-center shadow-sm shrink-0">
+<span class="material-symbols-outlined text-[16px]" data-icon="mail">mail</span>
+</div>
+<div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-sm ml-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Sent Pricing &amp; SLA Proposal</span>
+<span class="px-2 py-0.2 rounded text-[11px] font-label-sm bg-emerald-50 text-emerald-700">Email</span>
+</div>
+<span class="text-outline font-label-sm text-label-sm">Oct 6, 10:15 AM</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm mb-2">
+<span>Sent by</span>
+<span class="font-medium text-on-surface">Sarah Jenkins</span>
+</div>
+<p class="text-on-surface font-body-md text-body-md leading-relaxed bg-surface p-3 rounded-md border border-surface-container">
+                        Delivered revised Enterprise Tier proposal with custom webhook SLA addendum as requested during initial call.
+                      </p>
+</div>
+</div>
+<!-- 5. Task (Oct 4, 4:20 PM) -->
+<div class="relative flex items-start gap-4">
+<!-- Icon badge -->
+<div class="absolute -left-6 mt-0.5 w-8 h-8 rounded-full bg-blue-100 text-blue-700 border-2 border-surface-container-lowest flex items-center justify-center shadow-sm shrink-0">
+<span class="material-symbols-outlined text-[16px]" data-icon="check_circle">check_circle</span>
+</div>
+<div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-sm ml-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Completed Security Review Questionnaire</span>
+<span class="px-2 py-0.2 rounded text-[11px] font-label-sm bg-blue-50 text-blue-700">Task</span>
+</div>
+<span class="text-outline font-label-sm text-label-sm">Oct 4, 4:20 PM</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm mb-2">
+<span>Assignee:</span>
+<span class="font-medium text-on-surface">John Smith</span>
+</div>
+<p class="text-on-surface font-body-md text-body-md leading-relaxed bg-surface p-3 rounded-md border border-surface-container">
+                        Filled out Northwind IT's vendor compliance security questionnaire and attached SOC2 summary.
+                      </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- RIGHT COLUMN: Contact Details, Company, & Linked Opportunities (~32%) -->
+<aside class="lg:col-span-4 space-y-6">
+<!-- 1. Details Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-5 space-y-4">
+<div class="flex items-center justify-between pb-3 border-b border-surface-container">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Details</span>
+<button class="text-primary hover:text-primary-container font-label-md text-label-md flex items-center gap-1 font-medium transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="edit">edit</span>
+                  Edit
+                </button>
+</div>
+<div class="space-y-3.5">
+<!-- EMAIL -->
+<div>
+<label class="block font-label-sm text-label-sm text-outline uppercase tracking-wider mb-1">Email</label>
+<div class="flex items-center justify-between group">
+<a class="text-primary font-body-md text-body-md hover:underline truncate" href="mailto:m.chen@northwindlogistics.com">
+                      m.chen@northwindlogistics.com
+                    </a>
+<button class="text-outline hover:text-on-surface p-1 rounded transition-colors" title="Copy Email" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+</div>
+<!-- PHONE -->
+<div>
+<label class="block font-label-sm text-label-sm text-outline uppercase tracking-wider mb-1">Phone</label>
+<div class="flex items-center justify-between">
+<span class="text-on-surface font-body-md text-body-md">+1 (555) 234-8901</span>
+<a class="text-outline hover:text-primary p-1 rounded transition-colors" href="tel:+15552348901" title="Call">
+<span class="material-symbols-outlined text-[16px]" data-icon="call">call</span>
+</a>
+</div>
+</div>
+<!-- OWNER -->
+<div>
+<label class="block font-label-sm text-label-sm text-outline uppercase tracking-wider mb-1">Owner</label>
+<div class="flex items-center gap-2 pt-0.5">
+<div class="w-6 h-6 rounded-full bg-secondary text-on-secondary text-[11px] font-label-sm flex items-center justify-center font-medium">
+                      SJ
+                    </div>
+<span class="text-on-surface font-label-md text-label-md font-medium">Sarah Jenkins</span>
+</div>
+</div>
+<!-- CREATED DATE -->
+<div>
+<label class="block font-label-sm text-label-sm text-outline uppercase tracking-wider mb-1">Created Date</label>
+<span class="text-on-surface font-body-md text-body-md">Oct 5, 2025</span>
+</div>
+</div>
+</div>
+<!-- 2. Company Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-5 space-y-4">
+<div class="flex items-center justify-between pb-3 border-b border-surface-container">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Company</span>
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="business">business</span>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-semibold text-on-surface">Northwind Logistics</h3>
+<p class="text-on-surface-variant font-body-sm text-body-sm">Enterprise Account</p>
+</div>
+<a class="p-1.5 text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-colors" href="#" title="View company page">
+<span class="material-symbols-outlined text-[18px]" data-icon="open_in_new">open_in_new</span>
+</a>
+</div>
+<div class="pt-2 border-t border-surface-container space-y-2.5">
+<div class="flex items-center justify-between text-body-sm font-body-sm">
+<span class="text-outline">Industry</span>
+<span class="font-medium text-on-surface">Logistics &amp; Freight</span>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm">
+<span class="text-outline">Fleet size</span>
+<span class="font-medium text-on-surface">120 vehicles</span>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm">
+<span class="text-outline">Location</span>
+<span class="font-medium text-on-surface">Chicago, IL</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. Opportunities Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-5 space-y-4">
+<div class="flex items-center justify-between pb-3 border-b border-surface-container">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Opportunities</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">2</span>
+</div>
+<button class="text-primary hover:text-primary-container font-label-sm text-label-sm font-medium flex items-center gap-1 transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+                  Add opportunity
+                </button>
+</div>
+<div class="space-y-3">
+<!-- Opportunity 1 -->
+<div class="p-3 rounded-lg border border-outline-variant bg-surface hover:border-outline transition-colors">
+<div class="flex items-start justify-between gap-2 mb-2">
+<a class="font-headline-sm text-headline-sm font-semibold text-on-surface hover:text-primary text-[14px] leading-tight" href="#">
+                      Northwind Logistics - Fleet Expansion
+                    </a>
+<span class="px-2 py-0.5 rounded text-[11px] font-label-sm bg-blue-100 text-blue-800 font-medium shrink-0">
+                      Proposal
+                    </span>
+</div>
+<div class="flex items-center justify-between pt-1 font-label-sm text-label-sm">
+<span class="font-metric-mono text-headline-sm font-semibold text-on-surface text-[15px]">$48,000</span>
+<div class="flex items-center gap-1 text-outline">
+<span class="material-symbols-outlined text-[14px]" data-icon="event">event</span>
+<span>Nov 15, 2025</span>
+</div>
+</div>
+</div>
+<!-- Opportunity 2 -->
+<div class="p-3 rounded-lg border border-outline-variant bg-surface hover:border-outline transition-colors">
+<div class="flex items-start justify-between gap-2 mb-2">
+<a class="font-headline-sm text-headline-sm font-semibold text-on-surface hover:text-primary text-[14px] leading-tight" href="#">
+                      Northwind Logistics - Telematics API Add-on
+                    </a>
+<span class="px-2 py-0.5 rounded text-[11px] font-label-sm bg-indigo-100 text-indigo-800 font-medium shrink-0">
+                      Qualified
+                    </span>
+</div>
+<div class="flex items-center justify-between pt-1 font-label-sm text-label-sm">
+<span class="font-metric-mono text-headline-sm font-semibold text-on-surface text-[15px]">$14,500</span>
+<div class="flex items-center gap-1 text-outline">
+<span class="material-symbols-outlined text-[14px]" data-icon="event">event</span>
+<span>Dec 01, 2025</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</main>
+</div>
+</body></html>

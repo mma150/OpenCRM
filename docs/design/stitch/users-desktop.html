@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Users - OpenCRM Admin</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed": "#dbe1ff",
+            "on-tertiary-fixed": "#360f00",
+            "inverse-primary": "#b4c5ff",
+            "on-surface-variant": "#434655",
+            "surface-tint": "#0053db",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-secondary-fixed-variant": "#3323cc",
+            "secondary-fixed": "#e2dfff",
+            "error": "#ba1a1a",
+            "on-tertiary-container": "#ffede6",
+            "surface-bright": "#fbf8ff",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-error": "#ffffff",
+            "tertiary-container": "#bc4800",
+            "surface-container-highest": "#e3e1ec",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "on-secondary-container": "#fffbff",
+            "on-secondary-fixed": "#0f0069",
+            "outline-variant": "#c3c6d7",
+            "surface-container-low": "#f4f2fd",
+            "surface-dim": "#dad9e3",
+            "surface-variant": "#e3e1ec",
+            "error-container": "#ffdad6",
+            "secondary": "#4b41e1",
+            "tertiary-fixed-dim": "#ffb596",
+            "on-secondary": "#ffffff",
+            "on-primary-fixed": "#00174b",
+            "on-error-container": "#93000a",
+            "tertiary": "#943700",
+            "on-tertiary": "#ffffff",
+            "background": "#fbf8ff",
+            "inverse-surface": "#2f3038",
+            "on-primary": "#ffffff",
+            "surface": "#fbf8ff",
+            "on-background": "#1a1b22",
+            "surface-container-high": "#e8e7f1",
+            "surface-container": "#eeedf7",
+            "primary-fixed-dim": "#b4c5ff",
+            "outline": "#737686",
+            "primary": "#004ac6",
+            "on-primary-container": "#eeefff",
+            "on-surface": "#1a1b22",
+            "primary-container": "#2563eb",
+            "inverse-on-surface": "#f1effa",
+            "tertiary-fixed": "#ffdbcd",
+            "secondary-container": "#645efb"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-md": "1.5rem",
+            "gutter": "1rem",
+            "space-xs": "0.25rem",
+            "margin-lg": "2rem",
+            "space-sm": "0.5rem",
+            "space-2xl": "2rem",
+            "gutter-lg": "1.5rem",
+            "space-xl": "1.5rem",
+            "space-lg": "1rem",
+            "margin": "1rem",
+            "space-md": "0.75rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "headline-xl": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "metric-mono": ["Inter"],
+            "body-md": ["Inter"],
+            "label-md": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-surface text-on-surface antialiased flex h-screen overflow-hidden selection:bg-primary-fixed selection:text-primary">
+<!-- ================= SIDEBAR (Shared Component: SideNavBar) ================= -->
+<!-- Contextual mapping: 'Users' is the exact active screen destination -->
+<aside class="fixed left-0 top-0 bottom-0 w-60 z-30 flex flex-col justify-between p-4 bg-surface-container-lowest border-r border-outline-variant shadow-sm shrink-0">
+<!-- Top Branding & Navigation -->
+<div class="flex flex-col gap-5">
+<!-- Wordmark & Logo Header -->
+<div class="flex items-center justify-between px-2 pt-1">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-bold text-headline-sm">
+<span class="material-symbols-outlined text-[18px]">view_quilt</span>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">OpenCRM</span>
+</div>
+</div>
+<span class="text-body-sm font-body-sm text-outline px-1.5 py-0.5 rounded border border-outline-variant">OSS</span>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex flex-col gap-1">
+<!-- Tab: Home (inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span>Home</span>
+</a>
+<!-- Tab: Users (ACTIVE) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-low text-primary font-medium hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span>Users</span>
+</a>
+<!-- Tab: Leads (inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">filter_alt</span>
+<span>Leads</span>
+</a>
+<!-- Tab: Contacts (inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">contact_page</span>
+<span>Contacts</span>
+</a>
+<!-- Tab: Opportunities (inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">monetization_on</span>
+<span>Opportunities</span>
+</a>
+<!-- Tab: Tasks (inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">task_alt</span>
+<span>Tasks</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Bottom / Footer Tabs -->
+<div class="flex flex-col gap-1 border-t border-outline-variant pt-3">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">menu_book</span>
+<span>Documentation</span>
+</a>
+<div class="px-3 py-2 flex items-center justify-between text-body-sm font-body-sm text-outline">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>
+<span>v0.8.4 (Self-hosted)</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- ================= MAIN VIEWPORT ================= -->
+<div class="pl-60 flex-1 flex flex-col h-screen overflow-y-auto">
+<!-- Top Header Bar (Shared Component: TopNavBar execution) -->
+<header class="sticky top-0 z-20 flex justify-between items-center h-14 px-8 w-full bg-surface-container-lowest border-b border-outline-variant shadow-sm">
+<!-- Breadcrumb indicator -->
+<div class="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant">
+<span class="hover:text-on-surface cursor-pointer">Acme Sales Org</span>
+<span class="text-outline">/</span>
+<span class="text-on-surface font-medium">Settings</span>
+<span class="text-outline">/</span>
+<span class="text-on-surface font-medium">Users</span>
+</div>
+<!-- Header Trailing Action & Profile Menu Area -->
+<div class="flex items-center gap-4 relative">
+<div class="flex items-center gap-1 border-r border-outline-variant pr-4">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" title="Notifications">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" title="Help">
+<span class="material-symbols-outlined text-[20px]">help</span>
+</button>
+</div>
+<!-- Profile trigger & Active Dropdown preview -->
+<div class="relative">
+<button class="flex items-center gap-2.5 p-1 rounded-lg hover:bg-surface-container-low transition-colors duration-150 cursor-pointer" id="profileDropdownBtn">
+<div aria-label="User avatar initials JS" class="w-7 h-7 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center font-label-sm text-label-sm text-on-surface font-medium">
+              JS
+            </div>
+<span class="font-label-md text-label-md text-on-surface font-medium">John Smith</span>
+<span class="material-symbols-outlined text-[18px] text-outline">expand_more</span>
+</button>
+<!-- Dropdown popover (Level 2 Elevation) -->
+<div class="absolute right-0 top-10 mt-1 w-56 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm py-1.5 z-40 hidden" id="profileDropdownMenu">
+<div class="px-3 py-1.5 border-b border-outline-variant mb-1">
+<p class="font-label-md text-label-md text-on-surface font-medium">John Smith</p>
+<p class="font-body-sm text-body-sm text-outline">john.smith@acme.corp</p>
+</div>
+<a class="flex items-center gap-2 px-3 py-1.5 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">person</span>
+<span>Profile</span>
+</a>
+<!-- Theme Segmented Toggle -->
+<div class="px-3 py-2 border-t border-outline-variant mt-1">
+<span class="font-body-sm text-body-sm text-outline block mb-1.5">Theme</span>
+<div class="flex items-center bg-surface-container-low p-0.5 rounded-lg border border-outline-variant text-body-sm font-body-sm">
+<button class="flex-1 py-1 text-center font-medium bg-surface-container-lowest rounded shadow-sm text-on-surface flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check</span> Light
+                </button>
+<button class="flex-1 py-1 text-center text-outline hover:text-on-surface">Dark</button>
+<button class="flex-1 py-1 text-center text-outline hover:text-on-surface">System</button>
+</div>
+</div>
+<div class="border-t border-outline-variant mt-1 pt-1">
+<a class="flex items-center gap-2 px-3 py-1.5 font-label-md text-label-md text-error hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+<span>Log out</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Content Container -->
+<main class="flex-1 max-w-6xl w-full mx-auto p-8">
+<!-- Header Row -->
+<div class="flex items-center justify-between mb-6">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Users</h1>
+<p class="font-body-md text-body-md text-outline mt-1">Invite people and manage their roles.</p>
+</div>
+<button class="h-9 px-4 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-colors duration-150 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Invite user</span>
+</button>
+</div>
+<!-- Info Banner (shadcn alert style) -->
+<div class="flex items-center justify-between p-3.5 mb-6 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface-variant font-body-md text-body-md shadow-sm">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-primary">info</span>
+<span class="text-on-surface">Outgoing email is off. Invite links will be shown for you to copy.</span>
+</div>
+<a class="font-label-md text-label-md text-primary hover:underline font-medium flex items-center gap-1" href="#">
+<span>Configure SMTP</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+<!-- Table Container (Level 1 Surface Card) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm">
+<!-- Table Control / Search bar -->
+<div class="px-4 py-3 border-b border-outline-variant flex items-center justify-between gap-4">
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-outline">search</span>
+<input class="w-full h-9 pl-9 pr-3 rounded-lg border border-outline-variant text-body-md font-body-md placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container bg-surface-container-lowest text-on-surface" placeholder="Filter by name, email..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="h-9 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline">filter_list</span>
+<span>Filter Role</span>
+</button>
+<button class="h-9 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline">tune</span>
+<span>Filter Status</span>
+</button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="w-full">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="py-2.5 px-6 font-label-sm text-label-sm text-outline font-medium uppercase tracking-wider">Name</th>
+<th class="py-2.5 px-6 font-label-sm text-label-sm text-outline font-medium uppercase tracking-wider">Role</th>
+<th class="py-2.5 px-6 font-label-sm text-label-sm text-outline font-medium uppercase tracking-wider">Manager</th>
+<th class="py-2.5 px-6 font-label-sm text-label-sm text-outline font-medium uppercase tracking-wider">Status</th>
+<th class="py-2.5 px-6 font-label-sm text-label-sm text-outline font-medium uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1: John Smith -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-3 px-6">
+<div class="font-body-md text-body-md text-on-surface font-medium flex items-center gap-1.5">
+<span>John Smith</span>
+<span class="font-body-sm text-body-sm text-outline">(you)</span>
+</div>
+<div class="font-body-sm text-body-sm text-outline">john.smith@acme.corp</div>
+</td>
+<td class="py-3 px-6">
+<span class="inline-block px-2.5 py-0.5 rounded-lg border border-outline-variant bg-surface-container-low text-on-surface font-label-sm text-label-sm">Admin</span>
+</td>
+<td class="py-3 px-6">
+<span class="font-body-md text-body-md text-outline">—</span>
+</td>
+<td class="py-3 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+<span>Active</span>
+</span>
+</td>
+<td class="py-3 px-6 text-right">
+<button class="w-8 h-8 rounded-lg inline-flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Sarah Jenkins -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-3 px-6">
+<div class="font-body-md text-body-md text-on-surface font-medium">Sarah Jenkins</div>
+<div class="font-body-sm text-body-sm text-outline">sarah.j@acme.corp</div>
+</td>
+<td class="py-3 px-6">
+<span class="inline-block px-2.5 py-0.5 rounded-lg border border-outline-variant bg-surface-container-low text-on-surface font-label-sm text-label-sm">Sales Manager</span>
+</td>
+<td class="py-3 px-6">
+<span class="font-body-md text-body-md text-outline">—</span>
+</td>
+<td class="py-3 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+<span>Active</span>
+</span>
+</td>
+<td class="py-3 px-6 text-right">
+<button class="w-8 h-8 rounded-lg inline-flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Marcus Chen -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-3 px-6">
+<div class="font-body-md text-body-md text-on-surface font-medium">Marcus Chen</div>
+<div class="font-body-sm text-body-sm text-outline">m.chen@acme.corp</div>
+</td>
+<td class="py-3 px-6">
+<span class="inline-block px-2.5 py-0.5 rounded-lg border border-outline-variant bg-surface-container-low text-on-surface font-label-sm text-label-sm">Sales Rep</span>
+</td>
+<td class="py-3 px-6">
+<span class="font-body-md text-body-md text-on-surface">Sarah Jenkins</span>
+</td>
+<td class="py-3 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+<span>Active</span>
+</span>
+</td>
+<td class="py-3 px-6 text-right">
+<button class="w-8 h-8 rounded-lg inline-flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Elena Rostova -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-3 px-6">
+<div class="font-body-md text-body-md text-on-surface font-medium">Elena Rostova</div>
+<div class="font-body-sm text-body-sm text-outline">e.rostova@acme.corp</div>
+</td>
+<td class="py-3 px-6">
+<span class="inline-block px-2.5 py-0.5 rounded-lg border border-outline-variant bg-surface-container-low text-on-surface font-label-sm text-label-sm">Sales Rep</span>
+</td>
+<td class="py-3 px-6">
+<span class="font-body-md text-body-md text-on-surface">Sarah Jenkins</span>
+</td>
+<td class="py-3 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-amber-200 bg-amber-50 text-amber-800 font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+<span>Invited</span>
+</span>
+</td>
+<td class="py-3 px-6 text-right">
+<button class="w-8 h-8 rounded-lg inline-flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Alex Rivera (WITH OPEN POPOVER MENU) -->
+<tr class="bg-surface-container-low/30 relative">
+<td class="py-3 px-6">
+<div class="font-body-md text-body-md text-on-surface font-medium">Alex Rivera</div>
+<div class="font-body-sm text-body-sm text-outline">alex.r@acme.corp</div>
+</td>
+<td class="py-3 px-6">
+<span class="inline-block px-2.5 py-0.5 rounded-lg border border-outline-variant bg-surface-container-low text-on-surface font-label-sm text-label-sm">Sales Rep</span>
+</td>
+<td class="py-3 px-6">
+<span class="font-body-md text-body-md text-on-surface">Sarah Jenkins</span>
+</td>
+<td class="py-3 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-amber-200 bg-amber-50 text-amber-800 font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+<span>Invited</span>
+</span>
+</td>
+<td class="py-3 px-6 text-right relative">
+<!-- Trigger button (active state) -->
+<button class="w-8 h-8 rounded-lg inline-flex items-center justify-center text-on-surface bg-surface-container-high shadow-xs">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+<!-- Popover menu open (Level 2 Elevation: 1px border, shadow-lg, w-44) -->
+<div class="absolute right-6 top-12 w-44 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg py-1 z-30 text-left">
+<button class="w-full flex items-center gap-2.5 px-3 py-1.5 font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline">edit</span>
+<span>Edit</span>
+</button>
+<button class="w-full flex items-center gap-2.5 px-3 py-1.5 font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline">forward_to_inbox</span>
+<span>Resend invite</span>
+</button>
+<div class="h-px bg-outline-variant my-1"></div>
+<button class="w-full flex items-center gap-2.5 px-3 py-1.5 font-label-md text-label-md text-error hover:bg-error-container transition-colors">
+<span class="material-symbols-outlined text-[18px] text-error">block</span>
+<span>Deactivate</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6: Maya Patel -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-3 px-6">
+<div class="font-body-md text-body-md text-on-surface font-medium">Maya Patel</div>
+<div class="font-body-sm text-body-sm text-outline">m.patel@acme.corp</div>
+</td>
+<td class="py-3 px-6">
+<span class="inline-block px-2.5 py-0.5 rounded-lg border border-outline-variant bg-surface-container-low text-on-surface font-label-sm text-label-sm">Read-only</span>
+</td>
+<td class="py-3 px-6">
+<span class="font-body-md text-body-md text-outline">—</span>
+</td>
+<td class="py-3 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+<span>Active</span>
+</span>
+</td>
+<td class="py-3 px-6 text-right">
+<button class="w-8 h-8 rounded-lg inline-flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 7: Lucas Bradley (DEACTIVATED ROW: dimmed styling) -->
+<tr class="bg-surface-container-low/40 opacity-75 hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3 px-6">
+<div class="font-body-md text-body-md text-outline font-medium">Lucas Bradley</div>
+<div class="font-body-sm text-body-sm text-outline/80">l.bradley@acme.corp</div>
+</td>
+<td class="py-3 px-6">
+<span class="inline-block px-2.5 py-0.5 rounded-lg border border-outline-variant bg-surface-container-low text-outline font-label-sm text-label-sm">Sales Rep</span>
+</td>
+<td class="py-3 px-6">
+<span class="font-body-md text-body-md text-outline">Sarah Jenkins</span>
+</td>
+<td class="py-3 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-outline-variant bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+<span>Deactivated</span>
+</span>
+</td>
+<td class="py-3 px-6 text-right">
+<button class="w-8 h-8 rounded-lg inline-flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination Footer -->
+<div class="px-6 py-3 border-t border-outline-variant flex items-center justify-between font-body-sm text-body-sm text-outline">
+<div>Showing <span class="font-medium text-on-surface">7</span> of <span class="font-medium text-on-surface">7</span> users</div>
+<div class="flex items-center gap-2">
+<button class="px-2.5 py-1 rounded border border-outline-variant bg-surface-container-lowest text-outline cursor-not-allowed opacity-50" disabled="">Previous</button>
+<button class="px-2.5 py-1 rounded border border-outline-variant bg-surface-container-lowest text-outline cursor-not-allowed opacity-50" disabled="">Next</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const profileBtn = document.getElementById('profileDropdownBtn');
+      const profileMenu = document.getElementById('profileDropdownMenu');
+
+      if (profileBtn && profileMenu) {
+        profileBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          profileMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!profileMenu.contains(e.target) && !profileBtn.contains(e.target)) {
+            profileMenu.classList.add('hidden');
+          }
+        });
+      }
+    });
+  </script>
+</body></html>

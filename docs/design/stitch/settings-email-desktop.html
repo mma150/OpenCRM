@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenCRM - Email Settings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              DEFAULT: '#2563eb',
+              hover: '#1d4ed8',
+              50: '#eff6ff',
+              100: '#dbeafe',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+  </style>
+</head>
+<body class="h-full antialiased text-slate-800 bg-[#f8fafc] flex overflow-hidden">
+
+  <!-- Left Global Sidebar -->
+  <aside class="w-60 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 h-screen select-none z-20">
+    <div class="flex flex-col">
+      <!-- App Header / Logo -->
+      <div class="h-16 px-5 flex items-center gap-3 border-b border-slate-100">
+        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm">
+          <span class="material-symbols-outlined text-[20px]">hub</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-slate-900 text-base tracking-tight">OpenCRM</span>
+          <span class="text-[10px] font-semibold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">OSS</span>
+        </div>
+      </div>
+
+      <!-- Main Navigation Items -->
+      <nav class="p-3 space-y-1">
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-500">home</span>
+          <span>Home</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-500">filter_alt</span>
+          <span>Leads</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-500">contacts</span>
+          <span>Contacts</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-500">business</span>
+          <span>Companies</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-500">monetization_on</span>
+          <span>Opportunities</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-500">check_circle</span>
+          <span>Tasks</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-slate-500">history</span>
+          <span>Activity</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Sidebar Bottom / Footer Nav -->
+    <div class="p-3 border-t border-slate-100 space-y-1">
+      <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50/70 rounded-lg transition-colors">
+        <span class="material-symbols-outlined text-[20px] text-blue-600">settings</span>
+        <span>Settings</span>
+      </a>
+      <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+        <span class="material-symbols-outlined text-[20px] text-slate-500">menu_book</span>
+        <span>Documentation</span>
+      </a>
+      <div class="px-3 py-2 flex items-center gap-2 text-xs text-slate-500 font-medium">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>v0.8.4 (Self-hosted)</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Layout Area -->
+  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+    
+    <!-- Top Bar Header -->
+    <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0 z-10">
+      <!-- Breadcrumb path -->
+      <nav class="flex items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
+        <span class="text-slate-600 font-medium">Acme Sales Org</span>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-600 font-medium">Settings</span>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-900 font-semibold">Email</span>
+      </nav>
+
+      <!-- Header actions & user menu -->
+      <div class="flex items-center gap-4">
+        <!-- Notification bell -->
+        <button type="button" class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors" title="Notifications">
+          <span class="material-symbols-outlined text-[20px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-4 h-4 bg-blue-600 text-[10px] font-bold text-white rounded-full flex items-center justify-center">3</span>
+        </button>
+        <!-- Help -->
+        <button type="button" class="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors" title="Help & Docs">
+          <span class="material-symbols-outlined text-[20px]">help</span>
+        </button>
+
+        <div class="h-5 w-px bg-slate-200 mx-1"></div>
+
+        <!-- User Profile Dropdown Pill -->
+        <div class="flex items-center gap-2.5 pl-1 cursor-pointer group">
+          <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-semibold text-xs flex items-center justify-center border border-slate-200">
+            JS
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="text-sm font-medium text-slate-800 group-hover:text-slate-900">John Smith</span>
+            <span class="material-symbols-outlined text-[16px] text-slate-400">expand_more</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Body Area: Secondary Settings Menu + Email Settings Content -->
+    <div class="flex-1 flex overflow-hidden">
+
+      <!-- Secondary Vertical Settings Menu -->
+      <aside class="w-56 bg-white border-r border-slate-200 p-4 shrink-0 overflow-y-auto select-none">
+        <div class="text-[11px] font-semibold tracking-wider text-slate-400 uppercase px-3 mb-2">
+          Settings
+        </div>
+        <nav class="space-y-1">
+          <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+            <span class="material-symbols-outlined text-[19px] text-slate-400">group</span>
+            <span>Users</span>
+          </a>
+          <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+            <span class="material-symbols-outlined text-[19px] text-slate-400">view_kanban</span>
+            <span>Pipeline stages</span>
+          </a>
+          <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+            <span class="material-symbols-outlined text-[19px] text-slate-400">tune</span>
+            <span>Custom fields</span>
+          </a>
+          <!-- Email (ACTIVE) -->
+          <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50/80 rounded-lg transition-colors">
+            <span class="material-symbols-outlined text-[19px] text-blue-600">mail</span>
+            <span>Email</span>
+          </a>
+          <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+            <span class="material-symbols-outlined text-[19px] text-slate-400">inventory_2</span>
+            <span>Products</span>
+          </a>
+          <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+            <span class="material-symbols-outlined text-[19px] text-slate-400">cloud_upload</span>
+            <span>Import data</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main Content Page Area -->
+      <main class="flex-1 overflow-y-auto p-8 max-w-5xl">
+        
+        <!-- Page Title & Header -->
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Email</h1>
+          <p class="text-sm text-slate-500 mt-1">Configure outgoing SMTP server delivery and manage shared notification templates.</p>
+        </div>
+
+        <!-- Horizontal Tab Bar -->
+        <div class="border-b border-slate-200 mb-6 flex gap-6">
+          <button type="button" class="pb-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-600 flex items-center gap-2">
+            <span>Outgoing (SMTP)</span>
+          </button>
+          <button type="button" class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-2">
+            <span>Templates</span>
+          </button>
+        </div>
+
+        <!-- Info Note Box -->
+        <div class="bg-blue-50/70 border border-blue-200/80 rounded-lg p-4 mb-6 flex items-start gap-3">
+          <span class="material-symbols-outlined text-blue-600 text-[20px] mt-0.5 shrink-0">info</span>
+          <div class="text-sm text-slate-700 leading-relaxed">
+            Until email is set up, invite and reset links are shown for you to copy.
+          </div>
+        </div>
+
+        <!-- SMTP Settings Card -->
+        <div class="bg-white border border-slate-200 rounded-lg shadow-none overflow-hidden">
+          <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-semibold text-slate-900">SMTP Server Configuration</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Specify credentials for sending transactional and invitation emails.</p>
+            </div>
+            <!-- Status Badge -->
+            <div class="flex items-center gap-2 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-md">
+              <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              <span class="text-xs font-medium text-amber-800">Not verified</span>
+            </div>
+          </div>
+
+          <!-- Form Fields -->
+          <div class="p-6 space-y-6">
+            
+            <!-- Host and Port -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div class="md:col-span-2">
+                <label for="smtp-host" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Host</label>
+                <div class="relative">
+                  <input type="text" id="smtp-host" value="smtp.postmarkapp.com" placeholder="e.g. smtp.example.com" class="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-shadow">
+                </div>
+              </div>
+              <div>
+                <label for="smtp-port" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Port</label>
+                <input type="text" id="smtp-port" value="587" placeholder="587" class="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-shadow">
+              </div>
+            </div>
+
+            <!-- Encryption -->
+            <div>
+              <label for="smtp-encryption" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Encryption</label>
+              <div class="relative max-w-md">
+                <select id="smtp-encryption" class="w-full appearance-none bg-white border border-slate-300 rounded-lg px-3.5 py-2 pr-10 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-shadow cursor-pointer">
+                  <option value="none">None</option>
+                  <option value="starttls" selected>STARTTLS</option>
+                  <option value="ssl-tls">SSL/TLS</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                  <span class="material-symbols-outlined text-[18px]">unfold_more</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-100 pt-5"></div>
+
+            <!-- Authentication: Username & Password -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label for="smtp-username" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Username</label>
+                <input type="text" id="smtp-username" value="9b14c78a-c852-475a-bb48" placeholder="SMTP username / API key" class="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-shadow">
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <label for="smtp-password" class="block text-xs font-semibold uppercase tracking-wider text-slate-600">Password</label>
+                </div>
+                <div class="relative">
+                  <input type="password" id="smtp-password" value="secret_smtp_token_12345" class="w-full bg-white border border-slate-300 rounded-lg pl-3.5 pr-10 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-shadow">
+                  <button type="button" onclick="const p = document.getElementById('smtp-password'); const icon = this.querySelector('span'); if (p.type === 'password') { p.type = 'text'; icon.textContent = 'visibility_off'; } else { p.type = 'password'; icon.textContent = 'visibility'; }" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 transition-colors" title="Toggle visibility">
+                    <span class="material-symbols-outlined text-[18px]">visibility</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-100 pt-5"></div>
+
+            <!-- From Name & From Address -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label for="smtp-from-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">From name</label>
+                <input type="text" id="smtp-from-name" value="OpenCRM Notifications" placeholder="e.g. Acme Sales Team" class="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-shadow">
+              </div>
+              <div>
+                <label for="smtp-from-address" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">From address</label>
+                <input type="email" id="smtp-from-address" value="notifications@acme.corp" placeholder="e.g. notifications@example.com" class="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-shadow">
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Footer Action Bar -->
+          <div class="px-6 py-4 bg-slate-50/60 border-t border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+              <span class="material-symbols-outlined text-[16px] text-slate-400">lock</span>
+              <span>Credentials are encrypted at rest with AES-256</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button type="button" class="px-4 py-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm rounded-lg transition-colors shadow-xs flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-slate-500">send</span>
+                <span>Send test email</span>
+              </button>
+              <button type="button" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-colors shadow-xs flex items-center gap-2">
+                <span>Save</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Help Documentation Hint -->
+        <div class="mt-6 flex items-center justify-between text-xs text-slate-500 px-1">
+          <span>Need help setting up Gmail, Outlook, Amazon SES, or Postmark?</span>
+          <a href="#" class="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+            <span>Read SMTP setup guide</span>
+            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </a>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+</body>
+</html>

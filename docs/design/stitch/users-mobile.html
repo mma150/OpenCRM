@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Users - OpenCRM Administration</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "surface-tint": "#0053db",
+            "error": "#ba1a1a",
+            "on-tertiary": "#ffffff",
+            "on-surface": "#1a1b22",
+            "primary-fixed": "#dbe1ff",
+            "on-secondary": "#ffffff",
+            "on-background": "#1a1b22",
+            "secondary-container": "#645efb",
+            "primary": "#004ac6",
+            "on-error-container": "#93000a",
+            "error-container": "#ffdad6",
+            "on-secondary-fixed": "#0f0069",
+            "tertiary-fixed": "#ffdbcd",
+            "on-tertiary-fixed": "#360f00",
+            "on-primary-container": "#eeefff",
+            "on-tertiary-container": "#ffede6",
+            "primary-container": "#2563eb",
+            "inverse-surface": "#2f3038",
+            "secondary-fixed": "#e2dfff",
+            "surface-container-high": "#e8e7f1",
+            "on-secondary-container": "#fffbff",
+            "tertiary-fixed-dim": "#ffb596",
+            "secondary": "#4b41e1",
+            "surface-container-lowest": "#ffffff",
+            "on-primary-fixed": "#00174b",
+            "on-secondary-fixed-variant": "#3323cc",
+            "surface-variant": "#e3e1ec",
+            "primary-fixed-dim": "#b4c5ff",
+            "outline": "#737686",
+            "surface-bright": "#fbf8ff",
+            "outline-variant": "#c3c6d7",
+            "tertiary-container": "#bc4800",
+            "surface-dim": "#dad9e3",
+            "surface": "#fbf8ff",
+            "on-surface-variant": "#434655",
+            "surface-container-highest": "#e3e1ec",
+            "tertiary": "#943700",
+            "on-primary-fixed-variant": "#003ea8",
+            "inverse-primary": "#b4c5ff",
+            "background": "#fbf8ff",
+            "on-primary": "#ffffff",
+            "on-error": "#ffffff",
+            "surface-container-low": "#f4f2fd",
+            "secondary-fixed-dim": "#c3c0ff",
+            "inverse-on-surface": "#f1effa",
+            "surface-container": "#eeedf7"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "gutter": "1rem",
+            "space-xl": "1.5rem",
+            "space-lg": "1rem",
+            "margin": "1rem",
+            "margin-md": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-2xl": "2rem",
+            "margin-lg": "2rem",
+            "gutter-lg": "1.5rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "label-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "headline-xl": ["Inter"],
+            "headline-md": ["Inter"],
+            "metric-mono": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "label-sm": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+      vertical-align: middle;
+    }
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md text-body-md min-h-screen overflow-x-hidden antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Top App Bar (Sticky Docked) -->
+<header class="sticky top-0 z-40 w-full h-14 bg-surface-container-lowest/95 backdrop-blur-md shadow-sm flex items-center justify-between px-margin max-w-full">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-xs">
+<span class="material-symbols-outlined text-[18px]">account_tree</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight">OpenCRM</span>
+<span class="px-1.5 py-0.5 text-[10px] font-label-sm font-semibold tracking-wide bg-surface-container text-on-surface-variant rounded">OSS</span>
+</div>
+</div>
+<!-- User Avatar / Profile Touch Area -->
+<button aria-label="Account Settings" class="min-w-[44px] min-h-[44px] flex items-center justify-end gap-1.5 focus:outline-none group" type="button">
+<div class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center font-label-md text-label-md font-semibold border border-outline-variant/60 group-hover:border-primary transition-colors">
+        JS
+      </div>
+<span class="material-symbols-outlined text-outline text-[18px] group-hover:text-on-surface transition-colors">arrow_drop_down</span>
+</button>
+</header>
+<!-- Main Content Container with bottom padding for fixed tab bar -->
+<main class="w-full max-w-md mx-auto px-margin pt-space-xl pb-28 flex flex-col gap-space-lg overflow-x-hidden">
+<!-- Page Header Section -->
+<section class="flex flex-col gap-space-xs">
+<div class="flex items-baseline justify-between">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Users</h1>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">6 team members</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Invite people and manage their roles.</p>
+</section>
+<!-- Primary Action: Full-width CTA -->
+<div>
+<button class="w-full min-h-[44px] h-11 bg-primary text-on-primary font-label-md text-label-md rounded-lg shadow-sm hover:bg-surface-tint active:scale-[0.99] transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" type="button">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span>Invite user</span>
+</button>
+</div>
+<!-- Notification Callout Banner -->
+<div class="bg-surface-container-low border border-outline-variant/60 rounded-xl p-3.5 flex items-start gap-3 shadow-xs" role="status">
+<div class="p-1 rounded-lg bg-surface-container text-primary flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">info</span>
+</div>
+<div class="flex-1 text-body-sm font-body-sm leading-relaxed text-on-surface">
+<p class="mb-1 text-on-surface">Outgoing email is off. Invite links will be shown for you to copy.</p>
+<a class="font-label-sm text-label-sm text-primary font-semibold hover:underline inline-flex items-center gap-1 focus:outline-none" href="#configure-smtp">
+          Configure SMTP
+          <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- User Stack (Vertical Stack of Individual Cards) -->
+<section aria-label="Team member directory" class="flex flex-col gap-3.5">
+<!-- Card 1: John Smith (Admin, Active, You) -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col gap-3">
+<div class="flex items-start justify-between">
+<div class="flex flex-col min-w-0 pr-2">
+<div class="flex items-center gap-1.5 flex-wrap">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate">John Smith</h2>
+<span class="px-1.5 py-0.5 text-[11px] font-label-sm font-medium bg-surface-container-high text-on-surface-variant rounded">you</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate mt-0.5 font-mono">john.smith@acme.corp</span>
+</div>
+<button aria-label="Actions for John Smith" class="min-w-[44px] min-h-[44px] -mr-2 -mt-2 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container rounded-lg active:scale-95 transition-all focus:outline-none" type="button">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="flex items-center gap-2 flex-wrap pt-0.5">
+<!-- Role Badge -->
+<span class="px-2.5 py-1 text-label-sm font-label-sm rounded-lg bg-surface-container text-on-surface-variant border border-outline-variant/40">
+            Admin
+          </span>
+<!-- Status Badge: Active -->
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-label-sm font-label-sm rounded-lg bg-[#dcfce7] text-[#15803d]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#15803d]"></span>
+            Active
+          </span>
+</div>
+</article>
+<!-- Card 2: Sarah Jenkins (Sales Manager, Active) -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col gap-3">
+<div class="flex items-start justify-between">
+<div class="flex flex-col min-w-0 pr-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate">Sarah Jenkins</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate mt-0.5 font-mono">sarah.j@acme.corp</span>
+</div>
+<button aria-label="Actions for Sarah Jenkins" class="min-w-[44px] min-h-[44px] -mr-2 -mt-2 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container rounded-lg active:scale-95 transition-all focus:outline-none" type="button">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="flex items-center gap-2 flex-wrap pt-0.5">
+<span class="px-2.5 py-1 text-label-sm font-label-sm rounded-lg bg-surface-container text-on-surface-variant border border-outline-variant/40">
+            Sales Manager
+          </span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-label-sm font-label-sm rounded-lg bg-[#dcfce7] text-[#15803d]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#15803d]"></span>
+            Active
+          </span>
+</div>
+</article>
+<!-- Card 3: Marcus Chen (Sales Rep, Active, Reports to Sarah) -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col gap-3">
+<div class="flex items-start justify-between">
+<div class="flex flex-col min-w-0 pr-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate">Marcus Chen</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate mt-0.5 font-mono">m.chen@acme.corp</span>
+</div>
+<button aria-label="Actions for Marcus Chen" class="min-w-[44px] min-h-[44px] -mr-2 -mt-2 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container rounded-lg active:scale-95 transition-all focus:outline-none" type="button">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="flex items-center gap-2 flex-wrap pt-0.5">
+<span class="px-2.5 py-1 text-label-sm font-label-sm rounded-lg bg-surface-container text-on-surface-variant border border-outline-variant/40">
+            Sales Rep
+          </span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-label-sm font-label-sm rounded-lg bg-[#dcfce7] text-[#15803d]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#15803d]"></span>
+            Active
+          </span>
+</div>
+<div class="pt-2 border-t border-surface-container-high/80 flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-outline">account_tree</span>
+<span class="font-body-sm text-body-sm">Reports to <span class="text-on-surface font-medium">Sarah Jenkins</span></span>
+</div>
+</article>
+<!-- Card 4: Elena Rostova (Sales Rep, Invited, Reports to Sarah) -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col gap-3">
+<div class="flex items-start justify-between">
+<div class="flex flex-col min-w-0 pr-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate">Elena Rostova</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate mt-0.5 font-mono">e.rostova@acme.corp</span>
+</div>
+<button aria-label="Actions for Elena Rostova" class="min-w-[44px] min-h-[44px] -mr-2 -mt-2 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container rounded-lg active:scale-95 transition-all focus:outline-none" type="button">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="flex items-center gap-2 flex-wrap pt-0.5">
+<span class="px-2.5 py-1 text-label-sm font-label-sm rounded-lg bg-surface-container text-on-surface-variant border border-outline-variant/40">
+            Sales Rep
+          </span>
+<!-- Status Badge: Invited (Amber Dot) -->
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-label-sm font-label-sm rounded-lg bg-[#fef3c7] text-[#b45309]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#d97706]"></span>
+            Invited
+          </span>
+</div>
+<div class="pt-2 border-t border-surface-container-high/80 flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-outline">account_tree</span>
+<span class="font-body-sm text-body-sm">Reports to <span class="text-on-surface font-medium">Sarah Jenkins</span></span>
+</div>
+</article>
+<!-- Card 5: Lucas Bradley (Sales Rep, Deactivated, Reports to Sarah - Dimmed/Opacity-60) -->
+<article class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-4 shadow-none opacity-60 flex flex-col gap-3">
+<div class="flex items-start justify-between">
+<div class="flex flex-col min-w-0 pr-2">
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface-variant truncate line-through">Lucas Bradley</h2>
+</div>
+<span class="font-body-sm text-body-sm text-outline truncate mt-0.5 font-mono">l.bradley@acme.corp</span>
+</div>
+<button aria-label="Actions for Lucas Bradley" class="min-w-[44px] min-h-[44px] -mr-2 -mt-2 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container rounded-lg active:scale-95 transition-all focus:outline-none" type="button">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="flex items-center gap-2 flex-wrap pt-0.5">
+<span class="px-2.5 py-1 text-label-sm font-label-sm rounded-lg bg-surface-container text-outline border border-outline-variant/30">
+            Sales Rep
+          </span>
+<!-- Status Badge: Deactivated (Gray dot) -->
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-label-sm font-label-sm rounded-lg bg-surface-container-high text-outline">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+            Deactivated
+          </span>
+</div>
+<div class="pt-2 border-t border-outline-variant/40 flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[16px] text-outline">account_tree</span>
+<span class="font-body-sm text-body-sm">Reports to Sarah Jenkins</span>
+</div>
+</article>
+<!-- Card 6: Maya Patel (Read-only, Active) -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col gap-3">
+<div class="flex items-start justify-between">
+<div class="flex flex-col min-w-0 pr-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate">Maya Patel</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate mt-0.5 font-mono">m.patel@acme.corp</span>
+</div>
+<button aria-label="Actions for Maya Patel" class="min-w-[44px] min-h-[44px] -mr-2 -mt-2 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container rounded-lg active:scale-95 transition-all focus:outline-none" type="button">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="flex items-center gap-2 flex-wrap pt-0.5">
+<span class="px-2.5 py-1 text-label-sm font-label-sm rounded-lg bg-surface-container text-on-surface-variant border border-outline-variant/40">
+            Read-only
+          </span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-label-sm font-label-sm rounded-lg bg-[#dcfce7] text-[#15803d]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#15803d]"></span>
+            Active
+          </span>
+</div>
+</article>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Docked full-width bottom-0, shadow-sm, no border-t per Shell Border Ban) -->
+<nav aria-label="Bottom Navigation" class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-14 px-space-md bg-surface-container-lowest shadow-[0_-2px_6px_rgba(0,0,0,0.04)]">
+<!-- Tab: Home (Inactive) -->
+<a class="min-h-[44px] min-w-[56px] flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors duration-150 active:scale-95" href="#home">
+<span class="material-symbols-outlined text-[22px]">home</span>
+<span class="font-label-sm text-[11px] leading-tight">Home</span>
+</a>
+<!-- Tab: Users (Active - Mapped via Semantic Lock) -->
+<a aria-current="page" class="min-h-[44px] min-w-[56px] flex flex-col items-center justify-center text-primary font-semibold hover:bg-surface-container-low transition-colors duration-150 active:scale-95" href="#users">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label-sm text-[11px] leading-tight font-semibold">Users</span>
+</a>
+<!-- Tab: Profile (Inactive) -->
+<a class="min-h-[44px] min-w-[56px] flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors duration-150 active:scale-95" href="#profile">
+<span class="material-symbols-outlined text-[22px]">person</span>
+<span class="font-label-sm text-[11px] leading-tight">Profile</span>
+</a>
+<!-- Tab: More (Inactive) -->
+<a class="min-h-[44px] min-w-[56px] flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors duration-150 active:scale-95" href="#more">
+<span class="material-symbols-outlined text-[22px]">more_horiz</span>
+<span class="font-label-sm text-[11px] leading-tight">More</span>
+</a>
+</nav>
+</body></html>

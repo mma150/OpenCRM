@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Contacts</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration verbatim as requested -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-error-container": "#93000a",
+            "secondary-fixed": "#e2dfff",
+            "on-surface-variant": "#434655",
+            "on-surface": "#1a1b22",
+            "error": "#ba1a1a",
+            "surface": "#fbf8ff",
+            "on-secondary": "#ffffff",
+            "secondary": "#4b41e1",
+            "on-secondary-fixed-variant": "#3323cc",
+            "on-secondary-container": "#fffbff",
+            "primary-container": "#2563eb",
+            "primary": "#004ac6",
+            "on-background": "#1a1b22",
+            "error-container": "#ffdad6",
+            "tertiary-fixed": "#ffdbcd",
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-primary-container": "#eeefff",
+            "primary-fixed-dim": "#b4c5ff",
+            "on-tertiary": "#ffffff",
+            "on-primary-fixed-variant": "#003ea8",
+            "inverse-on-surface": "#f1effa",
+            "inverse-primary": "#b4c5ff",
+            "outline": "#737686",
+            "on-tertiary-container": "#ffede6",
+            "on-secondary-fixed": "#0f0069",
+            "tertiary-container": "#bc4800",
+            "surface-container-low": "#f4f2fd",
+            "surface-container-high": "#e8e7f1",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "surface-tint": "#0053db",
+            "on-tertiary-fixed": "#360f00",
+            "on-primary": "#ffffff",
+            "tertiary": "#943700",
+            "surface-bright": "#fbf8ff",
+            "tertiary-fixed-dim": "#ffb596",
+            "surface-variant": "#e3e1ec",
+            "surface-dim": "#dad9e3",
+            "inverse-surface": "#2f3038",
+            "primary-fixed": "#dbe1ff",
+            "on-error": "#ffffff",
+            "on-primary-fixed": "#00174b",
+            "surface-container-lowest": "#ffffff",
+            "background": "#fbf8ff",
+            "surface-container": "#eeedf7",
+            "secondary-container": "#645efb",
+            "outline-variant": "#c3c6d7",
+            "surface-container-highest": "#e3e1ec"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-lg": "1rem",
+            "space-md": "0.75rem",
+            "margin": "1rem",
+            "space-sm": "0.5rem",
+            "margin-lg": "2rem",
+            "space-2xl": "2rem",
+            "gutter-lg": "1.5rem",
+            "space-xs": "0.25rem",
+            "margin-md": "1.5rem",
+            "gutter": "1rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "metric-mono": ["Inter"],
+            "headline-xl": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-md": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="h-full text-on-surface bg-surface font-body-md antialiased flex">
+<!-- Left Sidebar (SideNavBar Shared Component) -->
+<aside class="fixed top-0 left-0 h-screen w-60 bg-surface-container-lowest border-r border-outline-variant shadow-sm z-30 flex flex-col justify-between p-4 select-none">
+<!-- Top Brand & Navigation -->
+<div class="flex flex-col gap-5">
+<!-- Header / Logo -->
+<div class="flex items-center gap-3 px-1 pt-1">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-headline-sm font-semibold shadow-sm">
+<span class="material-symbols-outlined text-white" style="font-size: 20px;">domain</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="text-headline-sm font-headline-sm font-semibold text-on-surface">OpenCRM</span>
+<span class="px-1.5 py-0.2 rounded text-[10px] font-medium tracking-tight bg-surface-container-high text-on-surface-variant border border-outline-variant">OSS</span>
+</div>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Sales Pipeline</span>
+</div>
+</div>
+<!-- Main Navigation Items -->
+<nav class="flex flex-col gap-1">
+<!-- Home -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-label-md font-label-md">Home</span>
+</a>
+<!-- Leads -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">filter_list</span>
+<span class="text-label-md font-label-md">Leads</span>
+</a>
+<!-- Contacts (ACTIVE DESTINATION) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-high text-primary font-medium transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">contacts</span>
+<span class="text-label-md font-label-md">Contacts</span>
+</a>
+<!-- Companies -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="text-label-md font-label-md">Companies</span>
+</a>
+<!-- Opportunities -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">monetization_on</span>
+<span class="text-label-md font-label-md">Opportunities</span>
+</a>
+<!-- Tasks -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">check_circle</span>
+<span class="text-label-md font-label-md">Tasks</span>
+</a>
+<!-- Activity -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="text-label-md font-label-md">Activity</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Section: Settings, Docs, Version Indicator -->
+<div class="flex flex-col gap-1 pt-3 border-t border-outline-variant">
+<!-- Settings -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+<!-- Documentation -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="text-label-md font-label-md">Documentation</span>
+</a>
+<!-- Version Indicator Pill -->
+<div class="mt-2 px-3 py-2 rounded-lg bg-surface flex items-center justify-between border border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">v0.8.4 (Self-hosted)</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Viewport Container (Offset by sidebar w-60) -->
+<div class="flex-1 ml-60 flex flex-col min-h-screen">
+<!-- TopNavBar (Shared Component implementation) -->
+<header class="h-14 px-6 bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between sticky top-0 z-20 shadow-sm">
+<!-- Breadcrumb / Location Anchor -->
+<div class="flex items-center gap-2 text-label-md font-label-md">
+<span class="text-on-surface-variant font-medium">Acme Sales Org</span>
+<span class="text-outline-variant font-normal">/</span>
+<span class="text-on-surface font-semibold">Contacts</span>
+</div>
+<!-- Right Action Cluster -->
+<div class="flex items-center gap-4">
+<!-- Quick Search shortcut indicator -->
+<div class="relative hidden lg:flex items-center text-on-surface-variant">
+<div class="flex items-center gap-2 px-2.5 py-1 rounded-md bg-surface border border-outline-variant text-body-sm text-on-surface-variant hover:border-outline cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px]">search</span>
+<span>Search deals, contacts...</span>
+<kbd class="px-1.5 py-0.5 text-[10px] font-metric-mono font-medium bg-surface-container-high rounded text-on-surface">⌘K</kbd>
+</div>
+</div>
+<!-- Help icon -->
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" title="Help &amp; Guides">
+<span class="material-symbols-outlined">help</span>
+</button>
+<!-- Notification Bell with Active Indicator Badge -->
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors relative" title="Notifications">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full ring-2 ring-surface-container-lowest"></span>
+</button>
+<div class="h-4 w-px bg-outline-variant"></div>
+<!-- User Profile Dropdown Menu -->
+<div class="flex items-center gap-2.5 cursor-pointer pl-1 group">
+<div class="w-7 h-7 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-xs font-semibold">
+            JS
+          </div>
+<span class="text-label-md font-label-md text-on-surface font-medium group-hover:text-primary transition-colors">John Smith</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant group-hover:text-on-surface transition-colors">expand_more</span>
+</div>
+</div>
+</header>
+<!-- Main Canvas Viewport -->
+<main class="flex-1 p-6 flex flex-col gap-6 max-w-7xl w-full mx-auto">
+<!-- Page Header: Title + Subtitle + Action CTA cluster -->
+<section class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div>
+<h1 class="text-headline-lg font-headline-lg font-semibold text-on-surface tracking-tight">Contacts</h1>
+<p class="text-body-md font-body-md text-on-surface-variant mt-0.5">Manage customer contacts and account relationships.</p>
+</div>
+<div class="flex items-center gap-2.5">
+<!-- Import Button -->
+<button class="h-9 px-3.5 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low text-label-md font-label-md flex items-center gap-2 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">upload</span>
+<span>Import</span>
+</button>
+<!-- New Contact Primary CTA -->
+<button class="h-9 px-3.5 rounded-lg bg-primary-container hover:bg-primary text-on-primary text-label-md font-label-md flex items-center gap-2 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>+ New contact</span>
+</button>
+</div>
+</section>
+<!-- Card Container with Contacts Table -->
+<section class="bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm overflow-hidden flex flex-col">
+<!-- Toolbar inside card -->
+<div class="p-3.5 border-b border-outline-variant flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-surface-container-lowest">
+<!-- Search & Filters -->
+<div class="flex flex-wrap items-center gap-2.5 flex-1">
+<!-- Search input -->
+<div class="relative min-w-[260px] max-w-md flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full h-9 pl-9 pr-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-body-md font-body-md text-on-surface placeholder:text-on-surface-variant focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all" placeholder="Search contacts by name, email, company..." type="text"/>
+</div>
+<!-- Filter: Company -->
+<div class="relative">
+<button class="h-9 px-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-label-md font-label-md text-on-surface hover:bg-surface-container-low flex items-center gap-2 transition-colors">
+<span class="text-on-surface-variant font-normal">Company:</span>
+<span class="font-medium">All</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">expand_more</span>
+</button>
+</div>
+<!-- Filter: Owner -->
+<div class="relative">
+<button class="h-9 px-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-label-md font-label-md text-on-surface hover:bg-surface-container-low flex items-center gap-2 transition-colors">
+<span class="text-on-surface-variant font-normal">Owner:</span>
+<span class="font-medium">All owners</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Secondary Actions Right -->
+<div class="flex items-center gap-2 self-end lg:self-auto">
+<button class="h-9 px-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low text-label-md font-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span>Export CSV</span>
+</button>
+</div>
+</div>
+<!-- Table Container -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<!-- Table Header -->
+<thead>
+<tr class="h-9 bg-surface-container-low border-b border-outline-variant text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant select-none">
+<th class="pl-4 pr-3 py-2 w-10 text-center" scope="col">
+<input class="w-4 h-4 rounded text-primary-container border-outline-variant focus:ring-primary-container focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+</th>
+<th class="px-4 py-2 font-medium" scope="col">NAME &amp; TITLE</th>
+<th class="px-4 py-2 font-medium" scope="col">COMPANY</th>
+<th class="px-4 py-2 font-medium" scope="col">EMAIL</th>
+<th class="px-4 py-2 font-medium" scope="col">PHONE</th>
+<th class="px-4 py-2 font-medium" scope="col">OWNER</th>
+<th class="px-4 py-2 font-medium" scope="col">LAST CONTACT</th>
+<th class="pr-4 pl-2 py-2 text-right font-medium" scope="col">ACTIONS</th>
+</tr>
+</thead>
+<!-- Table Rows (8 realistic B2B rows) -->
+<tbody class="divide-y divide-surface-variant text-body-md font-body-md text-on-surface">
+<!-- Row 1: Marcus Chen -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors duration-100 group">
+<td class="pl-4 pr-3 text-center">
+<input class="w-4 h-4 rounded text-primary-container border-outline-variant focus:ring-primary-container focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-2">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface group-hover:text-primary transition-colors cursor-pointer">Marcus Chen</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Director of Operations</span>
+</div>
+</td>
+<td class="px-4 py-2">
+<a class="text-primary hover:underline font-medium" href="#">Northwind Logistics</a>
+</td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface">
+                  m.chen@northwindlogistics.com
+                </td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface-variant">
+                  +1 (555) 234-8901
+                </td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-1.5" title="Sarah Jenkins">
+<span class="w-6 h-6 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-[11px] font-medium flex items-center justify-center">SJ</span>
+<span class="text-body-sm font-body-sm text-on-surface">Sarah J.</span>
+</div>
+</td>
+<td class="px-4 py-2 text-body-sm text-on-surface-variant font-metric-mono">
+                  2 hours ago
+                </td>
+<td class="pr-4 pl-2 text-right">
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Actions">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Elena Rostova -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors duration-100 group">
+<td class="pl-4 pr-3 text-center">
+<input class="w-4 h-4 rounded text-primary-container border-outline-variant focus:ring-primary-container focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-2">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface group-hover:text-primary transition-colors cursor-pointer">Elena Rostova</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">VP of Engineering</span>
+</div>
+</td>
+<td class="px-4 py-2">
+<a class="text-primary hover:underline font-medium" href="#">Kestrel Robotics</a>
+</td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface">
+                  e.rostova@kestrelrobotics.ai
+                </td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface-variant">
+                  +1 (555) 849-2041
+                </td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-1.5" title="Maya Patel">
+<span class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed-variant text-[11px] font-medium flex items-center justify-center">MP</span>
+<span class="text-body-sm font-body-sm text-on-surface">Maya P.</span>
+</div>
+</td>
+<td class="px-4 py-2 text-body-sm text-on-surface-variant font-metric-mono">
+                  Yesterday
+                </td>
+<td class="pr-4 pl-2 text-right">
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Actions">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Liam Gallagher -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors duration-100 group">
+<td class="pl-4 pr-3 text-center">
+<input class="w-4 h-4 rounded text-primary-container border-outline-variant focus:ring-primary-container focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-2">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface group-hover:text-primary transition-colors cursor-pointer">Liam Gallagher</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Chief Medical Officer</span>
+</div>
+</td>
+<td class="px-4 py-2">
+<a class="text-primary hover:underline font-medium" href="#">Brightpath Dental</a>
+</td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface">
+                  liam.g@brightpathdental.com
+                </td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface-variant">
+                  +1 (555) 492-1102
+                </td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-1.5" title="Sarah Jenkins">
+<span class="w-6 h-6 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-[11px] font-medium flex items-center justify-center">SJ</span>
+<span class="text-body-sm font-body-sm text-on-surface">Sarah J.</span>
+</div>
+</td>
+<td class="px-4 py-2 text-body-sm text-on-surface-variant font-metric-mono">
+                  3 days ago
+                </td>
+<td class="pr-4 pl-2 text-right">
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Actions">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Claire Beaumont -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors duration-100 group">
+<td class="pl-4 pr-3 text-center">
+<input class="w-4 h-4 rounded text-primary-container border-outline-variant focus:ring-primary-container focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-2">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface group-hover:text-primary transition-colors cursor-pointer">Claire Beaumont</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Head of Infrastructure</span>
+</div>
+</td>
+<td class="px-4 py-2">
+<a class="text-primary hover:underline font-medium" href="#">Aegis Cloud Architecture</a>
+</td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface">
+                  c.beaumont@aegiscloud.io
+                </td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface-variant">
+                  +1 (555) 912-4433
+                </td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-1.5" title="Maya Patel">
+<span class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed-variant text-[11px] font-medium flex items-center justify-center">MP</span>
+<span class="text-body-sm font-body-sm text-on-surface">Maya P.</span>
+</div>
+</td>
+<td class="px-4 py-2 text-body-sm text-on-surface-variant font-metric-mono">
+                  5 days ago
+                </td>
+<td class="pr-4 pl-2 text-right">
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Actions">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Devon Vance -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors duration-100 group">
+<td class="pl-4 pr-3 text-center">
+<input class="w-4 h-4 rounded text-primary-container border-outline-variant focus:ring-primary-container focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-2">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface group-hover:text-primary transition-colors cursor-pointer">Devon Vance</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Procurement Lead</span>
+</div>
+</td>
+<td class="px-4 py-2">
+<a class="text-primary hover:underline font-medium" href="#">Vance Industrial Supply</a>
+</td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface">
+                  d.vance@vancesupply.com
+                </td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface-variant">
+                  +1 (555) 601-8899
+                </td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-1.5" title="Sarah Jenkins">
+<span class="w-6 h-6 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-[11px] font-medium flex items-center justify-center">SJ</span>
+<span class="text-body-sm font-body-sm text-on-surface">Sarah J.</span>
+</div>
+</td>
+<td class="px-4 py-2 text-body-sm text-on-surface-variant font-metric-mono">
+                  1 week ago
+                </td>
+<td class="pr-4 pl-2 text-right">
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Actions">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 6: Sophia Aris -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors duration-100 group">
+<td class="pl-4 pr-3 text-center">
+<input class="w-4 h-4 rounded text-primary-container border-outline-variant focus:ring-primary-container focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-2">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface group-hover:text-primary transition-colors cursor-pointer">Sophia Aris</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">VP of Merchandising</span>
+</div>
+</td>
+<td class="px-4 py-2">
+<a class="text-primary hover:underline font-medium" href="#">Pinnacle Retail Group</a>
+</td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface">
+                  s.aris@pinnacleretail.com
+                </td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface-variant">
+                  +1 (555) 341-7720
+                </td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-1.5" title="Maya Patel">
+<span class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed-variant text-[11px] font-medium flex items-center justify-center">MP</span>
+<span class="text-body-sm font-body-sm text-on-surface">Maya P.</span>
+</div>
+</td>
+<td class="px-4 py-2 text-body-sm text-on-surface-variant font-metric-mono">
+                  4 hours ago
+                </td>
+<td class="pr-4 pl-2 text-right">
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Actions">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 7: Tariq Mansour -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors duration-100 group">
+<td class="pl-4 pr-3 text-center">
+<input class="w-4 h-4 rounded text-primary-container border-outline-variant focus:ring-primary-container focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-2">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface group-hover:text-primary transition-colors cursor-pointer">Tariq Mansour</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Operations Director</span>
+</div>
+</td>
+<td class="px-4 py-2">
+<a class="text-primary hover:underline font-medium" href="#">Helios Solar Energy</a>
+</td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface">
+                  tariq@heliossolar.energy
+                </td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface-variant">
+                  +1 (555) 762-5509
+                </td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-1.5" title="Sarah Jenkins">
+<span class="w-6 h-6 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-[11px] font-medium flex items-center justify-center">SJ</span>
+<span class="text-body-sm font-body-sm text-on-surface">Sarah J.</span>
+</div>
+</td>
+<td class="px-4 py-2 text-body-sm text-on-surface-variant font-metric-mono">
+                  2 days ago
+                </td>
+<td class="pr-4 pl-2 text-right">
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Actions">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 8: Anika Sharma -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors duration-100 group">
+<td class="pl-4 pr-3 text-center">
+<input class="w-4 h-4 rounded text-primary-container border-outline-variant focus:ring-primary-container focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-2">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface group-hover:text-primary transition-colors cursor-pointer">Anika Sharma</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Managing Director</span>
+</div>
+</td>
+<td class="px-4 py-2">
+<a class="text-primary hover:underline font-medium" href="#">Veritas Diagnostics</a>
+</td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface">
+                  a.sharma@veritasdx.org
+                </td>
+<td class="px-4 py-2 font-mono text-body-sm text-on-surface-variant">
+                  +1 (555) 203-9941
+                </td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-1.5" title="Maya Patel">
+<span class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed-variant text-[11px] font-medium flex items-center justify-center">MP</span>
+<span class="text-body-sm font-body-sm text-on-surface">Maya P.</span>
+</div>
+</td>
+<td class="px-4 py-2 text-body-sm text-on-surface-variant font-metric-mono flex items-center gap-1.5 mt-3">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>Just now</span>
+</td>
+<td class="pr-4 pl-2 text-right">
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Actions">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="h-12 px-4 border-t border-outline-variant flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant bg-surface-container-lowest">
+<div class="flex items-center gap-1">
+<span>Showing <span class="font-medium text-on-surface">8</span> of <span class="font-medium text-on-surface">212</span></span>
+</div>
+<div class="flex items-center gap-2">
+<button class="h-8 px-2.5 rounded-lg border border-outline-variant text-on-surface-variant opacity-50 cursor-not-allowed text-label-sm font-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+<span>Previous</span>
+</button>
+<button class="h-8 px-2.5 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-low text-label-sm font-label-sm flex items-center gap-1 transition-colors">
+<span>Next</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+</div>
+</body></html>

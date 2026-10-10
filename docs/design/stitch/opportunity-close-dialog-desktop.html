@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Close Opportunity</title>
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container": "#eeedf7",
+            "on-error-container": "#93000a",
+            "on-secondary-fixed": "#0f0069",
+            "tertiary-fixed-dim": "#ffb596",
+            "error": "#ba1a1a",
+            "error-container": "#ffdad6",
+            "surface-dim": "#dad9e3",
+            "inverse-primary": "#b4c5ff",
+            "on-tertiary-container": "#ffede6",
+            "on-secondary-fixed-variant": "#3323cc",
+            "inverse-surface": "#2f3038",
+            "tertiary": "#943700",
+            "on-tertiary": "#ffffff",
+            "on-secondary-container": "#fffbff",
+            "tertiary-container": "#bc4800",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f4f2fd",
+            "outline-variant": "#c3c6d7",
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "secondary-fixed": "#e2dfff",
+            "primary-fixed-dim": "#b4c5ff",
+            "on-primary": "#ffffff",
+            "on-background": "#1a1b22",
+            "surface": "#fbf8ff",
+            "secondary-container": "#645efb",
+            "on-error": "#ffffff",
+            "on-tertiary-fixed": "#360f00",
+            "primary-container": "#2563eb",
+            "on-surface": "#1a1b22",
+            "on-primary-fixed": "#00174b",
+            "inverse-on-surface": "#f1effa",
+            "background": "#fbf8ff",
+            "on-secondary": "#ffffff",
+            "surface-variant": "#e3e1ec",
+            "surface-container-highest": "#e3e1ec",
+            "on-primary-fixed-variant": "#003ea8",
+            "surface-container-high": "#e8e7f1",
+            "on-surface-variant": "#434655",
+            "primary": "#004ac6",
+            "primary-fixed": "#dbe1ff",
+            "tertiary-fixed": "#ffdbcd",
+            "outline": "#737686",
+            "secondary": "#4b41e1",
+            "on-primary-container": "#eeefff",
+            "surface-bright": "#fbf8ff",
+            "surface-tint": "#0053db"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "space-lg": "1rem",
+            "margin": "1rem",
+            "space-2xl": "2rem",
+            "space-md": "0.75rem",
+            "margin-md": "1.5rem",
+            "gutter": "1rem",
+            "margin-lg": "2rem",
+            "gutter-lg": "1.5rem",
+            "space-xl": "1.5rem",
+            "space-sm": "0.5rem"
+          },
+          "fontFamily": {
+            "metric-mono": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "headline-xl": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "label-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-lg": ["Inter"]
+          },
+          "fontSize": {
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="h-full bg-surface text-on-surface antialiased overflow-hidden selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- ==================== APP SHELL CONTAINER ==================== -->
+<div class="h-screen w-screen flex flex-row overflow-hidden relative">
+<!-- 1. SideNavBar (Anchor Execution based on Shared Components JSON) -->
+<aside class="h-screen w-60 flex flex-col justify-between p-3 fixed left-0 top-0 z-40 bg-surface-container-lowest dark:bg-inverse-surface border-r border-outline-variant dark:border-outline shadow-sm dark:shadow-none select-none">
+<!-- Top Section: Brand & Workspace -->
+<div class="flex flex-col gap-4">
+<!-- Brand Emblem & OSS Badge -->
+<div class="flex items-center justify-between px-2 pt-1">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-primary-container flex items-center justify-center text-on-primary font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined text-[18px]">account_tree</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-headline-sm font-headline-sm font-bold text-on-surface dark:text-inverse-on-surface tracking-tight">OpenCRM</span>
+<span class="text-[10px] font-label-sm font-bold tracking-wider px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant uppercase">OSS</span>
+</div>
+</div>
+<button aria-label="Toggle Navigation" class="text-on-surface-variant hover:text-on-surface p-1 rounded hover:bg-surface-container-low transition-colors duration-150 cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">keyboard_double_arrow_left</span>
+</button>
+</div>
+<!-- Workspace Selector -->
+<div class="flex items-center justify-between px-2.5 py-2 rounded-lg bg-surface-container-low border border-outline-variant/60 cursor-pointer hover:bg-surface-container transition-colors duration-150">
+<div class="flex items-center gap-2 overflow-hidden">
+<div class="w-5 h-5 rounded bg-primary text-on-primary flex items-center justify-center text-[10px] font-bold shrink-0">
+              AC
+            </div>
+<div class="flex flex-col truncate">
+<span class="text-label-sm font-label-sm font-semibold text-on-surface truncate leading-tight">Acme Corp</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant truncate text-[11px] leading-tight">Sales Workspace</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[16px] shrink-0">unfold_more</span>
+</div>
+<!-- Primary Action Button CTA -->
+<button class="w-full h-9 flex items-center justify-center gap-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary text-label-md font-label-md font-medium shadow-sm transition-colors duration-150 cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>New Deal</span>
+</button>
+<!-- Navigation Links Stack -->
+<nav aria-label="Main Navigation" class="flex flex-col gap-1 mt-1">
+<!-- Home -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant font-normal hover:bg-surface-container-low dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span class="text-label-md font-label-md">Home</span>
+</a>
+<!-- Leads -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant font-normal hover:bg-surface-container-low dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]">person_search</span>
+<span class="text-label-md font-label-md">Leads</span>
+</a>
+<!-- Contacts -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant font-normal hover:bg-surface-container-low dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]">contacts</span>
+<span class="text-label-md font-label-md">Contacts</span>
+</a>
+<!-- Companies -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant font-normal hover:bg-surface-container-low dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]">business</span>
+<span class="text-label-md font-label-md">Companies</span>
+</a>
+<!-- Opportunities (ACTIVE state - EXACT JSON style command match) -->
+<a aria-current="page" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container dark:bg-surface-container-high text-primary dark:text-inverse-primary font-medium cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+<span class="text-label-md font-label-md">Opportunities</span>
+</a>
+<!-- Tasks -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant font-normal hover:bg-surface-container-low dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]">task_alt</span>
+<span class="text-label-md font-label-md">Tasks</span>
+</a>
+<!-- Activity -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant font-normal hover:bg-surface-container-low dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]">history</span>
+<span class="text-label-md font-label-md">Activity</span>
+</a>
+</nav>
+</div>
+<!-- Footer Section: System Status & Links -->
+<div class="flex flex-col gap-1 border-t border-outline-variant/60 pt-3">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span class="text-label-md font-label-md">Documentation</span>
+</a>
+<!-- System Status badge -->
+<div class="mt-1 flex items-center justify-between px-3 py-2 rounded-lg bg-surface-container-low/70">
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="text-[11px] font-label-sm text-on-surface-variant">v0.8.4 Self-hosted</span>
+</div>
+<span class="material-symbols-outlined text-emerald-600 text-[14px]">check_circle</span>
+</div>
+</div>
+</aside>
+<!-- 2. Main Canvas & TopNavBar Container -->
+<div class="flex-1 flex flex-col pl-60 min-w-0 h-screen overflow-hidden">
+<!-- TopNavBar (Anchor Execution based on Shared Components JSON) -->
+<header class="h-14 w-full flex items-center justify-between px-6 bg-surface-container-lowest dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm dark:shadow-none sticky top-0 z-30 select-none">
+<!-- Breadcrumbs Navigation -->
+<div class="flex items-center gap-2 overflow-hidden text-body-sm font-body-sm">
+<span class="text-on-surface-variant hover:text-on-surface cursor-pointer">Acme Sales Org</span>
+<span class="text-outline">/</span>
+<a class="text-on-surface-variant hover:text-on-surface cursor-pointer" href="#">Opportunities</a>
+<span class="text-outline">/</span>
+<span class="font-label-md text-on-surface truncate max-w-xs font-medium">Northwind Logistics - Fleet Expansion</span>
+</div>
+<!-- Search Bar (Cmd+K) & User Trailing Cluster -->
+<div class="flex items-center gap-3">
+<!-- Command Palette Bar -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-[18px] text-outline">search</span>
+<input class="w-full h-8 pl-8 pr-12 text-body-sm font-body-sm bg-surface-container-low border border-outline-variant rounded-lg text-on-surface placeholder:text-outline focus:outline-none focus:border-primary cursor-pointer" placeholder="Search or type Cmd+K..." readonly="" type="text"/>
+<div class="absolute right-2 top-1.5 flex items-center gap-0.5 pointer-events-none">
+<kbd class="px-1 py-0.5 text-[10px] font-metric-mono font-medium text-outline bg-surface-container-lowest border border-outline-variant rounded shadow-xs">⌘K</kbd>
+</div>
+</div>
+<!-- Help Icon -->
+<button aria-label="Help" class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">help</span>
+</button>
+<!-- Notifications with Badge -->
+<button aria-label="Notifications" class="relative w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span>
+</button>
+<div class="h-5 w-[1px] bg-outline-variant mx-1"></div>
+<!-- User Profile Avatar JS -->
+<div class="flex items-center gap-2 cursor-pointer">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-label-sm font-label-sm font-semibold shadow-xs">
+              JS
+            </div>
+<div class="hidden xl:flex flex-col text-left">
+<span class="text-label-sm font-label-sm font-semibold text-on-surface leading-tight">John Smith</span>
+<span class="text-[11px] font-body-sm text-on-surface-variant leading-tight">Admin</span>
+</div>
+</div>
+</div>
+</header>
+<!-- 3. Opportunity Detail Page View (Rendered under Dimmed Backdrop) -->
+<main class="flex-1 overflow-y-auto bg-surface p-6 space-y-6">
+<!-- Header: Detail & Actions -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 shadow-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="text-headline-lg font-headline-lg text-on-surface tracking-tight">Northwind Logistics - Fleet Expansion</h1>
+<span class="px-2 py-0.5 rounded-md text-label-sm font-label-sm font-medium bg-blue-50 text-blue-700 border border-blue-200">Stage: Proposal</span>
+</div>
+<div class="flex flex-wrap items-center gap-y-1 gap-x-4 mt-2 text-body-md font-body-md text-on-surface-variant">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-outline">business</span>
+                  Northwind Logistics
+                </span>
+<span class="text-outline">•</span>
+<span class="flex items-center gap-1.5 font-metric-mono font-medium text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-outline">payments</span>
+                  $48,000 USD
+                </span>
+<span class="text-outline">•</span>
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-outline">calendar_today</span>
+                  Close target: Nov 15, 2025
+                </span>
+<span class="text-outline">•</span>
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-outline">person</span>
+                  Owner: Sarah Jenkins
+                </span>
+</div>
+</div>
+<!-- Header Action Buttons -->
+<div class="flex items-center gap-2">
+<button class="h-9 px-3.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low text-label-md font-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">chat_bubble_outline</span>
+<span>Log conversation</span>
+</button>
+<button class="h-9 px-3.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-label-md font-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-emerald-700">trophy</span>
+<span>Close as won</span>
+</button>
+<button class="h-9 px-3.5 rounded-lg border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 text-label-md font-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-red-600">close</span>
+<span>Close as lost</span>
+</button>
+</div>
+</div>
+<!-- Pipeline Stepper / Progress Bar -->
+<div class="mt-6 pt-6 border-t border-outline-variant">
+<div class="grid grid-cols-5 gap-2">
+<!-- Stage 1: New (Won/Completed) -->
+<div class="flex flex-col gap-1.5">
+<div class="h-2 w-full rounded bg-emerald-500"></div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-emerald-700">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check</span>
+                    New
+                  </span>
+<span class="text-[11px] text-outline">Oct 02</span>
+</div>
+</div>
+<!-- Stage 2: Qualified (Completed) -->
+<div class="flex flex-col gap-1.5">
+<div class="h-2 w-full rounded bg-emerald-500"></div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-emerald-700">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check</span>
+                    Qualified
+                  </span>
+<span class="text-[11px] text-outline">Oct 11</span>
+</div>
+</div>
+<!-- Stage 3: Proposal (Active Highlighted) -->
+<div class="flex flex-col gap-1.5">
+<div class="h-2 w-full rounded bg-primary-container ring-2 ring-primary/20"></div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-primary font-semibold">
+<span class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                    Proposal
+                  </span>
+<span class="text-[11px] text-primary">60%</span>
+</div>
+</div>
+<!-- Stage 4: Negotiation (Upcoming) -->
+<div class="flex flex-col gap-1.5">
+<div class="h-2 w-full rounded bg-surface-container-high"></div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Negotiation</span>
+<span class="text-[11px] text-outline">80%</span>
+</div>
+</div>
+<!-- Stage 5: Closed (Upcoming) -->
+<div class="flex flex-col gap-1.5">
+<div class="h-2 w-full rounded bg-surface-container-high"></div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Closed</span>
+<span class="text-[11px] text-outline">100%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Two-Column Layout Grid -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Left Column: Activity & Timeline (8 Columns) -->
+<div class="col-span-8 space-y-4">
+<!-- Quick Action Logger Box -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-sm">
+<!-- Filter Tabs -->
+<div class="flex items-center gap-2 border-b border-outline-variant pb-3 mb-3">
+<button class="px-2.5 py-1 rounded bg-surface-container text-primary font-medium text-label-sm font-label-sm">All</button>
+<button class="px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface text-label-sm font-label-sm">Conversations</button>
+<button class="px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface text-label-sm font-label-sm">Notes</button>
+<button class="px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface text-label-sm font-label-sm">Tasks</button>
+<button class="px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface text-label-sm font-label-sm">Emails</button>
+</div>
+<!-- Fast Note Editor -->
+<div class="relative">
+<textarea class="w-full text-body-md font-body-md rounded-lg border border-outline-variant p-3 bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary text-on-surface" placeholder="Click to log a call, write a note, or record customer feedback..." rows="3"></textarea>
+<div class="flex items-center justify-between mt-2">
+<div class="flex items-center gap-2 text-outline">
+<button class="p-1 hover:text-on-surface"><span class="material-symbols-outlined text-[18px]">attach_file</span></button>
+<button class="p-1 hover:text-on-surface"><span class="material-symbols-outlined text-[18px]">format_bold</span></button>
+<button class="p-1 hover:text-on-surface"><span class="material-symbols-outlined text-[18px]">link</span></button>
+</div>
+<button class="px-3 py-1.5 rounded-md bg-primary-container text-on-primary text-label-sm font-label-sm font-medium">Save Note</button>
+</div>
+</div>
+</div>
+<!-- Activity Items List -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm space-y-4">
+<h3 class="text-headline-sm font-headline-sm text-on-surface font-semibold">Recent Timeline</h3>
+<!-- Timeline Item 1 -->
+<div class="flex items-start gap-3 pb-3 border-b border-outline-variant/50">
+<div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">call</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<p class="text-label-md font-label-md font-medium text-on-surface">Call with Marcus Chen</p>
+<span class="text-body-sm font-body-sm text-outline">Yesterday at 3:15 PM</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Discussed enterprise tier pricing for 200 telemetry devices. Marcus indicated competitor X bid 15% lower on hardware license costs.</p>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<p class="text-label-md font-label-md font-medium text-on-surface">Proposal Sent v2.1</p>
+<span class="text-body-sm font-body-sm text-outline">Oct 14, 2025</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Transmitted contract package and SLA terms directly to procurement.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Deal Summary & Contacts (4 Columns) -->
+<div class="col-span-4 space-y-4">
+<!-- Summary Details Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm">
+<h3 class="text-headline-sm font-headline-sm text-on-surface font-semibold mb-3">Opportunity Summary</h3>
+<dl class="space-y-3 text-body-md font-body-md">
+<div class="flex justify-between items-center py-1 border-b border-outline-variant/40">
+<dt class="text-on-surface-variant">Amount</dt>
+<dd class="font-metric-mono font-semibold text-on-surface">$48,000</dd>
+</div>
+<div class="flex justify-between items-center py-1 border-b border-outline-variant/40">
+<dt class="text-on-surface-variant">Probability</dt>
+<dd class="font-metric-mono font-medium text-on-surface">60%</dd>
+</div>
+<div class="flex justify-between items-center py-1 border-b border-outline-variant/40">
+<dt class="text-on-surface-variant">Pipeline Stage</dt>
+<dd class="text-label-sm font-label-sm font-medium text-primary">Proposal</dd>
+</div>
+<div class="flex justify-between items-center py-1 border-b border-outline-variant/40">
+<dt class="text-on-surface-variant">Key Contact</dt>
+<dd class="text-on-surface font-medium">Marcus Chen</dd>
+</div>
+<div class="flex justify-between items-center py-1">
+<dt class="text-on-surface-variant">Account Owner</dt>
+<dd class="text-on-surface">Sarah Jenkins</dd>
+</div>
+</dl>
+</div>
+<!-- Associated Contacts Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-headline-sm font-headline-sm text-on-surface font-semibold">Associated Contacts</h3>
+<button class="text-primary hover:text-primary-container text-label-sm font-label-sm font-medium">+ Add</button>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface font-label-sm font-semibold flex items-center justify-center">
+                    MC
+                  </div>
+<div class="flex-1 min-w-0">
+<p class="text-label-md font-label-md font-medium text-on-surface truncate">Marcus Chen</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant truncate">VP of Logistics Operations</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface font-label-sm font-semibold flex items-center justify-center">
+                    ER
+                  </div>
+<div class="flex-1 min-w-0">
+<p class="text-label-md font-label-md font-medium text-on-surface truncate">Elena Rostova</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant truncate">Procurement Director</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- ==================== TRANSLUCENT MODAL BACKDROP ==================== -->
+<div class="fixed inset-0 z-50 bg-zinc-900/50 backdrop-blur-[2px] flex items-center justify-center p-4">
+<!-- Shadcn-Style Center Modal Dialog (max-w-md / ~480px) -->
+<div aria-labelledby="modal-title" aria-modal="true" class="relative w-full max-w-[480px] bg-surface-container-lowest rounded-lg border border-outline-variant shadow-2xl overflow-visible animate-in fade-in-0 zoom-in-95 duration-150" role="dialog">
+<!-- Modal Header -->
+<div class="p-6 pb-4 border-b border-outline-variant flex items-start justify-between">
+<div>
+<h2 class="text-headline-md font-headline-md text-on-surface font-semibold tracking-tight" id="modal-title">
+              Close as lost
+            </h2>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1.5 leading-normal">
+              Record why this opportunity was not won. This will move the deal to Closed Lost.
+            </p>
+</div>
+<!-- Close 'X' Button -->
+<button aria-label="Close dialog" class="w-7 h-7 -mr-2 -mt-2 rounded-md flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 cursor-pointer" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Form Body -->
+<form class="p-6 space-y-5">
+<!-- Field 1: Reason (Required with red asterisk) - Shown in OPEN state -->
+<div class="relative">
+<label class="block text-label-md font-label-md font-medium text-on-surface mb-1.5" for="lost-reason-trigger">
+              Reason <span class="text-error font-bold">*</span>
+</label>
+<!-- Select Trigger Control (active / open visual state) -->
+<div class="w-full h-9 px-3 rounded-lg border-2 border-primary bg-surface-container-lowest flex items-center justify-between text-body-md font-body-md text-on-surface shadow-xs ring-2 ring-blue-500/20 cursor-pointer select-none" id="lost-reason-trigger" tabindex="0">
+<span class="font-medium">Chose competitor</span>
+<span class="material-symbols-outlined text-outline text-[18px]">expand_less</span>
+</div>
+<!-- Expanded Select Menu Overlay (Open State Preview) -->
+<div class="absolute left-0 right-0 top-[68px] z-20 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg py-1 select-none">
+<div class="px-3 py-2 text-body-md font-body-md text-on-surface hover:bg-surface-container-low cursor-pointer transition-colors duration-100 flex items-center justify-between">
+<span>Price</span>
+</div>
+<div class="px-3 py-2 text-body-md font-body-md bg-surface-container text-primary font-medium cursor-pointer transition-colors duration-100 flex items-center justify-between">
+<span>Chose competitor</span>
+<span class="material-symbols-outlined text-primary text-[16px]">check</span>
+</div>
+<div class="px-3 py-2 text-body-md font-body-md text-on-surface hover:bg-surface-container-low cursor-pointer transition-colors duration-100">
+<span>No budget</span>
+</div>
+<div class="px-3 py-2 text-body-md font-body-md text-on-surface hover:bg-surface-container-low cursor-pointer transition-colors duration-100">
+<span>No response</span>
+</div>
+<div class="px-3 py-2 text-body-md font-body-md text-on-surface hover:bg-surface-container-low cursor-pointer transition-colors duration-100">
+<span>Other</span>
+</div>
+</div>
+</div>
+<!-- Spacing spacer compensation to preserve natural layout when dropdown is expanded -->
+<div class="h-32"></div>
+<!-- Field 2: Notes (Textarea) -->
+<div>
+<label class="block text-label-md font-label-md font-medium text-on-surface mb-1.5" for="lost-notes">
+              Notes
+            </label>
+<textarea class="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-md font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-blue-500/20 transition-all resize-none" id="lost-notes" placeholder="Provide additional context on why the deal was lost..." rows="3">Client opted for FleetTrack Pro due to existing hardware integration discounts.</textarea>
+</div>
+<!-- Field 3: Closed Date (Date input with calendar icon) -->
+<div>
+<label class="block text-label-md font-label-md font-medium text-on-surface mb-1.5" for="closed-date">
+              Closed date
+            </label>
+<div class="relative">
+<input class="w-full h-9 pl-9 pr-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-blue-500/20 transition-all" id="closed-date" type="text" value="Oct 16, 2025"/>
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-[18px] text-outline pointer-events-none">
+                calendar_today
+              </span>
+</div>
+</div>
+<!-- Modal Footer Actions -->
+<div class="pt-4 border-t border-outline-variant flex items-center justify-end gap-2.5">
+<button class="h-9 px-4 rounded-md border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low text-label-md font-label-md font-medium transition-colors duration-150 cursor-pointer" type="button">
+              Cancel
+            </button>
+<button class="h-9 px-4 rounded-md bg-error hover:bg-red-700 text-on-error text-label-md font-label-md font-medium shadow-sm transition-colors duration-150 cursor-pointer flex items-center gap-1.5" type="submit">
+<span class="material-symbols-outlined text-[16px]">close</span>
+<span>Close as lost</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</body></html>

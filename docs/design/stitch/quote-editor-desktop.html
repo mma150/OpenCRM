@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Quote Editor</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-tint": "#0053db",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "on-primary": "#ffffff",
+            "error-container": "#ffdad6",
+            "primary-fixed-dim": "#b4c5ff",
+            "on-secondary-fixed-variant": "#3323cc",
+            "secondary-container": "#645efb",
+            "tertiary-fixed": "#ffdbcd",
+            "surface-container-high": "#e8e7f1",
+            "on-surface-variant": "#434655",
+            "outline": "#737686",
+            "secondary-fixed": "#e2dfff",
+            "on-error-container": "#93000a",
+            "surface-container-highest": "#e3e1ec",
+            "primary-container": "#2563eb",
+            "on-background": "#1a1b22",
+            "background": "#fbf8ff",
+            "surface-dim": "#dad9e3",
+            "surface-container-lowest": "#ffffff",
+            "surface-container": "#eeedf7",
+            "on-primary-container": "#eeefff",
+            "inverse-surface": "#2f3038",
+            "tertiary-fixed-dim": "#ffb596",
+            "on-tertiary-container": "#ffede6",
+            "surface-variant": "#e3e1ec",
+            "secondary-fixed-dim": "#c3c0ff",
+            "tertiary": "#943700",
+            "surface-bright": "#fbf8ff",
+            "on-secondary": "#ffffff",
+            "surface-container-low": "#f4f2fd",
+            "on-surface": "#1a1b22",
+            "outline-variant": "#c3c6d7",
+            "primary-fixed": "#dbe1ff",
+            "on-error": "#ffffff",
+            "error": "#ba1a1a",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed": "#0f0069",
+            "on-secondary-container": "#fffbff",
+            "inverse-primary": "#b4c5ff",
+            "inverse-on-surface": "#f1effa",
+            "surface": "#fbf8ff",
+            "on-tertiary-fixed": "#360f00",
+            "on-primary-fixed-variant": "#003ea8",
+            "tertiary-container": "#bc4800",
+            "secondary": "#4b41e1",
+            "primary": "#004ac6",
+            "on-primary-fixed": "#00174b"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-md": "1.5rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1rem",
+            "space-2xl": "2rem",
+            "gutter-lg": "1.5rem",
+            "space-md": "0.75rem",
+            "margin-lg": "2rem",
+            "gutter": "1rem",
+            "space-xl": "1.5rem",
+            "space-xs": "0.25rem",
+            "margin": "1rem"
+          },
+          "fontFamily": {
+            "body-md": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-sm": ["Inter"],
+            "metric-mono": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-xl": ["Inter"]
+          },
+          "fontSize": {
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Tabular figures for financial accuracy */
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body class="h-full bg-[#f8fafc] text-on-surface antialiased flex overflow-hidden">
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="fixed top-0 left-0 h-screen w-60 bg-surface-container-lowest border-r border-[#e4e4e7] flex flex-col justify-between shrink-0 z-30 select-none shadow-sm">
+<div class="p-4 flex flex-col h-full">
+<!-- App Header & Logo -->
+<div class="flex items-center justify-between px-2 pt-1 pb-4 border-b border-[#f4f4f5]">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-white font-headline-sm text-label-md">
+<span class="material-symbols-outlined text-[18px]">view_quilt</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm font-semibold tracking-tight text-on-surface">OpenCRM</span>
+<span class="text-[10px] uppercase font-bold tracking-wider px-1 py-0.5 rounded bg-surface-container text-on-surface-variant leading-none">OSS</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">Sales &amp; Operations</span>
+</div>
+</div>
+</div>
+<!-- Quick Action CTA -->
+<div class="mt-4 px-1">
+<button class="w-full flex items-center justify-center gap-2 bg-surface-container-lowest border border-[#e4e4e7] hover:bg-[#f4f4f5] text-on-surface font-label-md text-label-md py-1.5 px-3 rounded-lg shadow-sm transition-colors duration-150">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>New Record</span>
+</button>
+</div>
+<!-- Main Navigation Menu -->
+<nav class="mt-4 flex-1 space-y-0.5 px-1 overflow-y-auto">
+<!-- Home -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline">home</span>
+<span>Home</span>
+</a>
+<!-- Leads -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline">person_search</span>
+<span>Leads</span>
+</a>
+<!-- Contacts -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline">contacts</span>
+<span>Contacts</span>
+</a>
+<!-- Companies -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline">business</span>
+<span>Companies</span>
+</a>
+<!-- Opportunities (ACTIVE LOCK) -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-primary font-label-md text-label-md bg-surface-container-low rounded-lg transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px] text-primary" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+<span class="font-semibold text-primary">Opportunities</span>
+</a>
+<!-- Tasks -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline">check_circle</span>
+<span>Tasks</span>
+</a>
+<!-- Activity -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline">history</span>
+<span>Activity</span>
+</a>
+</nav>
+<!-- Sidebar Footer -->
+<div class="pt-3 border-t border-[#f4f4f5] px-1 space-y-1">
+<!-- Settings -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline">settings</span>
+<span>Settings</span>
+</a>
+<!-- Documentation -->
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline">description</span>
+<span>Documentation</span>
+</a>
+<!-- Version Status Pill -->
+<div class="mt-2 pt-2 px-2.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#15803d]"></span>
+<span class="font-body-sm text-[11px] text-outline">v0.8.4 Self-hosted</span>
+</div>
+<span class="font-body-sm text-[10px] text-outline-variant font-mono">MIT</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- ==================== MAIN CONTENT WRAPPER ==================== -->
+<div class="flex-1 ml-60 flex flex-col h-screen overflow-hidden bg-[#f8fafc]">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 w-full z-20 h-14 bg-surface-container-lowest border-b border-[#e4e4e7] flex items-center justify-between px-6 shrink-0 shadow-sm">
+<!-- Breadcrumb Navigation -->
+<div class="flex items-center gap-2 text-body-sm font-body-sm text-outline">
+<a class="hover:text-on-surface transition-colors" href="#">Opportunities</a>
+<span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
+<a class="hover:text-on-surface transition-colors text-on-surface-variant" href="#">Fleet tracking rollout</a>
+<span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
+<span class="font-label-md text-on-surface font-medium">Quote Q-0042</span>
+</div>
+<!-- Right Utility Controls -->
+<div class="flex items-center gap-3">
+<!-- Search bar with Cmd+K -->
+<div class="relative w-64">
+<div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-[18px] text-outline">search</span>
+</div>
+<input class="w-full h-8 pl-8 pr-12 text-body-sm font-body-sm bg-[#fafafa] border border-[#e4e4e7] rounded-lg focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container text-on-surface cursor-pointer placeholder-outline" placeholder="Search or jump to..." readonly="" type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+<kbd class="font-mono text-[10px] border border-[#e4e4e7] bg-white px-1.5 py-0.5 rounded text-outline shadow-xs">⌘K</kbd>
+</div>
+</div>
+<div class="h-4 w-px bg-[#e4e4e7]"></div>
+<!-- Notification Bell -->
+<button class="relative p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1 right-1 w-4 h-4 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">3</span>
+</button>
+<!-- Help Icon -->
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">help</span>
+</button>
+<!-- User Profile Pill -->
+<div class="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg border border-[#e4e4e7] bg-surface-container-lowest hover:bg-[#fafafa] cursor-pointer transition-colors">
+<div class="w-6 h-6 rounded-full bg-[#e0e7ff] text-[#3730a3] text-[11px] font-bold flex items-center justify-center">
+            JS
+          </div>
+<span class="font-label-md text-label-sm text-on-surface font-medium">John Smith</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+</div>
+</header>
+<!-- Page Content Scrollable Canvas -->
+<main class="flex-1 overflow-y-auto px-8 py-6">
+<div class="max-w-[1280px] mx-auto space-y-6">
+<!-- ==================== PAGE HEADER ==================== -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#e4e4e7]">
+<!-- Title & Status Badge -->
+<div class="flex items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">Quote Q-0042</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-[#f4f4f5] text-[#71717a] border border-[#e4e4e7]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#a1a1aa]"></span>
+              Draft
+            </span>
+</div>
+<!-- Actions Bar -->
+<div class="flex items-center gap-2.5 relative">
+<!-- Download PDF -->
+<button class="h-9 px-3.5 bg-white border border-[#e4e4e7] hover:bg-[#f4f4f5] text-on-surface font-label-md text-label-md rounded-lg shadow-sm inline-flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline">download</span>
+<span>Download PDF</span>
+</button>
+<!-- Email to Contact -->
+<button class="h-9 px-3.5 bg-white border border-[#e4e4e7] hover:bg-[#f4f4f5] text-on-surface font-label-md text-label-md rounded-lg shadow-sm inline-flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline">mail</span>
+<span>Email to contact</span>
+</button>
+<!-- Primary Save Button -->
+<button class="h-9 px-4 bg-primary-container hover:bg-[#1d4ed8] text-white font-label-md text-label-md font-medium rounded-lg shadow-sm inline-flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">check</span>
+<span>Save</span>
+</button>
+<!-- More Actions Dropdown (Open State Representation) -->
+<div class="relative">
+<button class="h-9 w-9 bg-white border border-[#e4e4e7] hover:bg-[#f4f4f5] text-on-surface rounded-lg shadow-sm flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+<!-- Dropdown Popover (Visualized Open) -->
+<div class="absolute right-0 top-11 w-48 bg-white border border-[#e4e4e7] rounded-lg shadow-lg z-30 py-1 text-label-md">
+<a class="flex items-center gap-2 px-3 py-2 text-on-surface hover:bg-[#f4f4f5] transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-[#15803d]">check_circle</span>
+<span>Mark as accepted</span>
+</a>
+<a class="flex items-center gap-2 px-3 py-2 text-on-surface hover:bg-[#f4f4f5] transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-outline">receipt_long</span>
+<span>Create invoice</span>
+</a>
+<div class="h-px bg-[#e4e4e7] my-1"></div>
+<a class="flex items-center gap-2 px-3 py-2 text-error hover:bg-error-container hover:text-on-error-container transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+<span>Delete quote</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- ==================== 2-COLUMN MAIN LAYOUT ==================== -->
+<div class="grid grid-cols-12 gap-6 items-start">
+<!-- ==================== LEFT COLUMN (~70% width: 8 cols) ==================== -->
+<div class="col-span-12 lg:col-span-8 space-y-6">
+<!-- Card 1: Bill To & Dates Section -->
+<div class="bg-surface-container-lowest border border-[#e4e4e7] rounded-lg shadow-sm overflow-hidden">
+<div class="px-5 py-3.5 border-b border-[#f4f4f5] bg-[#fafafa] flex items-center justify-between">
+<span class="font-label-md text-label-sm uppercase tracking-wider text-outline font-semibold">Recipient &amp; Document Terms</span>
+<span class="text-body-sm font-body-sm text-outline">Reference: Q-2025-0042</span>
+</div>
+<div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Left: Bill To -->
+<div class="space-y-2 border-r md:border-[#f4f4f5] pr-4">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-body-sm text-outline uppercase font-semibold">Bill To</span>
+<a class="font-label-md text-label-sm text-primary hover:underline" href="#">Change contact</a>
+</div>
+<div class="mt-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Elena Rostova</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Director of Operations</p>
+<div class="mt-2 flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-[16px] text-outline">business</span>
+<a class="font-label-md text-body-sm hover:underline font-medium" href="#">Northwind Logistics LLC</a>
+</div>
+<div class="mt-2 space-y-1 font-body-sm text-body-sm text-outline">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+<span>elena.rostova@northwindlogistics.com</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">call</span>
+<span>+1 (415) 890-2341</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Metadata & Dates -->
+<div class="space-y-4">
+<span class="font-label-md text-body-sm text-outline uppercase font-semibold block">Schedule &amp; Valuation</span>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block font-label-md text-label-sm text-on-surface-variant mb-1">Issue date</label>
+<div class="relative">
+<input class="w-full h-9 pl-3 pr-8 font-body-md text-body-md bg-white border border-[#e4e4e7] rounded-lg text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container" type="text" value="Oct 24, 2025"/>
+<span class="material-symbols-outlined text-[18px] text-outline absolute right-2.5 top-2 pointer-events-none">calendar_today</span>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-sm text-on-surface-variant mb-1">Valid until</label>
+<div class="relative">
+<input class="w-full h-9 pl-3 pr-8 font-body-md text-body-md bg-white border border-[#e4e4e7] rounded-lg text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container" type="text" value="Nov 24, 2025"/>
+<span class="material-symbols-outlined text-[18px] text-outline absolute right-2.5 top-2 pointer-events-none">event</span>
+</div>
+<p class="font-body-sm text-[11px] text-outline mt-1">30 days validity period</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-1">
+<div>
+<label class="block font-label-md text-label-sm text-on-surface-variant mb-1">Currency</label>
+<select class="w-full h-9 px-3 font-body-md text-body-md bg-white border border-[#e4e4e7] rounded-lg text-on-surface focus:outline-none focus:border-primary-container">
+<option selected="">USD ($)</option>
+<option>EUR (€)</option>
+<option>GBP (£)</option>
+</select>
+</div>
+<div>
+<label class="block font-label-md text-label-sm text-on-surface-variant mb-1">Payment Method</label>
+<input class="w-full h-9 px-3 font-body-md text-body-md bg-[#fafafa] border border-[#e4e4e7] rounded-lg text-on-surface-variant" readonly="" type="text" value="Direct ACH / Wire"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Line-Items Table -->
+<div class="bg-surface-container-lowest border border-[#e4e4e7] rounded-lg shadow-sm overflow-hidden">
+<div class="px-5 py-3.5 border-b border-[#e4e4e7] flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Quote Line Items</h2>
+<span class="text-body-sm font-body-sm text-outline">3 items configured</span>
+</div>
+<!-- Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#fafafa] border-b border-[#e4e4e7] text-label-sm font-label-md text-outline">
+<th class="py-2.5 px-4 w-[28%] uppercase tracking-wider text-[11px]">Product</th>
+<th class="py-2.5 px-4 w-[28%] uppercase tracking-wider text-[11px]">Description</th>
+<th class="py-2.5 px-3 w-[10%] uppercase tracking-wider text-[11px] text-right">Qty</th>
+<th class="py-2.5 px-3 w-[12%] uppercase tracking-wider text-[11px] text-right">Unit price</th>
+<th class="py-2.5 px-3 w-[10%] uppercase tracking-wider text-[11px] text-right">Disc. %</th>
+<th class="py-2.5 px-4 w-[12%] uppercase tracking-wider text-[11px] text-right">Line total</th>
+<th class="py-2.5 px-3 w-[4%] text-center"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#f4f4f5] font-body-md text-body-md">
+<!-- Row 1 -->
+<tr class="hover:bg-[#f8fafc] transition-colors group">
+<td class="p-3 pl-4 align-top">
+<select class="w-full h-9 text-body-md font-body-md border border-[#e4e4e7] rounded-lg px-2.5 bg-white text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container">
+<option selected="">Fleet tracking licence</option>
+<option>GPS tracker hardware</option>
+<option>Onboarding package</option>
+<option>API integration support</option>
+</select>
+</td>
+<td class="p-3 align-top">
+<input class="w-full h-9 text-body-sm font-body-sm border border-[#e4e4e7] rounded-lg px-2.5 bg-white text-on-surface focus:border-primary-container" type="text" value="Monthly enterprise telematics subscription per vehicle"/>
+</td>
+<td class="p-3 align-top">
+<input class="w-full h-9 text-body-md font-body-md border border-[#e4e4e7] rounded-lg px-2 text-right bg-white tabular-nums focus:border-primary-container" type="number" value="120"/>
+</td>
+<td class="p-3 align-top">
+<input class="w-full h-9 text-body-md font-body-md border border-[#e4e4e7] rounded-lg px-2 text-right bg-white tabular-nums focus:border-primary-container" type="text" value="$29.00"/>
+</td>
+<td class="p-3 align-top">
+<input class="w-full h-9 text-body-md font-body-md border border-[#e4e4e7] rounded-lg px-2 text-right bg-white tabular-nums focus:border-primary-container" type="text" value="10%"/>
+</td>
+<td class="p-3 pr-4 align-top text-right font-metric-mono text-body-md font-medium text-on-surface pt-5 tabular-nums">
+                        $3,132.00
+                      </td>
+<td class="p-3 text-center align-top pt-4">
+<button class="text-outline hover:text-error transition-colors p-1 rounded hover:bg-error-container">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-[#f8fafc] transition-colors group">
+<td class="p-3 pl-4 align-top">
+<select class="w-full h-9 text-body-md font-body-md border border-[#e4e4e7] rounded-lg px-2.5 bg-white text-on-surface focus:border-primary-container">
+<option>Fleet tracking licence</option>
+<option selected="">GPS tracker hardware</option>
+<option>Onboarding package</option>
+</select>
+</td>
+<td class="p-3 align-top">
+<input class="w-full h-9 text-body-sm font-body-sm border border-[#e4e4e7] rounded-lg px-2.5 bg-white text-on-surface focus:border-primary-container" type="text" value="OBD-II telematics gateway unit with LTE connectivity"/>
+</td>
+<td class="p-3 align-top">
+<input class="w-full h-9 text-body-md font-body-md border border-[#e4e4e7] rounded-lg px-2 text-right bg-white tabular-nums focus:border-primary-container" type="number" value="120"/>
+</td>
+<td class="p-3 align-top">
+<input class="w-full h-9 text-body-md font-body-md border border-[#e4e4e7] rounded-lg px-2 text-right bg-white tabular-nums focus:border-primary-container" type="text" value="$149.00"/>
+</td>
+<td class="p-3 align-top">
+<input class="w-full h-9 text-body-md font-body-md border border-[#e4e4e7] rounded-lg px-2 text-right bg-white tabular-nums focus:border-primary-container" type="text" value="5%"/>
+</td>
+<td class="p-3 pr-4 align-top text-right font-metric-mono text-body-md font-medium text-on-surface pt-5 tabular-nums">
+                        $16,986.00
+                      </td>
+<td class="p-3 text-center align-top pt-4">
+<button class="text-outline hover:text-error transition-colors p-1 rounded hover:bg-error-container">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-[#f8fafc] transition-colors group">
+<td class="p-3 pl-4 align-top">
+<select class="w-full h-9 text-body-md font-body-md border border-[#e4e4e7] rounded-lg px-2.5 bg-white text-on-surface focus:border-primary-container">
+<option>Fleet tracking licence</option>
+<option>GPS tracker hardware</option>
+<option selected="">Onboarding package</option>
+</select>
+</td>
+<td class="p-3 align-top">
+<input class="w-full h-9 text-body-sm font-body-sm border border-[#e4e4e7] rounded-lg px-2.5 bg-white text-on-surface focus:border-primary-container" type="text" value="Dedicated field engineer setup and telemetry calibration"/>
+</td>
+<td class="p-3 align-top">
+<input class="w-full h-9 text-body-md font-body-md border border-[#e4e4e7] rounded-lg px-2 text-right bg-white tabular-nums focus:border-primary-container" type="number" value="1"/>
+</td>
+<td class="p-3 align-top">
+<input class="w-full h-9 text-body-md font-body-md border border-[#e4e4e7] rounded-lg px-2 text-right bg-white tabular-nums focus:border-primary-container" type="text" value="$1,200.00"/>
+</td>
+<td class="p-3 align-top">
+<input class="w-full h-9 text-body-md font-body-md border border-[#e4e4e7] rounded-lg px-2 text-right bg-white tabular-nums focus:border-primary-container" type="text" value="0%"/>
+</td>
+<td class="p-3 pr-4 align-top text-right font-metric-mono text-body-md font-medium text-on-surface pt-5 tabular-nums">
+                        $1,200.00
+                      </td>
+<td class="p-3 text-center align-top pt-4">
+<button class="text-outline hover:text-error transition-colors p-1 rounded hover:bg-error-container">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Add Line Action -->
+<div class="p-4 bg-[#fafafa] border-t border-[#e4e4e7]">
+<button class="w-full py-2 border border-dashed border-[#c3c6d7] hover:border-primary rounded-lg text-body-md font-label-md text-on-surface-variant hover:text-primary flex items-center justify-center gap-1.5 transition-colors bg-white">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Add line item</span>
+</button>
+</div>
+</div>
+<!-- Totals Section (Right-Aligned Calculation Block) -->
+<div class="flex justify-end">
+<div class="w-full md:w-80 bg-surface-container-lowest border border-[#e4e4e7] rounded-lg shadow-sm p-4 space-y-3">
+<div class="flex justify-between items-center text-body-md text-on-surface-variant">
+<span>Subtotal</span>
+<span class="font-metric-mono tabular-nums text-on-surface font-medium">$21,318.00</span>
+</div>
+<div class="flex justify-between items-center text-body-md text-on-surface-variant">
+<span class="flex items-center gap-1">
+<span>Discount</span>
+<span class="text-xs bg-[#eff6ff] text-[#1d4ed8] px-1.5 py-0.2 rounded font-medium">Combined</span>
+</span>
+<span class="font-metric-mono tabular-nums text-[#15803d] font-medium">-$1,056.00</span>
+</div>
+<div class="flex justify-between items-center text-body-md text-on-surface-variant">
+<div class="flex flex-col">
+<span>Tax rate</span>
+<select class="mt-0.5 text-[11px] h-6 py-0 pl-1.5 pr-6 border border-[#e4e4e7] rounded bg-white text-on-surface-variant">
+<option selected="">8.25% (State + Local)</option>
+<option>0% (Tax Exempt)</option>
+<option>5.00% (Standard Federal)</option>
+</select>
+</div>
+<span class="font-metric-mono tabular-nums text-on-surface font-medium">$1,671.62</span>
+</div>
+<div class="h-px bg-[#e4e4e7] my-2"></div>
+<div class="flex justify-between items-baseline pt-1">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Grand Total</span>
+<div class="text-right">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface tabular-nums tracking-tight">$21,933.62</span>
+<span class="block text-[11px] text-outline font-medium">USD</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 3: Notes & Terms Section -->
+<div class="bg-surface-container-lowest border border-[#e4e4e7] rounded-lg shadow-sm p-5 space-y-3">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Notes &amp; Terms</h3>
+<span class="text-body-sm text-outline">Customer facing</span>
+</div>
+<div>
+<textarea class="w-full text-body-md font-body-md border border-[#e4e4e7] rounded-lg p-3 text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container" rows="3">Payment terms: Net 30 days from invoice date. Hardware warranty covers 24 months. Delivery schedule begins within 10 business days upon acceptance.</textarea>
+</div>
+<p class="text-[11px] text-outline">
+                These legal terms will appear verbatim at the bottom of the exported PDF quote.
+              </p>
+</div>
+</div>
+<!-- ==================== RIGHT COLUMN (~30% width: 4 cols) ==================== -->
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<!-- Card 1: Context & Summary Info -->
+<div class="bg-surface-container-lowest border border-[#e4e4e7] rounded-lg shadow-sm overflow-hidden">
+<div class="px-5 py-3.5 border-b border-[#f4f4f5] bg-[#fafafa]">
+<h3 class="font-label-md text-label-sm uppercase tracking-wider text-outline font-semibold">Linked Opportunity</h3>
+</div>
+<div class="p-5 space-y-4">
+<div>
+<a class="font-headline-sm text-headline-sm text-primary hover:underline font-semibold block" href="#">Fleet tracking rollout</a>
+<div class="mt-1 flex items-center gap-2">
+<span class="font-metric-mono text-body-md font-semibold text-on-surface">$48,000.00</span>
+<span class="text-outline text-body-sm">•</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#eff6ff] text-[#1d4ed8]">Stage: Proposal</span>
+</div>
+</div>
+<div class="h-px bg-[#f4f4f5]"></div>
+<div class="space-y-3 font-body-sm">
+<div class="flex items-center justify-between">
+<span class="text-outline">Deal Owner</span>
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-[#fef3c7] text-[#92400e] text-[10px] font-bold flex items-center justify-center">
+                        SJ
+                      </div>
+<span class="text-on-surface font-medium">Sarah Jenkins</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-outline">Created date</span>
+<span class="text-on-surface font-medium">Oct 20, 2025</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-outline">Primary Contact</span>
+<span class="text-on-surface font-medium">Elena Rostova</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-outline">Probability</span>
+<span class="text-on-surface font-medium">70%</span>
+</div>
+</div>
+<div class="pt-2">
+<a class="w-full flex items-center justify-center gap-1.5 py-1.5 text-body-sm font-label-md text-on-surface-variant hover:text-on-surface bg-[#fafafa] border border-[#e4e4e7] rounded-lg hover:bg-[#f4f4f5] transition-colors" href="#">
+<span>View Deal Overview</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Card 2: Status History & Timeline -->
+<div class="bg-surface-container-lowest border border-[#e4e4e7] rounded-lg shadow-sm overflow-hidden">
+<div class="px-5 py-3.5 border-b border-[#f4f4f5] bg-[#fafafa] flex items-center justify-between">
+<h3 class="font-label-md text-label-sm uppercase tracking-wider text-outline font-semibold">Audit Trail &amp; Timeline</h3>
+<span class="text-[11px] text-outline font-mono">3 Events</span>
+</div>
+<div class="p-5">
+<div class="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#e4e4e7]">
+<!-- Event 1: Draft Created (Completed) -->
+<div class="relative">
+<span class="absolute -left-6 top-1 w-4 h-4 rounded-full bg-white border-2 border-[#15803d] flex items-center justify-center">
+<span class="w-1.5 h-1.5 rounded-full bg-[#15803d]"></span>
+</span>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface font-medium">Draft created</h4>
+<p class="font-body-sm text-[12px] text-on-surface-variant">By Sarah Jenkins</p>
+<time class="font-body-sm text-[11px] text-outline block mt-0.5">Oct 20, 2025 at 10:15 AM</time>
+</div>
+</div>
+<!-- Event 2: Revision 2 Saved (Completed) -->
+<div class="relative">
+<span class="absolute -left-6 top-1 w-4 h-4 rounded-full bg-white border-2 border-[#15803d] flex items-center justify-center">
+<span class="w-1.5 h-1.5 rounded-full bg-[#15803d]"></span>
+</span>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface font-medium">Revision 2 saved</h4>
+<p class="font-body-sm text-[12px] text-on-surface-variant">Adjusted telemetry bundle discount</p>
+<time class="font-body-sm text-[11px] text-outline block mt-0.5">Oct 22, 2025 at 4:30 PM</time>
+</div>
+</div>
+<!-- Event 3: Current State (Awaiting approval) -->
+<div class="relative">
+<span class="absolute -left-6 top-1 w-4 h-4 rounded-full bg-white border-2 border-primary-container flex items-center justify-center ring-4 ring-blue-50">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+</span>
+<div>
+<h4 class="font-label-md text-label-md text-primary font-semibold">Awaiting approval / send</h4>
+<p class="font-body-sm text-[12px] text-on-surface-variant">Pending internal sales lead sign-off</p>
+<span class="inline-block mt-1 font-body-sm text-[11px] text-outline italic">Current Status</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 3: Quick Collaboration Note -->
+<div class="bg-surface-container-low border border-[#c3c6d7] rounded-lg p-4 space-y-2">
+<div class="flex items-center gap-2 text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">lock_reset</span>
+<span>Approval Rule active</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                Discounts greater than 8% on hardware line items require manager approval prior to client dispatch.
+              </p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

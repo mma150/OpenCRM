@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - New Lead</title>
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-high": "#e8e7f1",
+            "on-primary": "#ffffff",
+            "tertiary-fixed": "#ffdbcd",
+            "primary-fixed": "#dbe1ff",
+            "surface-variant": "#e3e1ec",
+            "surface-container-low": "#f4f2fd",
+            "surface-bright": "#fbf8ff",
+            "inverse-on-surface": "#f1effa",
+            "secondary-fixed": "#e2dfff",
+            "secondary-container": "#645efb",
+            "on-secondary-container": "#fffbff",
+            "on-tertiary": "#ffffff",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "on-secondary-fixed": "#0f0069",
+            "on-error": "#ffffff",
+            "background": "#fbf8ff",
+            "surface": "#fbf8ff",
+            "surface-container": "#eeedf7",
+            "tertiary": "#943700",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-primary-container": "#eeefff",
+            "on-secondary": "#ffffff",
+            "primary-fixed-dim": "#b4c5ff",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-fixed-variant": "#3323cc",
+            "on-error-container": "#93000a",
+            "tertiary-fixed-dim": "#ffb596",
+            "primary": "#004ac6",
+            "inverse-surface": "#2f3038",
+            "primary-container": "#2563eb",
+            "surface-container-highest": "#e3e1ec",
+            "outline-variant": "#c3c6d7",
+            "secondary": "#4b41e1",
+            "error-container": "#ffdad6",
+            "surface-dim": "#dad9e3",
+            "on-tertiary-container": "#ffede6",
+            "on-primary-fixed": "#00174b",
+            "inverse-primary": "#b4c5ff",
+            "surface-tint": "#0053db",
+            "secondary-fixed-dim": "#c3c0ff",
+            "outline": "#737686",
+            "on-background": "#1a1b22",
+            "tertiary-container": "#bc4800",
+            "on-surface": "#1a1b22",
+            "on-tertiary-fixed": "#360f00",
+            "error": "#ba1a1a",
+            "on-surface-variant": "#434655"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "1.5rem",
+            "space-lg": "1rem",
+            "margin": "1rem",
+            "space-md": "0.75rem",
+            "margin-md": "1.5rem",
+            "space-sm": "0.5rem",
+            "gutter-lg": "1.5rem",
+            "margin-lg": "2rem",
+            "gutter": "1rem",
+            "space-2xl": "2rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "headline-sm": ["Inter"],
+            "label-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "body-md": ["Inter"],
+            "metric-mono": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-xl": ["Inter"],
+            "headline-md": ["Inter"]
+          },
+          "fontSize": {
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-50 text-on-surface antialiased font-body-md overflow-x-hidden">
+<div class="min-h-full flex">
+<!-- Left Side Navigation Anchor (JSON Component: SideNavBar) -->
+<aside class="fixed top-0 left-0 h-screen w-60 bg-surface-container-lowest border-r border-outline-variant shadow-sm z-30 flex flex-col justify-between p-4">
+<!-- Top Branding & Navigation -->
+<div class="flex flex-col gap-6">
+<!-- Logo & OSS Badge Header -->
+<div class="flex items-center justify-between px-2 pt-1">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">dataset</span>
+</div>
+<div class="flex flex-col">
+<span class="text-headline-sm font-headline-sm font-semibold text-on-surface leading-tight tracking-tight">OpenCRM</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant text-[11px] leading-none">Sales Pipeline</span>
+</div>
+</div>
+<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200 rounded font-metric-mono">OSS</span>
+</div>
+<!-- Main Nav Tabs with Active state strictly mapped to 'Leads' -->
+<nav class="flex flex-col gap-1">
+<!-- Home -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span>Home</span>
+</a>
+<!-- Leads (ACTIVE per hierarchy rule and intent) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-high text-primary font-medium hover:bg-surface-container-high transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">filter_list</span>
+<span>Leads</span>
+</a>
+<!-- Contacts -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">contacts</span>
+<span>Contacts</span>
+</a>
+<!-- Companies -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">domain</span>
+<span>Companies</span>
+</a>
+<!-- Opportunities -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">monetization_on</span>
+<span>Opportunities</span>
+</a>
+<!-- Tasks -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<span>Tasks</span>
+</a>
+<!-- Activity -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">history</span>
+<span>Activity</span>
+</a>
+</nav>
+</div>
+<!-- Footer Section (Settings & Meta Version) -->
+<div class="flex flex-col gap-1 border-t border-slate-200 pt-3">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">description</span>
+<span>Documentation</span>
+</a>
+<div class="px-3 pt-2 text-[11px] text-slate-400 font-metric-mono flex items-center justify-between">
+<span>v0.8.4 (Self-hosted)</span>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</div>
+</div>
+</aside>
+<!-- Main Viewport Canvas (With 240px offset for Left Sidebar) -->
+<div class="flex-1 ml-60 flex flex-col min-h-screen">
+<!-- Top Bar Anchor (Sticky Desktop) -->
+<header class="sticky top-0 z-20 h-14 bg-surface-container-lowest border-b border-outline-variant px-6 flex items-center justify-between shadow-sm">
+<!-- Breadcrumbs Navigation -->
+<nav aria-label="Breadcrumb" class="flex items-center gap-2 text-label-md font-label-md">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-150 flex items-center gap-1.5" href="#">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+<span>Leads</span>
+</a>
+<span class="text-slate-400 text-xs">/</span>
+<span class="font-medium text-on-surface">New lead</span>
+</nav>
+<!-- Right Side Global Actions & Controls -->
+<div class="flex items-center gap-3">
+<!-- Notification Bell with Count Badge -->
+<button aria-label="Notifications" class="relative p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" type="button">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary-container"></span>
+</span>
+</button>
+<!-- Help Documentation Icon Button -->
+<button aria-label="Help and Documentation" class="p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" type="button">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+</button>
+<div class="h-4 w-px bg-slate-200"></div>
+<!-- User Profile Dropdown Button -->
+<button class="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors duration-150" type="button">
+<div class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-semibold tracking-wide">
+              JS
+            </div>
+<span class="text-label-md font-label-md text-on-surface font-medium">John Smith</span>
+<span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 p-6 md:p-8 max-w-[1280px] w-full">
+<!-- Header Info Group -->
+<div class="max-w-[720px] mb-6">
+<a class="inline-flex items-center gap-1.5 text-label-sm font-label-sm text-slate-500 hover:text-primary transition-colors mb-2" href="#">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+<span>Back to all leads</span>
+</a>
+<h1 class="text-headline-lg font-headline-lg text-on-surface tracking-tight">New lead</h1>
+<p class="text-body-md font-body-md text-slate-500 mt-0.5">Capture a new prospect and assign ownership.</p>
+</div>
+<!-- Form Card Container -->
+<section class="max-w-[720px] bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm p-6 sm:p-8">
+<form class="space-y-6" onsubmit="event.preventDefault();">
+<!-- Lead Core Info Grid (2 Columns) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
+<!-- 1. First Name -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-first-name">First name <span class="text-red-500">*</span></label>
+<input class="h-9 px-3 text-body-md font-body-md bg-white border border-slate-300 rounded-lg text-on-surface placeholder:text-slate-400 focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 transition-all" id="lead-first-name" name="first_name" placeholder="e.g. Marcus" type="text" value="Marcus"/>
+</div>
+<!-- 2. Last Name -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-last-name">Last name <span class="text-red-500">*</span></label>
+<input class="h-9 px-3 text-body-md font-body-md bg-white border border-slate-300 rounded-lg text-on-surface placeholder:text-slate-400 focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 transition-all" id="lead-last-name" name="last_name" placeholder="e.g. Chen" type="text" value="Chen"/>
+</div>
+<!-- 3. Company -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-company">Company</label>
+<input class="h-9 px-3 text-body-md font-body-md bg-white border border-slate-300 rounded-lg text-on-surface placeholder:text-slate-400 focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 transition-all" id="lead-company" name="company" placeholder="e.g. Northwind Logistics" type="text" value="Northwind Logistics"/>
+</div>
+<!-- 4. Job Title -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-job-title">Job title</label>
+<input class="h-9 px-3 text-body-md font-body-md bg-white border border-slate-300 rounded-lg text-on-surface placeholder:text-slate-400 focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 transition-all" id="lead-job-title" name="job_title" placeholder="e.g. VP of Operations" type="text" value="VP of Operations"/>
+</div>
+<!-- 5. Email (ERROR STATE per specification) -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-email">Email <span class="text-red-500">*</span></label>
+<span class="text-[11px] font-metric-mono text-red-600 font-medium">Invalid syntax</span>
+</div>
+<div class="relative">
+<input class="h-9 w-full pl-3 pr-9 text-body-md font-body-md bg-white border border-red-500 rounded-lg text-on-surface focus:outline-none focus:border-red-600 focus:ring-2 focus:ring-red-500/20 transition-all text-red-900" id="lead-email" name="email" type="email" value="marcus.chen@"/>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-red-500">
+<span class="material-symbols-outlined text-[18px]">error</span>
+</div>
+</div>
+<!-- Error Notice Message below field -->
+<div class="flex items-center gap-1.5 mt-0.5 text-red-600">
+<span class="material-symbols-outlined text-[15px]">warning</span>
+<p class="text-body-sm font-body-sm text-red-600 font-medium">Enter a valid email address.</p>
+</div>
+</div>
+<!-- 6. Phone -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-phone">Phone</label>
+<input class="h-9 px-3 text-body-md font-body-md bg-white border border-slate-300 rounded-lg text-on-surface placeholder:text-slate-400 focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 transition-all" id="lead-phone" name="phone" placeholder="+1 (555) 000-0000" type="tel"/>
+</div>
+<!-- 7. Source -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-source">Source</label>
+<div class="relative">
+<select class="h-9 w-full pl-3 pr-9 text-body-md font-body-md bg-white border border-slate-300 rounded-lg text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 appearance-none transition-all cursor-pointer" id="lead-source" name="source">
+<option selected="" value="Website">Website</option>
+<option value="Referral">Referral</option>
+<option value="Cold call">Cold call</option>
+<option value="Event">Event</option>
+<option value="Other">Other</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-2.5 top-2 text-slate-400 text-[18px]">unfold_more</span>
+</div>
+</div>
+<!-- 8. Status -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-status">Status</label>
+<div class="relative">
+<select class="h-9 w-full pl-3 pr-9 text-body-md font-body-md bg-white border border-slate-300 rounded-lg text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 appearance-none transition-all cursor-pointer" id="lead-status" name="status">
+<option selected="" value="New">New</option>
+<option value="Contacted">Contacted</option>
+<option value="Qualified">Qualified</option>
+<option value="Converted">Converted</option>
+<option value="Lost">Lost</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-2.5 top-2 text-slate-400 text-[18px]">unfold_more</span>
+</div>
+</div>
+<!-- 9. Owner -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-owner">Owner</label>
+<div class="relative">
+<select class="h-9 w-full pl-3 pr-9 text-body-md font-body-md bg-white border border-slate-300 rounded-lg text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 appearance-none transition-all cursor-pointer" id="lead-owner" name="owner">
+<option selected="" value="Sarah Jenkins">Sarah Jenkins</option>
+<option value="Maya Patel">Maya Patel</option>
+<option value="Marcus Chen">Marcus Chen</option>
+<option value="Unassigned">Unassigned</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-2.5 top-2 text-slate-400 text-[18px]">unfold_more</span>
+</div>
+</div>
+<!-- 10. Estimated value (USD) -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-estimated-value">Estimated value (USD)</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-body-md font-metric-mono font-medium">
+                    $
+                  </div>
+<input class="h-9 w-full pl-7 pr-3 text-body-md font-body-md font-metric-mono bg-white border border-slate-300 rounded-lg text-on-surface placeholder:text-slate-400 focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 transition-all" id="lead-estimated-value" name="estimated_value" placeholder="0.00" step="0.01" type="number"/>
+</div>
+</div>
+</div>
+<!-- Notes Field (Full-width Textarea) -->
+<div class="flex flex-col gap-1.5 pt-1">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-notes">Notes</label>
+<textarea class="w-full p-3 text-body-md font-body-md bg-white border border-slate-300 rounded-lg text-on-surface placeholder:text-slate-400 focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 transition-all resize-y" id="lead-notes" name="notes" placeholder="Add initial conversation details, requirements, or meeting takeaways..." rows="3"></textarea>
+</div>
+<!-- Custom fields Subheading & Inputs -->
+<div class="border-t border-slate-200 pt-5 mt-5">
+<div class="mb-4">
+<h3 class="text-headline-sm font-headline-sm text-on-surface text-[15px] font-semibold">Custom fields</h3>
+<p class="text-body-sm font-body-sm text-slate-500">Configure company-specific tracking parameters.</p>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
+<!-- Custom Field: Industry -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-industry">Industry</label>
+<div class="relative">
+<select class="h-9 w-full pl-3 pr-9 text-body-md font-body-md bg-white border border-slate-300 rounded-lg text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 appearance-none transition-all cursor-pointer" id="lead-industry" name="industry">
+<option disabled="" selected="" value="">Select industry...</option>
+<option value="Logistics &amp; Supply Chain">Logistics &amp; Supply Chain</option>
+<option value="Healthcare">Healthcare</option>
+<option value="Software &amp; SaaS">Software &amp; SaaS</option>
+<option value="Manufacturing">Manufacturing</option>
+<option value="Financial Services">Financial Services</option>
+<option value="Retail">Retail</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-2.5 top-2 text-slate-400 text-[18px]">unfold_more</span>
+</div>
+</div>
+<!-- Custom Field: Fleet size -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm font-label-sm text-slate-700" for="lead-fleet-size">Fleet size</label>
+<input class="h-9 px-3 text-body-md font-body-md font-metric-mono bg-white border border-slate-300 rounded-lg text-on-surface placeholder:text-slate-400 focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-blue-500/20 transition-all" id="lead-fleet-size" name="fleet_size" placeholder="e.g. 25" type="number"/>
+</div>
+</div>
+</div>
+<!-- Form Actions / Buttons Footer -->
+<div class="border-t border-slate-200 pt-5 mt-6 flex justify-end items-center gap-3">
+<button class="h-9 px-4 rounded-lg bg-surface-container-lowest border border-slate-300 text-slate-700 text-label-md font-label-md font-medium hover:bg-slate-50 active:bg-slate-100 transition-colors duration-150" type="button">
+                Cancel
+              </button>
+<button class="h-9 px-4 rounded-lg bg-primary-container hover:bg-blue-700 active:bg-blue-800 text-on-primary text-label-md font-label-md font-medium shadow-sm flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-150" type="submit">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Create lead</span>
+</button>
+</div>
+</form>
+</section>
+</main>
+</div>
+</div>
+</body></html>

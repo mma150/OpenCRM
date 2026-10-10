@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Activity Feed</title>
+<!-- Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration verbatim as mandated -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container": "#eeedf7",
+            "secondary-fixed": "#e2dfff",
+            "primary-container": "#2563eb",
+            "outline-variant": "#c3c6d7",
+            "on-tertiary-fixed": "#360f00",
+            "inverse-surface": "#2f3038",
+            "error": "#ba1a1a",
+            "secondary-container": "#645efb",
+            "tertiary-fixed-dim": "#ffb596",
+            "outline": "#737686",
+            "secondary": "#4b41e1",
+            "primary-fixed-dim": "#b4c5ff",
+            "surface-container-high": "#e8e7f1",
+            "on-tertiary-container": "#ffede6",
+            "primary": "#004ac6",
+            "surface-container-low": "#f4f2fd",
+            "tertiary-fixed": "#ffdbcd",
+            "on-primary-fixed": "#00174b",
+            "on-primary-container": "#eeefff",
+            "on-surface": "#1a1b22",
+            "inverse-on-surface": "#f1effa",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-highest": "#e3e1ec",
+            "on-background": "#1a1b22",
+            "on-secondary-fixed-variant": "#3323cc",
+            "on-secondary-fixed": "#0f0069",
+            "on-surface-variant": "#434655",
+            "on-secondary": "#ffffff",
+            "on-primary-fixed-variant": "#003ea8",
+            "surface-tint": "#0053db",
+            "tertiary": "#943700",
+            "surface-bright": "#fbf8ff",
+            "on-primary": "#ffffff",
+            "tertiary-container": "#bc4800",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "secondary-fixed-dim": "#c3c0ff",
+            "primary-fixed": "#dbe1ff",
+            "error-container": "#ffdad6",
+            "on-error": "#ffffff",
+            "surface-dim": "#dad9e3",
+            "on-error-container": "#93000a",
+            "inverse-primary": "#b4c5ff",
+            "surface": "#fbf8ff",
+            "on-tertiary": "#ffffff",
+            "on-secondary-container": "#fffbff",
+            "surface-variant": "#e3e1ec",
+            "background": "#fbf8ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "margin-lg": "2rem",
+            "gutter": "1rem",
+            "margin-md": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-md": "0.75rem",
+            "space-lg": "1rem",
+            "space-2xl": "2rem",
+            "margin": "1rem",
+            "space-xl": "1.5rem",
+            "gutter-lg": "1.5rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "metric-mono": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-xl": ["Inter"],
+            "body-md": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1;
+    }
+  </style>
+</head>
+<body class="h-full font-body-md text-body-md text-on-surface bg-background flex antialiased selection:bg-primary/10 selection:text-primary">
+<!-- ========================================================================= -->
+<!-- SIDE NAVIGATION (SideNavBar blueprint execution)                          -->
+<!-- ========================================================================= -->
+<aside class="fixed top-0 left-0 h-screen w-60 bg-surface-container-lowest border-r border-outline-variant shadow-sm z-30 flex flex-col justify-between p-4 shrink-0">
+<!-- Top Brand & Navigation Cluster -->
+<div class="flex flex-col gap-4">
+<!-- Header Logo & Subtitle -->
+<div class="flex items-center justify-between px-2 pt-1 pb-2">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-headline-sm text-headline-sm font-semibold shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="insights">insights</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface tracking-tight">OpenCRM</span>
+<span class="text-[10px] font-metric-mono text-metric-mono font-medium px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant">OSS</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-none mt-0.5">Sales &amp; Operations</p>
+</div>
+</div>
+</div>
+<!-- Quick Action CTA -->
+<button class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-2 px-3 rounded-lg transition-colors duration-150 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+<span>New Record</span>
+</button>
+<!-- Primary Tabs List (Target matching: Activity is ACTIVE) -->
+<nav aria-label="Main Navigation" class="flex flex-col gap-0.5 mt-2">
+<!-- 1. Home -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span>Home</span>
+</a>
+<!-- 2. Leads -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="person_search">person_search</span>
+<span>Leads</span>
+</a>
+<!-- 3. Contacts -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="contacts">contacts</span>
+<span>Contacts</span>
+</a>
+<!-- 4. Companies -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="business">business</span>
+<span>Companies</span>
+</a>
+<!-- 5. Opportunities -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="monetization_on">monetization_on</span>
+<span>Opportunities</span>
+</a>
+<!-- 6. Tasks -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+<span>Tasks</span>
+</a>
+<!-- 7. Activity (ACTIVE ITEM) -->
+<a aria-current="page" class="flex items-center gap-3 px-3 py-2 text-primary font-label-md text-label-md bg-surface-container-low rounded-lg transition-colors duration-150 font-semibold" href="#">
+<span class="material-symbols-outlined text-primary" data-icon="history">history</span>
+<span>Activity</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Bottom / Footer Tabs -->
+<div class="flex flex-col gap-1 border-t border-outline-variant pt-3">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span>Documentation</span>
+</a>
+<!-- Version & Deployment Status Indicator -->
+<div class="mt-2 px-3 py-2 rounded-lg bg-surface-container-low/60 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">v0.8.4</span>
+</div>
+<span class="text-[11px] font-metric-mono text-on-surface-variant text-slate-400">Self-hosted</span>
+</div>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- MAIN APPLICATION CANVAS (Padded left by w-60)                            -->
+<!-- ========================================================================= -->
+<div class="ml-60 flex-1 flex flex-col min-w-0 min-h-screen">
+<!-- TopNavBar (Fixed / Sticky Header Blueprint) -->
+<header class="sticky top-0 w-full z-20 bg-surface-container-lowest border-b border-outline-variant shadow-sm h-14 px-6 flex justify-between items-center">
+<!-- Breadcrumbs & Scope Context -->
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline" data-icon="corporate_fare">corporate_fare</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Acme Sales Org</span>
+<span class="text-outline-variant">/</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Activity</span>
+</div>
+<!-- Trailing Action Cluster & User Profile -->
+<div class="flex items-center gap-3">
+<!-- Quick Search Trigger -->
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-2.5 top-2.5 text-outline text-[16px]" data-icon="search">search</span>
+<input class="h-9 w-60 pl-8 pr-3 text-body-sm font-body-sm bg-surface rounded-lg border border-outline-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 text-on-surface placeholder:text-outline" placeholder="Jump to record... (Cmd+K)" type="text"/>
+</div>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors duration-150" title="Documentation &amp; Help" type="button">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<!-- Notification Bell with count -->
+<button aria-label="Notifications" class="relative w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors duration-150" type="button">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 flex h-2 w-2">
+<span class="inline-flex rounded-full h-2 w-2 bg-error"></span>
+</span>
+</button>
+<!-- Profile Menu Dropdown Pill -->
+<div class="h-5 w-[1px] bg-outline-variant mx-1"></div>
+<button class="flex items-center gap-2.5 pl-1.5 pr-2 py-1 rounded-lg hover:bg-surface-container-low transition-colors duration-150 text-left" type="button">
+<div class="w-7 h-7 rounded-full bg-secondary-fixed text-on-secondary-fixed font-metric-mono text-label-sm font-semibold flex items-center justify-center">
+            SJ
+          </div>
+<div class="hidden md:flex flex-col">
+<span class="font-label-md text-label-md leading-tight text-on-surface font-medium">Sarah Jenkins</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[16px]" data-icon="expand_more">expand_more</span>
+</button>
+</div>
+</header>
+<!-- Main Content Viewport -->
+<main class="flex-1 px-8 py-6 max-w-7xl w-full mx-auto">
+<!-- Page Title & Subtitle -->
+<div class="mb-5">
+<h1 class="font-headline-lg text-headline-lg font-semibold text-on-surface tracking-tight">Activity</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">What your team did and when.</p>
+</div>
+<!-- Filter / Control Toolbar -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-3 shadow-sm mb-4 flex flex-wrap items-center justify-between gap-3">
+<!-- Filter Selects -->
+<div class="flex flex-wrap items-center gap-2.5">
+<!-- Person Filter -->
+<div class="relative">
+<select class="appearance-none h-9 pl-3 pr-8 bg-surface-container-lowest border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors duration-150 focus:outline-none focus:border-primary cursor-pointer">
+<option selected="">Person: All team</option>
+<option>Marcus Chen</option>
+<option>Elena Rostova</option>
+<option>Alex Rivera</option>
+<option>Sarah Jenkins</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2.5 text-outline pointer-events-none text-[18px]" data-icon="expand_more">expand_more</span>
+</div>
+<!-- Date Range Picker Pill -->
+<button class="h-9 px-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors duration-150 flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="calendar_today">calendar_today</span>
+<span>Last 7 days</span>
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="expand_more">expand_more</span>
+</button>
+<!-- Type Filter -->
+<div class="relative">
+<select class="appearance-none h-9 pl-3 pr-8 bg-surface-container-lowest border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors duration-150 focus:outline-none focus:border-primary cursor-pointer">
+<option selected="">Type: All types</option>
+<option>Conversations</option>
+<option>Notes</option>
+<option>Tasks</option>
+<option>Status changes</option>
+<option>Emails</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2.5 text-outline pointer-events-none text-[18px]" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<!-- Right Export Action -->
+<button class="h-9 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors duration-150 flex items-center gap-2 shadow-sm font-medium" type="button">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="download">download</span>
+<span>Export CSV</span>
+</button>
+</section>
+<!-- Metric / Activity Summary Strip -->
+<section class="bg-surface-container-low/70 border border-outline-variant/70 rounded-lg px-4 py-2.5 mb-6 flex flex-wrap items-center gap-6 font-label-sm text-label-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]" data-icon="chat">chat</span>
+<span>Conversations <strong class="font-metric-mono text-on-surface font-semibold ml-0.5">42</strong></span>
+</div>
+<span class="text-outline-variant">·</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-600 text-[16px]" data-icon="sticky_note_2">sticky_note_2</span>
+<span>Notes <strong class="font-metric-mono text-on-surface font-semibold ml-0.5">17</strong></span>
+</div>
+<span class="text-outline-variant">·</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-[16px]" data-icon="task_alt">task_alt</span>
+<span>Tasks completed <strong class="font-metric-mono text-on-surface font-semibold ml-0.5">23</strong></span>
+</div>
+<span class="text-outline-variant">·</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-purple-600 text-[16px]" data-icon="swap_horiz">swap_horiz</span>
+<span>Status changes <strong class="font-metric-mono text-on-surface font-semibold ml-0.5">11</strong></span>
+</div>
+</section>
+<!-- Chronological Activity Feed Card Wrapper -->
+<div class="space-y-7">
+<!-- ================= GROUP 1: TODAY ================= -->
+<section aria-labelledby="heading-today">
+<div class="flex items-center gap-3 mb-2.5">
+<h2 class="font-label-md text-label-md font-semibold text-on-surface tracking-wide uppercase text-[11px] text-outline" id="heading-today">Today</h2>
+<div class="h-[1px] flex-1 bg-outline-variant/60"></div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg divide-y divide-outline-variant/40 shadow-sm overflow-hidden">
+<!-- Entry 1: Marcus Chen (Call) -->
+<article class="p-4 hover:bg-surface-container-low/40 transition-colors duration-150 flex items-start gap-3.5">
+<div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-metric-mono text-label-sm font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                MC
+              </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-2">
+<p class="font-body-md text-body-md text-on-surface">
+<span class="font-medium text-on-surface">Marcus Chen</span>
+<span class="text-on-surface-variant"> logged a call on </span>
+<a class="font-medium text-primary hover:underline" href="#">Northwind Logistics</a>
+</p>
+<time class="font-body-sm text-body-sm text-outline shrink-0 font-metric-mono">11:30 AM</time>
+</div>
+<!-- Excerpt Row -->
+<div class="mt-1.5 flex items-center gap-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+<span class="material-symbols-outlined text-[13px]" data-icon="call">call</span>
+                    Call
+                  </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                    Discussed Northwind's current fleet dispatch bottleneck across 120 vehicles.
+                  </p>
+</div>
+</div>
+</article>
+<!-- Entry 2: Elena Rostova (Status Change) -->
+<article class="p-4 hover:bg-surface-container-low/40 transition-colors duration-150 flex items-start gap-3.5">
+<div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-metric-mono text-label-sm font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                ER
+              </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-2">
+<p class="font-body-md text-body-md text-on-surface">
+<span class="font-medium text-on-surface">Elena Rostova</span>
+<span class="text-on-surface-variant"> changed status on </span>
+<a class="font-medium text-primary hover:underline" href="#">Kestrel Robotics</a>
+<span class="text-on-surface-variant"> to </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Qualified</span>
+</p>
+<time class="font-body-sm text-body-sm text-outline shrink-0 font-metric-mono">10:15 AM</time>
+</div>
+<!-- Excerpt Row -->
+<div class="mt-1.5 flex items-center gap-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-purple-50 text-purple-700 border border-purple-200">
+<span class="material-symbols-outlined text-[13px]" data-icon="swap_horiz">swap_horiz</span>
+                    Status
+                  </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                    Updated deal stage after reviewing budget sign-off.
+                  </p>
+</div>
+</div>
+</article>
+<!-- Entry 3: Alex Rivera (Note) -->
+<article class="p-4 hover:bg-surface-container-low/40 transition-colors duration-150 flex items-start gap-3.5">
+<div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 font-metric-mono text-label-sm font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                AR
+              </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-2">
+<p class="font-body-md text-body-md text-on-surface">
+<span class="font-medium text-on-surface">Alex Rivera</span>
+<span class="text-on-surface-variant"> added a note on </span>
+<a class="font-medium text-primary hover:underline" href="#">Vance Industrial Supply</a>
+</p>
+<time class="font-body-sm text-body-sm text-outline shrink-0 font-metric-mono">9:05 AM</time>
+</div>
+<!-- Excerpt Row -->
+<div class="mt-1.5 flex items-center gap-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+<span class="material-symbols-outlined text-[13px]" data-icon="sticky_note_2">sticky_note_2</span>
+                    Note
+                  </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                    Procurement lead confirmed RFP review scheduled for next Thursday.
+                  </p>
+</div>
+</div>
+</article>
+<!-- Entry 4: Marcus Chen (Task) -->
+<article class="p-4 hover:bg-surface-container-low/40 transition-colors duration-150 flex items-start gap-3.5">
+<div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-metric-mono text-label-sm font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                MC
+              </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-2">
+<p class="font-body-md text-body-md text-on-surface">
+<span class="font-medium text-on-surface">Marcus Chen</span>
+<span class="text-on-surface-variant"> completed a task on </span>
+<a class="font-medium text-primary hover:underline" href="#">Brightpath Dental</a>
+</p>
+<time class="font-body-sm text-body-sm text-outline shrink-0 font-metric-mono">8:45 AM</time>
+</div>
+<!-- Excerpt Row -->
+<div class="mt-1.5 flex items-center gap-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="material-symbols-outlined text-[13px]" data-icon="check_circle">check_circle</span>
+                    Task
+                  </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                    Sent revised MSA pricing tier matrix and legal redline.
+                  </p>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- ================= GROUP 2: YESTERDAY ================= -->
+<section aria-labelledby="heading-yesterday">
+<div class="flex items-center gap-3 mb-2.5">
+<h2 class="font-label-md text-label-md font-semibold text-on-surface tracking-wide uppercase text-[11px] text-outline" id="heading-yesterday">Yesterday</h2>
+<div class="h-[1px] flex-1 bg-outline-variant/60"></div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg divide-y divide-outline-variant/40 shadow-sm overflow-hidden">
+<!-- Entry 5: Elena Rostova (Meeting) -->
+<article class="p-4 hover:bg-surface-container-low/40 transition-colors duration-150 flex items-start gap-3.5">
+<div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-metric-mono text-label-sm font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                ER
+              </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-2">
+<p class="font-body-md text-body-md text-on-surface">
+<span class="font-medium text-on-surface">Elena Rostova</span>
+<span class="text-on-surface-variant"> logged a meeting with </span>
+<a class="font-medium text-primary hover:underline" href="#">Aegis Cloud Architecture</a>
+</p>
+<time class="font-body-sm text-body-sm text-outline shrink-0 font-metric-mono">Yesterday, 3:45 PM</time>
+</div>
+<!-- Excerpt Row -->
+<div class="mt-1.5 flex items-center gap-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+<span class="material-symbols-outlined text-[13px]" data-icon="groups">groups</span>
+                    Meeting
+                  </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                    Technical demo went well; CTO requested API security whitepaper.
+                  </p>
+</div>
+</div>
+</article>
+<!-- Entry 6: Alex Rivera (Email) -->
+<article class="p-4 hover:bg-surface-container-low/40 transition-colors duration-150 flex items-start gap-3.5">
+<div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 font-metric-mono text-label-sm font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                AR
+              </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-2">
+<p class="font-body-md text-body-md text-on-surface">
+<span class="font-medium text-on-surface">Alex Rivera</span>
+<span class="text-on-surface-variant"> sent an email to </span>
+<a class="font-medium text-primary hover:underline" href="#">Helios Solar Energy</a>
+</p>
+<time class="font-body-sm text-body-sm text-outline shrink-0 font-metric-mono">Yesterday, 2:10 PM</time>
+</div>
+<!-- Excerpt Row -->
+<div class="mt-1.5 flex items-center gap-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-sky-50 text-sky-700 border border-sky-200">
+<span class="material-symbols-outlined text-[13px]" data-icon="mail">mail</span>
+                    Email
+                  </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                    Followed up on quarterly contract renewal and tier upgrade options.
+                  </p>
+</div>
+</div>
+</article>
+<!-- Entry 7: Marcus Chen (Call) -->
+<article class="p-4 hover:bg-surface-container-low/40 transition-colors duration-150 flex items-start gap-3.5">
+<div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-metric-mono text-label-sm font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                MC
+              </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-2">
+<p class="font-body-md text-body-md text-on-surface">
+<span class="font-medium text-on-surface">Marcus Chen</span>
+<span class="text-on-surface-variant"> logged a call on </span>
+<a class="font-medium text-primary hover:underline" href="#">Horizon Media</a>
+</p>
+<time class="font-body-sm text-body-sm text-outline shrink-0 font-metric-mono">Yesterday, 11:20 AM</time>
+</div>
+<!-- Excerpt Row -->
+<div class="mt-1.5 flex items-center gap-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+<span class="material-symbols-outlined text-[13px]" data-icon="call">call</span>
+                    Call
+                  </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                    Discovery call completed with VP of Sales regarding 35 seat rollout.
+                  </p>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- ================= GROUP 3: TUE 6 OCT ================= -->
+<section aria-labelledby="heading-tue-6-oct">
+<div class="flex items-center gap-3 mb-2.5">
+<h2 class="font-label-md text-label-md font-semibold text-on-surface tracking-wide uppercase text-[11px] text-outline" id="heading-tue-6-oct">Tue 6 Oct</h2>
+<div class="h-[1px] flex-1 bg-outline-variant/60"></div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg divide-y divide-outline-variant/40 shadow-sm overflow-hidden">
+<!-- Entry 8: Elena Rostova (Task) -->
+<article class="p-4 hover:bg-surface-container-low/40 transition-colors duration-150 flex items-start gap-3.5">
+<div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-metric-mono text-label-sm font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                ER
+              </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-2">
+<p class="font-body-md text-body-md text-on-surface">
+<span class="font-medium text-on-surface">Elena Rostova</span>
+<span class="text-on-surface-variant"> completed a task on </span>
+<a class="font-medium text-primary hover:underline" href="#">Brightpath Dental</a>
+</p>
+<time class="font-body-sm text-body-sm text-outline shrink-0 font-metric-mono">Oct 6, 4:30 PM</time>
+</div>
+<!-- Excerpt Row -->
+<div class="mt-1.5 flex items-center gap-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="material-symbols-outlined text-[13px]" data-icon="check_circle">check_circle</span>
+                    Task
+                  </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                    Followed up on legal redline contract review with Chief Medical Officer.
+                  </p>
+</div>
+</div>
+</article>
+<!-- Entry 9: Alex Rivera (Note) -->
+<article class="p-4 hover:bg-surface-container-low/40 transition-colors duration-150 flex items-start gap-3.5">
+<div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 font-metric-mono text-label-sm font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                AR
+              </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-2">
+<p class="font-body-md text-body-md text-on-surface">
+<span class="font-medium text-on-surface">Alex Rivera</span>
+<span class="text-on-surface-variant"> added a note on </span>
+<a class="font-medium text-primary hover:underline" href="#">Pinnacle Retail Group</a>
+</p>
+<time class="font-body-sm text-body-sm text-outline shrink-0 font-metric-mono">Oct 6, 2:00 PM</time>
+</div>
+<!-- Excerpt Row -->
+<div class="mt-1.5 flex items-center gap-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+<span class="material-symbols-outlined text-[13px]" data-icon="sticky_note_2">sticky_note_2</span>
+                    Note
+                  </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                    Internal alignment note: Sarah Jenkins approved 10% volume incentive.
+                  </p>
+</div>
+</div>
+</article>
+<!-- Entry 10: Marcus Chen (Status Change) -->
+<article class="p-4 hover:bg-surface-container-low/40 transition-colors duration-150 flex items-start gap-3.5">
+<div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-metric-mono text-label-sm font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                MC
+              </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-2">
+<p class="font-body-md text-body-md text-on-surface">
+<span class="font-medium text-on-surface">Marcus Chen</span>
+<span class="text-on-surface-variant"> changed status on </span>
+<a class="font-medium text-primary hover:underline" href="#">Veritas Diagnostics</a>
+<span class="text-on-surface-variant"> to </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">Proposal Sent</span>
+</p>
+<time class="font-body-sm text-body-sm text-outline shrink-0 font-metric-mono">Oct 6, 10:00 AM</time>
+</div>
+<!-- Excerpt Row -->
+<div class="mt-1.5 flex items-center gap-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-purple-50 text-purple-700 border border-purple-200">
+<span class="material-symbols-outlined text-[13px]" data-icon="swap_horiz">swap_horiz</span>
+                    Status
+                  </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                    Enterprise quote generated and delivered to executive sponsor.
+                  </p>
+</div>
+</div>
+</article>
+</div>
+</section>
+</div>
+<!-- Feed Pagination / Load More Footer -->
+<div class="mt-8 mb-6 flex justify-center">
+<button class="px-4 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface font-label-md text-label-md rounded-lg shadow-sm transition-colors duration-150 flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="sync">sync</span>
+<span>Load older activity</span>
+</button>
+</div>
+</main>
+</div>
+</body></html>

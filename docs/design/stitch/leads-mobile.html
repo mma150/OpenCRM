@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>OpenCRM - Leads</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "inverse-surface": "#2f3038",
+            "surface-dim": "#dad9e3",
+            "secondary": "#4b41e1",
+            "primary": "#004ac6",
+            "inverse-on-surface": "#f1effa",
+            "background": "#fbf8ff",
+            "surface-tint": "#0053db",
+            "surface-bright": "#fbf8ff",
+            "outline": "#737686",
+            "on-tertiary": "#ffffff",
+            "tertiary": "#943700",
+            "surface-container-lowest": "#ffffff",
+            "on-surface": "#1a1b22",
+            "on-primary-container": "#eeefff",
+            "on-secondary-container": "#fffbff",
+            "on-secondary": "#ffffff",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "outline-variant": "#c3c6d7",
+            "on-primary-fixed-variant": "#003ea8",
+            "secondary-container": "#645efb",
+            "primary-container": "#2563eb",
+            "on-secondary-fixed-variant": "#3323cc",
+            "surface-container": "#eeedf7",
+            "on-tertiary-container": "#ffede6",
+            "surface-container-highest": "#e3e1ec",
+            "primary-fixed-dim": "#b4c5ff",
+            "tertiary-container": "#bc4800",
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-surface-variant": "#434655",
+            "primary-fixed": "#dbe1ff",
+            "tertiary-fixed": "#ffdbcd",
+            "surface-container-low": "#f4f2fd",
+            "on-primary-fixed": "#00174b",
+            "inverse-primary": "#b4c5ff",
+            "secondary-fixed": "#e2dfff",
+            "on-tertiary-fixed": "#360f00",
+            "on-error-container": "#93000a",
+            "surface-container-high": "#e8e7f1",
+            "on-secondary-fixed": "#0f0069",
+            "error-container": "#ffdad6",
+            "on-primary": "#ffffff",
+            "tertiary-fixed-dim": "#ffb596",
+            "surface": "#fbf8ff",
+            "surface-variant": "#e3e1ec",
+            "on-error": "#ffffff",
+            "on-background": "#1a1b22",
+            "error": "#ba1a1a"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "space-xl": "1.5rem",
+            "margin": "1rem",
+            "space-lg": "1rem",
+            "gutter": "1rem",
+            "margin-lg": "2rem",
+            "space-xs": "0.25rem",
+            "space-2xl": "2rem",
+            "space-md": "0.75rem",
+            "margin-md": "1.5rem",
+            "gutter-lg": "1.5rem",
+            "space-sm": "0.5rem"
+          },
+          fontFamily: {
+            "headline-md": ["Inter"],
+            "body-md": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-xl": ["Inter"],
+            "body-lg": ["Inter"],
+            "metric-mono": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-lg": ["Inter"]
+          },
+          fontSize: {
+            "headline-md": ["20px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "body-md": ["14px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "400" }],
+            "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.005em", fontWeight: "500" }],
+            "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }],
+            "body-lg": ["16px", { lineHeight: "24px", letterSpacing: "0em", fontWeight: "400" }],
+            "metric-mono": ["14px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "500" }],
+            "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "500" }],
+            "headline-sm": ["16px", { lineHeight: "24px", letterSpacing: "-0.005em", fontWeight: "600" }],
+            "body-sm": ["12px", { lineHeight: "16px", letterSpacing: "0em", fontWeight: "400" }],
+            "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.015em", fontWeight: "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-slate-50 text-zinc-900 antialiased min-h-screen w-full max-w-[390px] mx-auto overflow-x-hidden selection:bg-blue-100 selection:text-blue-700">
+<!-- Top Header / Bar -->
+<header class="sticky top-0 z-40 bg-white border-b border-zinc-200/80 px-4 h-14 flex items-center justify-between shadow-xs">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-xs">
+<span class="material-symbols-outlined text-base">dashboard_customize</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="font-bold text-zinc-900 text-base tracking-tight">OpenCRM</span>
+<span class="text-[10px] font-semibold text-zinc-500 bg-zinc-100 border border-zinc-200/70 px-1.5 py-0.5 rounded leading-none">OSS</span>
+</div>
+</div>
+<button aria-label="Account profile menu" class="flex items-center gap-1.5 p-1 -mr-1 rounded-full hover:bg-zinc-100 transition-colors" type="button">
+<div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 border border-blue-200 flex items-center justify-center font-semibold text-xs">
+        JS
+      </div>
+<span class="material-symbols-outlined text-zinc-400 text-sm">expand_more</span>
+</button>
+</header>
+<!-- Main Scrollable Content -->
+<main class="px-4 pt-4 pb-28 space-y-4">
+<!-- Title Area -->
+<section class="space-y-1">
+<div class="flex items-center gap-2.5">
+<h1 class="text-2xl font-bold text-zinc-900 tracking-tight leading-tight">Leads</h1>
+<span class="text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200 px-2 py-0.5 rounded-full">6 leads</span>
+</div>
+<p class="text-xs text-zinc-500 leading-normal">Track every lead and what happens next.</p>
+</section>
+<!-- Actions & Controls -->
+<section class="space-y-3">
+<!-- Full-Width CTA -->
+<button class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium py-3 rounded-lg flex items-center justify-center gap-2 min-h-[44px] shadow-sm text-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-lg leading-none">add</span>
+<span>New lead</span>
+</button>
+<!-- Search Bar -->
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3.5 text-zinc-400 text-lg pointer-events-none">search</span>
+<input class="w-full h-11 pl-10 pr-3.5 border border-zinc-200 rounded-lg text-sm bg-zinc-50/50 text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition-all" placeholder="Search by name, company..." type="text"/>
+</div>
+<!-- Filter Chips Row -->
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 -mx-4 px-4">
+<button class="whitespace-nowrap bg-blue-600 text-white px-3.5 py-1.5 rounded-full text-xs font-medium shadow-xs" type="button">
+          All
+        </button>
+<button class="whitespace-nowrap bg-zinc-100 hover:bg-zinc-200/70 text-zinc-700 px-3.5 py-1.5 rounded-full text-xs font-medium border border-zinc-200/60 transition-colors" type="button">
+          New
+        </button>
+<button class="whitespace-nowrap bg-zinc-100 hover:bg-zinc-200/70 text-zinc-700 px-3.5 py-1.5 rounded-full text-xs font-medium border border-zinc-200/60 transition-colors" type="button">
+          Contacted
+        </button>
+<button class="whitespace-nowrap bg-zinc-100 hover:bg-zinc-200/70 text-zinc-700 px-3.5 py-1.5 rounded-full text-xs font-medium border border-zinc-200/60 transition-colors" type="button">
+          Qualified
+        </button>
+<button class="whitespace-nowrap bg-zinc-100 hover:bg-zinc-200/70 text-zinc-700 px-3.5 py-1.5 rounded-full text-xs font-medium border border-zinc-200/60 transition-colors" type="button">
+          Mine
+        </button>
+</div>
+</section>
+<!-- Lead Cards Stack -->
+<section aria-label="Lead cards list" class="space-y-3">
+<!-- Card 1 -->
+<article class="bg-white rounded-lg border border-zinc-200 p-4 shadow-xs space-y-3 hover:border-zinc-300 transition-colors">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2 flex-wrap">
+<h2 class="font-semibold text-zinc-900 text-sm">Marcus Chen</h2>
+<span class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-xs px-2.5 py-0.5 rounded-full font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+              Qualified
+            </span>
+</div>
+<button aria-label="Options for Marcus Chen" class="w-11 h-11 -mr-2.5 -my-2 flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors" type="button">
+<span class="material-symbols-outlined text-xl">more_horiz</span>
+</button>
+</div>
+<p class="text-xs text-zinc-500 font-medium">Northwind Logistics</p>
+<div class="flex items-center justify-between text-xs pt-1 border-t border-zinc-100">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-semibold text-xs flex items-center justify-center">
+              SJ
+            </div>
+<span class="text-zinc-600 font-medium">Sarah Jenkins</span>
+</div>
+<span class="text-zinc-400">2h ago</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-zinc-600 bg-zinc-50 rounded-md px-2.5 py-1.5 border border-zinc-100">
+<span class="material-symbols-outlined text-zinc-400 text-base leading-none">calendar_today</span>
+<span>Next follow-up: Tomorrow, 10:00 AM</span>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="bg-white rounded-lg border border-zinc-200 p-4 shadow-xs space-y-3 hover:border-zinc-300 transition-colors">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2 flex-wrap">
+<h2 class="font-semibold text-zinc-900 text-sm">Elena Rostova</h2>
+<span class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs px-2.5 py-0.5 rounded-full font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              Contacted
+            </span>
+</div>
+<button aria-label="Options for Elena Rostova" class="w-11 h-11 -mr-2.5 -my-2 flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors" type="button">
+<span class="material-symbols-outlined text-xl">more_horiz</span>
+</button>
+</div>
+<p class="text-xs text-zinc-500 font-medium">Kestrel Robotics</p>
+<div class="flex items-center justify-between text-xs pt-1 border-t border-zinc-100">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-purple-100 text-purple-700 font-semibold text-xs flex items-center justify-center">
+              MP
+            </div>
+<span class="text-zinc-600 font-medium">Maya Patel</span>
+</div>
+<span class="text-zinc-400">Yesterday</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-zinc-600 bg-zinc-50 rounded-md px-2.5 py-1.5 border border-zinc-100">
+<span class="material-symbols-outlined text-zinc-400 text-base leading-none">calendar_today</span>
+<span>Next follow-up: Oct 14, 2:30 PM</span>
+</div>
+</article>
+<!-- Card 3 (Overdue warning) -->
+<article class="bg-white rounded-lg border border-zinc-200 p-4 shadow-xs space-y-3 hover:border-zinc-300 transition-colors">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2 flex-wrap">
+<h2 class="font-semibold text-zinc-900 text-sm">Liam Gallagher</h2>
+<span class="inline-flex items-center gap-1.5 bg-zinc-100 text-zinc-700 border border-zinc-200 text-xs px-2.5 py-0.5 rounded-full font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
+              New
+            </span>
+</div>
+<button aria-label="Options for Liam Gallagher" class="w-11 h-11 -mr-2.5 -my-2 flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors" type="button">
+<span class="material-symbols-outlined text-xl">more_horiz</span>
+</button>
+</div>
+<p class="text-xs text-zinc-500 font-medium">Brightpath Dental</p>
+<div class="flex items-center justify-between text-xs pt-1 border-t border-zinc-100">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-semibold text-xs flex items-center justify-center">
+              SJ
+            </div>
+<span class="text-zinc-600 font-medium">Sarah Jenkins</span>
+</div>
+<span class="text-zinc-400">3 days ago</span>
+</div>
+<!-- Overdue callout banner -->
+<div class="bg-amber-50 border border-amber-200/80 rounded-md p-2 flex items-center justify-between text-xs text-amber-800 font-medium">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-amber-700 text-base leading-none">warning</span>
+<span>Overdue follow-up</span>
+</div>
+<span class="text-[11px] font-semibold text-amber-900 bg-amber-100/70 px-1.5 py-0.5 rounded">Oct 12 (2d ago)</span>
+</div>
+</article>
+<!-- Card 4 -->
+<article class="bg-white rounded-lg border border-zinc-200 p-4 shadow-xs space-y-3 hover:border-zinc-300 transition-colors">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2 flex-wrap">
+<h2 class="font-semibold text-zinc-900 text-sm">Claire Beaumont</h2>
+<span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+              Converted
+            </span>
+</div>
+<button aria-label="Options for Claire Beaumont" class="w-11 h-11 -mr-2.5 -my-2 flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors" type="button">
+<span class="material-symbols-outlined text-xl">more_horiz</span>
+</button>
+</div>
+<p class="text-xs text-zinc-500 font-medium">Aegis Cloud Architecture</p>
+<div class="flex items-center justify-between text-xs pt-1 border-t border-zinc-100">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-purple-100 text-purple-700 font-semibold text-xs flex items-center justify-center">
+              MP
+            </div>
+<span class="text-zinc-600 font-medium">Maya Patel</span>
+</div>
+<span class="text-zinc-400">5 days ago</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-emerald-800 bg-emerald-50/70 rounded-md px-2.5 py-1.5 border border-emerald-100 font-medium">
+<span class="material-symbols-outlined text-emerald-600 text-base leading-none">check_circle</span>
+<span>Opportunity created: Fleet Sec $48,000</span>
+</div>
+</article>
+<!-- Card 5 -->
+<article class="bg-white rounded-lg border border-zinc-200 p-4 shadow-xs space-y-3 hover:border-zinc-300 transition-colors">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2 flex-wrap">
+<h2 class="font-semibold text-zinc-900 text-sm">Devon Vance</h2>
+<span class="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 text-xs px-2.5 py-0.5 rounded-full font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+              Lost
+            </span>
+</div>
+<button aria-label="Options for Devon Vance" class="w-11 h-11 -mr-2.5 -my-2 flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors" type="button">
+<span class="material-symbols-outlined text-xl">more_horiz</span>
+</button>
+</div>
+<p class="text-xs text-zinc-500 font-medium">Vance Industrial Supply</p>
+<div class="flex items-center justify-between text-xs pt-1 border-t border-zinc-100">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-semibold text-xs flex items-center justify-center">
+              SJ
+            </div>
+<span class="text-zinc-600 font-medium">Sarah Jenkins</span>
+</div>
+<span class="text-zinc-400">1 week ago</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-zinc-600 bg-zinc-50 rounded-md px-2.5 py-1.5 border border-zinc-100">
+<span class="material-symbols-outlined text-zinc-400 text-base leading-none">cancel</span>
+<span>Closed: Chose competitor</span>
+</div>
+</article>
+<!-- Card 6 -->
+<article class="bg-white rounded-lg border border-zinc-200 p-4 shadow-xs space-y-3 hover:border-zinc-300 transition-colors">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2 flex-wrap">
+<h2 class="font-semibold text-zinc-900 text-sm">Sophia Aris</h2>
+<span class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-xs px-2.5 py-0.5 rounded-full font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+              Qualified
+            </span>
+</div>
+<button aria-label="Options for Sophia Aris" class="w-11 h-11 -mr-2.5 -my-2 flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors" type="button">
+<span class="material-symbols-outlined text-xl">more_horiz</span>
+</button>
+</div>
+<p class="text-xs text-zinc-500 font-medium">Pinnacle Retail Group</p>
+<div class="flex items-center justify-between text-xs pt-1 border-t border-zinc-100">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-purple-100 text-purple-700 font-semibold text-xs flex items-center justify-center">
+              MP
+            </div>
+<span class="text-zinc-600 font-medium">Maya Patel</span>
+</div>
+<span class="text-zinc-400">4 hours ago</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-zinc-600 bg-zinc-50 rounded-md px-2.5 py-1.5 border border-zinc-100">
+<span class="material-symbols-outlined text-zinc-400 text-base leading-none">calendar_today</span>
+<span>Next follow-up: Oct 15, 11:00 AM</span>
+</div>
+</article>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav aria-label="Bottom Navigation" class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-zinc-200 h-16 flex items-center justify-around px-2 max-w-[390px] mx-auto shadow-sm">
+<!-- Home Tab -->
+<a class="flex flex-col items-center justify-center text-zinc-500 hover:text-zinc-800 transition-colors flex-1 min-h-[44px]" href="#">
+<span class="material-symbols-outlined text-xl leading-none">home</span>
+<span class="text-[11px] font-medium mt-1">Home</span>
+</a>
+<!-- Leads Tab (Active) -->
+<a class="flex flex-col items-center justify-center text-blue-600 font-semibold flex-1 min-h-[44px]" href="#">
+<span class="material-symbols-outlined text-xl leading-none" style="font-variation-settings: 'FILL' 1;">filter_alt</span>
+<span class="text-[11px] font-semibold mt-1">Leads</span>
+</a>
+<!-- Tasks Tab -->
+<a class="flex flex-col items-center justify-center text-zinc-500 hover:text-zinc-800 transition-colors flex-1 min-h-[44px]" href="#">
+<span class="material-symbols-outlined text-xl leading-none">check_circle</span>
+<span class="text-[11px] font-medium mt-1">Tasks</span>
+</a>
+<!-- More Tab -->
+<a class="flex flex-col items-center justify-center text-zinc-500 hover:text-zinc-800 transition-colors flex-1 min-h-[44px]" href="#">
+<span class="material-symbols-outlined text-xl leading-none">more_horiz</span>
+<span class="text-[11px] font-medium mt-1">More</span>
+</a>
+</nav>
+</body></html>

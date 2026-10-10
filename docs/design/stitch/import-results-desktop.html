@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Import (Results)</title>
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-container": "#645efb",
+            "surface": "#fbf8ff",
+            "surface-container-lowest": "#ffffff",
+            "inverse-surface": "#2f3038",
+            "on-secondary-fixed-variant": "#3323cc",
+            "error": "#ba1a1a",
+            "surface-container": "#eeedf7",
+            "on-error-container": "#93000a",
+            "error-container": "#ffdad6",
+            "on-primary-fixed-variant": "#003ea8",
+            "surface-container-highest": "#e3e1ec",
+            "on-surface": "#1a1b22",
+            "surface-container-low": "#f4f2fd",
+            "surface-bright": "#fbf8ff",
+            "tertiary": "#943700",
+            "surface-variant": "#e3e1ec",
+            "tertiary-container": "#bc4800",
+            "surface-tint": "#0053db",
+            "surface-dim": "#dad9e3",
+            "primary": "#004ac6",
+            "on-secondary": "#ffffff",
+            "on-secondary-fixed": "#0f0069",
+            "primary-fixed": "#dbe1ff",
+            "on-tertiary-fixed": "#360f00",
+            "on-tertiary-container": "#ffede6",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "primary-container": "#2563eb",
+            "secondary": "#4b41e1",
+            "on-tertiary": "#ffffff",
+            "outline": "#737686",
+            "inverse-primary": "#b4c5ff",
+            "tertiary-fixed-dim": "#ffb596",
+            "on-primary": "#ffffff",
+            "on-background": "#1a1b22",
+            "inverse-on-surface": "#f1effa",
+            "tertiary-fixed": "#ffdbcd",
+            "on-surface-variant": "#434655",
+            "on-secondary-container": "#fffbff",
+            "surface-container-high": "#e8e7f1",
+            "outline-variant": "#c3c6d7",
+            "on-error": "#ffffff",
+            "secondary-fixed": "#e2dfff",
+            "on-primary-container": "#eeefff",
+            "primary-fixed-dim": "#b4c5ff",
+            "background": "#fbf8ff",
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-primary-fixed": "#00174b"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "margin-md": "1.5rem",
+            "gutter": "1rem",
+            "margin-lg": "2rem",
+            "space-xl": "1.5rem",
+            "space-lg": "1rem",
+            "space-2xl": "2rem",
+            "space-xs": "0.25rem",
+            "margin": "1rem",
+            "space-md": "0.75rem",
+            "gutter-lg": "1.5rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "metric-mono": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-xl": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-lg": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["20px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "500" }],
+            "metric-mono": ["14px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "500" }],
+            "body-sm": ["12px", { lineHeight: "16px", letterSpacing: "0em", fontWeight: "400" }],
+            "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }],
+            "body-md": ["14px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "400" }],
+            "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.015em", fontWeight: "600" }],
+            "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.005em", fontWeight: "500" }],
+            "headline-sm": ["16px", { lineHeight: "24px", letterSpacing: "-0.005em", fontWeight: "600" }],
+            "body-lg": ["16px", { lineHeight: "24px", letterSpacing: "0em", fontWeight: "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20;
+    }
+  </style>
+</head>
+<body class="h-full font-body-md text-body-md text-on-surface bg-slate-50 flex overflow-hidden antialiased select-none">
+<!-- ======================================================== -->
+<!-- 1. LEFT MAIN SIDEBAR (Shared Component: SideNavBar)      -->
+<!-- ======================================================== -->
+<aside class="h-screen w-60 flex flex-col justify-between p-3 fixed left-0 top-0 z-40 bg-surface-container-lowest border-r border-outline-variant shadow-sm shrink-0">
+<!-- Top Brand & Workspaces -->
+<div class="flex flex-col gap-4">
+<!-- Brand & Organization Context -->
+<div class="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-surface-container-low transition-colors duration-150 cursor-pointer">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-white flex items-center justify-center font-bold text-headline-sm shadow-sm shrink-0">
+<span class="material-symbols-outlined text-white" data-icon="business">business</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight truncate leading-tight">Acme Corp</span>
+<span class="text-label-sm font-label-sm text-outline truncate leading-tight">Sales Workspace</span>
+</div>
+</div>
+<!-- Action Button (Shared CTA: New Deal) -->
+<button class="w-full h-9 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md border border-outline-variant flex items-center justify-between transition-colors duration-150 shadow-sm group">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="add_circle">add_circle</span>
+<span class="font-medium text-on-surface">New Deal</span>
+</span>
+<span class="text-label-sm text-outline group-hover:text-on-surface">⌘K</span>
+</button>
+<!-- Main Navigation Links -->
+<nav class="flex flex-col gap-0.5">
+<!-- Home -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<!-- Leads -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="person_search">person_search</span>
+<span class="font-label-md text-label-md">Leads</span>
+</a>
+<!-- Contacts -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="contacts">contacts</span>
+<span class="font-label-md text-label-md">Contacts</span>
+</a>
+<!-- Companies -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="business">business</span>
+<span class="font-label-md text-label-md">Companies</span>
+</a>
+<!-- Opportunities -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="monetization_on">monetization_on</span>
+<span class="font-label-md text-label-md">Opportunities</span>
+</a>
+<!-- Tasks -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="task_alt">task_alt</span>
+<span class="font-label-md text-label-md">Tasks</span>
+</a>
+<!-- Activity -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="history">history</span>
+<span class="font-label-md text-label-md">Activity</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Secondary / Utility Navigation -->
+<div class="flex flex-col gap-1 border-t border-outline-variant pt-3">
+<!-- Settings (CURRENTLY ACTIVE SECTION OF APP) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container text-primary font-medium transition-colors" href="#">
+<span class="material-symbols-outlined text-primary fill-icon" data-icon="settings" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-label-md text-label-md font-semibold text-primary">Settings</span>
+</a>
+<!-- Documentation -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="menu_book">menu_book</span>
+<span class="font-label-md text-label-md">Documentation</span>
+</a>
+<!-- System Operational Indicator -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg text-outline font-normal">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="font-body-sm text-body-sm text-outline">v0.8.4 (Self-hosted)</span>
+</div>
+<span class="material-symbols-outlined text-emerald-600 text-[16px]" data-icon="check_circle">check_circle</span>
+</div>
+</div>
+</aside>
+<!-- ======================================================== -->
+<!-- 2. MAIN APP SHELL WRAPPER (TopNavBar + Secondary Subnav) -->
+<!-- ======================================================== -->
+<div class="flex-1 flex flex-col pl-60 min-w-0 h-screen">
+<!-- Top Navigation Bar (Shared Component: TopNavBar) -->
+<header class="h-14 w-full flex items-center justify-between px-6 bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-30 shrink-0">
+<!-- Breadcrumbs navigation -->
+<nav class="flex items-center gap-2 text-body-sm font-body-sm text-outline">
+<span class="text-on-surface font-medium hover:text-primary transition-colors cursor-pointer">Acme Sales Org</span>
+<span class="material-symbols-outlined text-[14px] text-outline" data-icon="chevron_right">chevron_right</span>
+<span class="hover:text-primary transition-colors cursor-pointer">Settings</span>
+<span class="material-symbols-outlined text-[14px] text-outline" data-icon="chevron_right">chevron_right</span>
+<span class="text-on-surface font-medium">Import data</span>
+</nav>
+<!-- Trailing Action Icons & Profile Cluster -->
+<div class="flex items-center gap-3">
+<!-- Quick Search Prompt -->
+<div class="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-surface-container-low border border-outline-variant text-outline text-label-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="search">search</span>
+<span>Quick find...</span>
+<kbd class="ml-2 font-metric-mono text-[10px] bg-white border border-outline-variant px-1 rounded">⌘K</kbd>
+</div>
+<!-- Notification with Badge "3" -->
+<button class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">3</span>
+</button>
+<!-- Help Icon -->
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="h-5 w-[1px] bg-outline-variant mx-1"></div>
+<!-- Profile / Account Context -->
+<div class="flex items-center gap-2.5 pl-1 py-1 pr-1.5 rounded-lg hover:bg-surface-container-low transition-colors duration-150 cursor-pointer">
+<div class="w-8 h-8 rounded-full bg-primary-fixed text-primary font-bold text-label-sm flex items-center justify-center border border-primary/20">
+            JS
+          </div>
+<div class="hidden md:flex flex-col text-left">
+<span class="font-label-md text-label-md font-medium text-on-surface leading-tight">John Smith</span>
+<span class="font-body-sm text-[11px] text-outline leading-tight">Administrator</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[16px]" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+</div>
+</div>
+</header>
+<!-- Sub-layout: Settings Sidebar + Content Area -->
+<div class="flex-1 flex overflow-hidden min-w-0">
+<!-- ======================================================== -->
+<!-- 3. SECONDARY SETTINGS SUB-SIDEBAR (w-60)                 -->
+<!-- ======================================================== -->
+<aside class="w-60 bg-surface-container-lowest border-r border-outline-variant flex flex-col py-5 px-3 shrink-0 overflow-y-auto">
+<div class="px-3 pb-2 text-[11px] font-semibold text-outline uppercase tracking-wider font-label-sm">
+          Settings
+        </div>
+<nav class="flex flex-col gap-1 mt-1">
+<!-- Users -->
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="group">group</span>
+<span>Users</span>
+</a>
+<!-- Pipeline stages -->
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="view_kanban">view_kanban</span>
+<span>Pipeline stages</span>
+</a>
+<!-- Custom fields -->
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="tune">tune</span>
+<span>Custom fields</span>
+</a>
+<!-- Email -->
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="mail">mail</span>
+<span>Email</span>
+</a>
+<!-- Products -->
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="inventory_2">inventory_2</span>
+<span>Products</span>
+</a>
+<!-- Import data (ACTIVE STATE) -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg bg-blue-50 text-primary-container font-label-md text-label-md font-semibold transition-colors border border-blue-100" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px] text-primary-container" data-icon="upload_file">upload_file</span>
+<span>Import data</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+</a>
+</nav>
+</aside>
+<!-- ======================================================== -->
+<!-- 4. MAIN CONTENT AREA (Import Results View)               -->
+<!-- ======================================================== -->
+<main class="flex-1 overflow-y-auto bg-slate-50/70 p-6 lg:p-8 flex flex-col gap-6">
+<!-- Header block -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="text-headline-lg font-headline-lg text-on-surface tracking-tight">Import leads</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-outline-variant text-label-sm font-label-sm text-outline shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-slate-400" data-icon="draft">draft</span>
+                leads-october.csv · 248 rows
+              </span>
+</div>
+<p class="text-body-md font-body-md text-outline mt-1">
+              Import completed. 231 of 248 records were successfully imported into your leads.
+            </p>
+</div>
+<div class="flex items-center gap-2 self-start sm:self-auto">
+<button class="h-9 px-3 rounded-lg bg-white border border-outline-variant hover:bg-slate-50 text-on-surface font-label-md text-label-md inline-flex items-center gap-1.5 shadow-sm transition-colors duration-150">
+<span class="material-symbols-outlined text-[16px]" data-icon="file_download">file_download</span>
+<span>Download log</span>
+</button>
+</div>
+</div>
+<!-- 3-Step Indicator Stepper Card (All Completed) -->
+<div class="bg-white rounded-lg border border-outline-variant p-4 shadow-sm">
+<div class="flex items-center justify-between max-w-3xl mx-auto">
+<!-- Step 1: Upload (Completed) -->
+<div class="flex items-center gap-3">
+<div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-label-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="flex flex-col">
+<span class="text-label-md font-label-md font-semibold text-on-surface leading-none">Upload</span>
+<span class="text-body-sm font-body-sm text-outline mt-0.5 leading-none">CSV verified</span>
+</div>
+</div>
+<!-- Connector 1 (Completed) -->
+<div class="flex-1 mx-4 h-[2px] bg-emerald-500 rounded-full"></div>
+<!-- Step 2: Map columns (Completed) -->
+<div class="flex items-center gap-3">
+<div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-label-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="flex flex-col">
+<span class="text-label-md font-label-md font-semibold text-on-surface leading-none">Map columns</span>
+<span class="text-body-sm font-body-sm text-outline mt-0.5 leading-none">12 fields mapped</span>
+</div>
+</div>
+<!-- Connector 2 (Completed) -->
+<div class="flex-1 mx-4 h-[2px] bg-emerald-500 rounded-full"></div>
+<!-- Step 3: Review & Results (Finished State) -->
+<div class="flex items-center gap-3">
+<div class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-label-sm shadow-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="done_all" style="font-variation-settings: 'FILL' 1;">done_all</span>
+</div>
+<div class="flex flex-col">
+<span class="text-label-md font-label-md font-semibold text-on-surface leading-none">Review &amp; Results</span>
+<span class="text-body-sm font-body-sm text-emerald-600 font-medium mt-0.5 leading-none">Finished</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Summary Metrics Banner (3 Cards Grid) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- 1. Imported Metric Card -->
+<div class="bg-white rounded-lg border border-outline-variant p-5 shadow-sm relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div>
+<span class="text-label-md font-label-md text-outline">Imported</span>
+<div class="text-headline-xl font-headline-xl font-bold text-on-surface mt-1 tabular-nums">231</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 text-label-sm font-label-sm border border-emerald-200">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                93.1% success rate
+              </span>
+</div>
+<div class="text-body-md font-body-md text-on-surface-variant mt-3 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              Leads successfully created
+            </div>
+</div>
+<!-- 2. Skipped Metric Card -->
+<div class="bg-white rounded-lg border border-outline-variant p-5 shadow-sm relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div>
+<span class="text-label-md font-label-md text-outline">Skipped</span>
+<div class="text-headline-xl font-headline-xl font-bold text-on-surface mt-1 tabular-nums">9</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-label-sm font-label-sm border border-slate-200">
+                Existing leads kept
+              </span>
+</div>
+<div class="text-body-md font-body-md text-on-surface-variant mt-3 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-slate-400"></span>
+              Duplicate emails skipped
+            </div>
+</div>
+<!-- 3. Failed Metric Card -->
+<div class="bg-white rounded-lg border border-outline-variant p-5 shadow-sm relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div>
+<span class="text-label-md font-label-md text-outline">Failed</span>
+<div class="text-headline-xl font-headline-xl font-bold text-error mt-1 tabular-nums">8</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-red-50 text-error text-label-sm font-label-sm border border-red-200">
+<span class="material-symbols-outlined text-[14px]" data-icon="error">error</span>
+                Action required
+              </span>
+</div>
+<div class="text-body-md font-body-md text-on-surface-variant mt-3 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-red-500"></span>
+              Rows with validation errors
+            </div>
+</div>
+</div>
+<!-- Rows that Failed - Table Card Section -->
+<div class="bg-white rounded-lg border border-outline-variant shadow-sm overflow-hidden flex flex-col">
+<!-- Card Header with Actions -->
+<div class="p-4 sm:px-6 border-b border-outline-variant flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Rows that failed</h2>
+<span class="px-2 py-0.5 rounded-full bg-red-50 text-error text-label-sm font-label-sm font-semibold border border-red-200">
+                  8
+                </span>
+</div>
+<p class="text-body-sm font-body-sm text-outline mt-0.5">
+                Review errors below or export the failed rows to correct and re-upload.
+              </p>
+</div>
+<button class="h-9 px-3.5 rounded-lg bg-white border border-outline-variant hover:bg-slate-50 text-on-surface font-label-md text-label-md inline-flex items-center gap-2 shadow-sm transition-colors duration-150 shrink-0">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="download">download</span>
+<span>Download failed rows (CSV)</span>
+</button>
+</div>
+<!-- Table Container -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-9 bg-slate-50 border-b border-outline-variant">
+<th class="px-6 text-label-sm font-label-sm text-outline uppercase tracking-wider w-24">Row #</th>
+<th class="px-6 text-label-sm font-label-sm text-outline uppercase tracking-wider w-48">Name</th>
+<th class="px-6 text-label-sm font-label-sm text-outline uppercase tracking-wider">Email</th>
+<th class="px-6 text-label-sm font-label-sm text-outline uppercase tracking-wider">Error Reason</th>
+<th class="px-6 text-label-sm font-label-sm text-outline uppercase tracking-wider text-right w-24">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 font-body-md text-body-md">
+<!-- Row 14 -->
+<tr class="h-12 hover:bg-slate-50/70 transition-colors">
+<td class="px-6 font-metric-mono text-label-sm text-outline tabular-nums">Row 14</td>
+<td class="px-6 font-medium text-on-surface">Devon Vance</td>
+<td class="px-6 font-metric-mono text-outline">devon.vance@invalid</td>
+<td class="px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-red-50 text-red-700 text-label-sm font-label-sm border border-red-200">
+<span class="material-symbols-outlined text-[13px] text-red-600" data-icon="cancel">cancel</span>
+                      Email is not valid
+                    </span>
+</td>
+<td class="px-6 text-right">
+<button class="text-primary hover:text-primary-container text-label-sm font-label-sm font-medium">Edit</button>
+</td>
+</tr>
+<!-- Row 38 -->
+<tr class="h-12 hover:bg-slate-50/70 transition-colors">
+<td class="px-6 font-metric-mono text-label-sm text-outline tabular-nums">Row 38</td>
+<td class="px-6 font-normal text-outline italic">—</td>
+<td class="px-6 font-metric-mono text-outline">missing-email</td>
+<td class="px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-red-50 text-red-700 text-label-sm font-label-sm border border-red-200">
+<span class="material-symbols-outlined text-[13px] text-red-600" data-icon="cancel">cancel</span>
+                      Name is required
+                    </span>
+</td>
+<td class="px-6 text-right">
+<button class="text-primary hover:text-primary-container text-label-sm font-label-sm font-medium">Edit</button>
+</td>
+</tr>
+<!-- Row 72 -->
+<tr class="h-12 hover:bg-slate-50/70 transition-colors">
+<td class="px-6 font-metric-mono text-label-sm text-outline tabular-nums">Row 72</td>
+<td class="px-6 font-medium text-on-surface">Liam Gallagher</td>
+<td class="px-6 font-metric-mono text-outline">liam.g@brightpath</td>
+<td class="px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-800 text-label-sm font-label-sm border border-amber-200">
+<span class="material-symbols-outlined text-[13px] text-amber-700" data-icon="warning">warning</span>
+                      Status 'Hot' is not a known status
+                    </span>
+</td>
+<td class="px-6 text-right">
+<button class="text-primary hover:text-primary-container text-label-sm font-label-sm font-medium">Edit</button>
+</td>
+</tr>
+<!-- Row 105 -->
+<tr class="h-12 hover:bg-slate-50/70 transition-colors">
+<td class="px-6 font-metric-mono text-label-sm text-outline tabular-nums">Row 105</td>
+<td class="px-6 font-medium text-on-surface">Sophia Aris</td>
+<td class="px-6 font-metric-mono text-outline">sophia@pinnacle.com</td>
+<td class="px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-red-50 text-red-700 text-label-sm font-label-sm border border-red-200">
+<span class="material-symbols-outlined text-[13px] text-red-600" data-icon="cancel">cancel</span>
+                      Lead owner 'K. Patel' not found
+                    </span>
+</td>
+<td class="px-6 text-right">
+<button class="text-primary hover:text-primary-container text-label-sm font-label-sm font-medium">Edit</button>
+</td>
+</tr>
+<!-- Row 142 -->
+<tr class="h-12 hover:bg-slate-50/70 transition-colors">
+<td class="px-6 font-metric-mono text-label-sm text-outline tabular-nums">Row 142</td>
+<td class="px-6 font-medium text-on-surface">Tariq Mansour</td>
+<td class="px-6 font-metric-mono text-outline">tariq@helios..com</td>
+<td class="px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-red-50 text-red-700 text-label-sm font-label-sm border border-red-200">
+<span class="material-symbols-outlined text-[13px] text-red-600" data-icon="cancel">cancel</span>
+                      Email is not valid
+                    </span>
+</td>
+<td class="px-6 text-right">
+<button class="text-primary hover:text-primary-container text-label-sm font-label-sm font-medium">Edit</button>
+</td>
+</tr>
+<!-- Row 189 -->
+<tr class="h-12 hover:bg-slate-50/70 transition-colors">
+<td class="px-6 font-metric-mono text-label-sm text-outline tabular-nums">Row 189</td>
+<td class="px-6 font-medium text-on-surface">Anika Sharma</td>
+<td class="px-6 font-metric-mono text-outline">invalid-format</td>
+<td class="px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-800 text-label-sm font-label-sm border border-amber-200">
+<span class="material-symbols-outlined text-[13px] text-amber-700" data-icon="warning">warning</span>
+                      Invalid phone number format
+                    </span>
+</td>
+<td class="px-6 text-right">
+<button class="text-primary hover:text-primary-container text-label-sm font-label-sm font-medium">Edit</button>
+</td>
+</tr>
+<!-- Row 204 -->
+<tr class="h-12 hover:bg-slate-50/70 transition-colors">
+<td class="px-6 font-metric-mono text-label-sm text-outline tabular-nums">Row 204</td>
+<td class="px-6 font-normal text-outline italic">—</td>
+<td class="px-6 font-metric-mono text-outline">no-email-provided</td>
+<td class="px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-red-50 text-red-700 text-label-sm font-label-sm border border-red-200">
+<span class="material-symbols-outlined text-[13px] text-red-600" data-icon="cancel">cancel</span>
+                      Name is required
+                    </span>
+</td>
+<td class="px-6 text-right">
+<button class="text-primary hover:text-primary-container text-label-sm font-label-sm font-medium">Edit</button>
+</td>
+</tr>
+<!-- Row 233 -->
+<tr class="h-12 hover:bg-slate-50/70 transition-colors">
+<td class="px-6 font-metric-mono text-label-sm text-outline tabular-nums">Row 233</td>
+<td class="px-6 font-medium text-on-surface">Marcus Chen</td>
+<td class="px-6 font-metric-mono text-outline">marcus@domain_bad</td>
+<td class="px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-800 text-label-sm font-label-sm border border-amber-200">
+<span class="material-symbols-outlined text-[13px] text-amber-700" data-icon="warning">warning</span>
+                      Status 'In-Review' is not a known status
+                    </span>
+</td>
+<td class="px-6 text-right">
+<button class="text-primary hover:text-primary-container text-label-sm font-label-sm font-medium">Edit</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Bottom Pagination or Indicator -->
+<div class="px-6 py-3 bg-slate-50 border-t border-outline-variant flex items-center justify-between text-body-sm text-outline">
+<span>Showing all 8 error records</span>
+<span class="font-metric-mono text-[11px] text-slate-500">Sorted by original row index ascending</span>
+</div>
+</div>
+<!-- ======================================================== -->
+<!-- 5. BOTTOM ACTION BAR / FOOTER (Content Canvas)          -->
+<!-- ======================================================== -->
+<div class="pt-2 pb-6 flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto">
+<!-- Left Action: Import another file -->
+<button class="text-on-surface-variant hover:text-on-surface font-label-md text-label-md inline-flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-container-low transition-colors duration-150">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="upload_file">upload_file</span>
+<span>Import another file</span>
+</button>
+<!-- Right Actions Cluster -->
+<div class="flex items-center gap-3">
+<!-- Secondary Outline: Download failed rows -->
+<button class="h-9 px-4 rounded-lg bg-white border border-outline-variant hover:bg-slate-50 text-on-surface font-label-md text-label-md inline-flex items-center gap-2 shadow-sm transition-colors duration-150">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="download">download</span>
+<span>Download failed rows (CSV)</span>
+</button>
+<!-- Primary Solid Blue: View imported leads -->
+<a class="h-9 px-4 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-label-md text-label-md font-medium inline-flex items-center gap-2 shadow-sm transition-colors duration-150 focus:ring-2 focus:ring-blue-500/20" href="#">
+<span>View imported leads</span>
+<span class="material-symbols-outlined text-[16px] text-white" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

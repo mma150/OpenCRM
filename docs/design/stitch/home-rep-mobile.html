@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OpenCRM - Home Mobile</title>
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              DEFAULT: '#2563eb',
+              hover: '#1d4ed8',
+              light: '#eff6ff',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background-color: #f4f4f5;
+    }
+    /* Hide scrollbars while allowing scroll */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="flex justify-center min-h-screen bg-zinc-200 sm:py-6">
+  <!-- Mobile Container (375px phone canvas) -->
+  <div class="w-full max-w-[375px] bg-white min-h-screen relative flex flex-col shadow-xl sm:rounded-2xl border-x border-zinc-200 overflow-x-hidden">
+    
+    <!-- Compact Top Bar -->
+    <header class="sticky top-0 z-40 bg-white border-b border-zinc-200 px-4 h-14 flex items-center justify-between">
+      <!-- OpenCRM Logo & Badge -->
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-[#2563eb] flex items-center justify-center text-white shadow-sm">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="font-bold text-zinc-900 text-base tracking-tight">OpenCRM</span>
+          <span class="text-[10px] font-semibold text-zinc-500 bg-zinc-100 border border-zinc-200 rounded px-1.5 py-0.5 uppercase tracking-wide">OSS</span>
+        </div>
+      </div>
+
+      <!-- Right: User Avatar Pill -->
+      <button class="flex items-center gap-1 pl-1 pr-1.5 py-1 rounded-full hover:bg-zinc-100 transition-colors min-h-[44px]">
+        <div class="w-8 h-8 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-800 text-xs font-semibold flex items-center justify-center">
+          MC
+        </div>
+        <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </header>
+
+    <!-- Main Scrollable Content -->
+    <main class="flex-1 px-4 pt-5 pb-24 space-y-5">
+      
+      <!-- Greeting & Subtitle -->
+      <div>
+        <h1 class="text-xl font-bold text-zinc-900 tracking-tight">Good morning, Marcus</h1>
+        <p class="text-xs font-medium text-zinc-500 mt-0.5">Sales Rep • Thursday, Oct 16</p>
+      </div>
+
+      <!-- Primary Action: Full-width Log Conversation Button -->
+      <button class="w-full h-11 bg-[#2563eb] hover:bg-[#1d4ed8] active:bg-[#1e40af] text-white text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm min-h-[44px]">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>Log conversation</span>
+      </button>
+
+      <!-- 2x2 Grid of Stat Cards -->
+      <section class="grid grid-cols-2 gap-2.5">
+        <!-- Open Leads -->
+        <div class="bg-white border border-zinc-200 rounded-lg p-3">
+          <span class="text-[11px] font-medium text-zinc-500 block uppercase tracking-wider">Open Leads</span>
+          <div class="text-2xl font-bold text-zinc-900 mt-1">18</div>
+        </div>
+
+        <!-- Pipeline Value -->
+        <div class="bg-white border border-zinc-200 rounded-lg p-3">
+          <span class="text-[11px] font-medium text-zinc-500 block uppercase tracking-wider">Pipeline Value</span>
+          <div class="text-2xl font-bold text-zinc-900 mt-1">$84,500</div>
+        </div>
+
+        <!-- Due Today -->
+        <div class="bg-white border border-zinc-200 rounded-lg p-3">
+          <span class="text-[11px] font-medium text-zinc-500 block uppercase tracking-wider">Due Today</span>
+          <div class="text-2xl font-bold text-zinc-900 mt-1">5</div>
+        </div>
+
+        <!-- Overdue (Amber Warning Tone) -->
+        <div class="bg-amber-50/60 border border-amber-200 rounded-lg p-3">
+          <span class="text-[11px] font-semibold text-amber-800 block uppercase tracking-wider">Overdue</span>
+          <div class="text-2xl font-bold text-amber-900 mt-1">2</div>
+        </div>
+      </section>
+
+      <!-- Card: Tasks Due -->
+      <section class="bg-white border border-zinc-200 rounded-lg overflow-hidden">
+        <div class="px-3.5 py-3 border-b border-zinc-100 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm font-semibold text-zinc-900">Tasks due</h2>
+            <span class="text-[10px] font-semibold bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded-full">4 pending</span>
+          </div>
+          <a href="#" class="text-xs font-medium text-[#2563eb] hover:underline min-h-[44px] flex items-center">View all</a>
+        </div>
+
+        <div class="divide-y divide-zinc-100">
+          <!-- Task 1 (Overdue) -->
+          <div class="p-3 flex items-start gap-3 hover:bg-zinc-50 transition-colors">
+            <input type="checkbox" class="mt-0.5 h-4 w-4 rounded border-zinc-300 text-[#2563eb] focus:ring-0 cursor-pointer min-h-[24px]">
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-semibold text-zinc-900 leading-snug">Send revised MSA pricing matrix</p>
+              <div class="flex items-center gap-1.5 mt-1 text-[11px]">
+                <span class="text-zinc-500 truncate">Northwind Logistics</span>
+                <span class="text-zinc-300">•</span>
+                <span class="text-amber-600 font-medium whitespace-nowrap">Overdue (Oct 15)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Task 2 (Overdue) -->
+          <div class="p-3 flex items-start gap-3 hover:bg-zinc-50 transition-colors">
+            <input type="checkbox" class="mt-0.5 h-4 w-4 rounded border-zinc-300 text-[#2563eb] focus:ring-0 cursor-pointer min-h-[24px]">
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-semibold text-zinc-900 leading-snug">Follow up on legal redline review</p>
+              <div class="flex items-center gap-1.5 mt-1 text-[11px]">
+                <span class="text-zinc-500 truncate">Brightpath Dental</span>
+                <span class="text-zinc-300">•</span>
+                <span class="text-amber-600 font-medium whitespace-nowrap">Overdue (Oct 15)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Task 3 (Today) -->
+          <div class="p-3 flex items-start gap-3 hover:bg-zinc-50 transition-colors">
+            <input type="checkbox" class="mt-0.5 h-4 w-4 rounded border-zinc-300 text-[#2563eb] focus:ring-0 cursor-pointer min-h-[24px]">
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-semibold text-zinc-900 leading-snug">Product demo with CTO</p>
+              <div class="flex items-center gap-1.5 mt-1 text-[11px]">
+                <span class="text-zinc-500 truncate">Northwind Logistics</span>
+                <span class="text-zinc-300">•</span>
+                <span class="text-zinc-500 font-medium whitespace-nowrap">Today 11:30 AM</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Task 4 (Today) -->
+          <div class="p-3 flex items-start gap-3 hover:bg-zinc-50 transition-colors">
+            <input type="checkbox" class="mt-0.5 h-4 w-4 rounded border-zinc-300 text-[#2563eb] focus:ring-0 cursor-pointer min-h-[24px]">
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-semibold text-zinc-900 leading-snug">Call procurement officer</p>
+              <div class="flex items-center gap-1.5 mt-1 text-[11px]">
+                <span class="text-zinc-500 truncate">Aegis Cloud</span>
+                <span class="text-zinc-300">•</span>
+                <span class="text-zinc-500 font-medium whitespace-nowrap">Today 2:00 PM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Card: Recent Conversations -->
+      <section class="bg-white border border-zinc-200 rounded-lg overflow-hidden">
+        <div class="px-3.5 py-3 border-b border-zinc-100 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm font-semibold text-zinc-900">Recent conversations</h2>
+          </div>
+          <a href="#" class="text-xs font-medium text-[#2563eb] hover:underline min-h-[44px] flex items-center">View all</a>
+        </div>
+
+        <div class="divide-y divide-zinc-100">
+          <!-- Conversation 1: Call -->
+          <div class="p-3 flex items-start gap-3 hover:bg-zinc-50 transition-colors">
+            <div class="w-7 h-7 rounded-md bg-blue-50 text-[#2563eb] border border-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-xs font-semibold text-zinc-900 truncate">Marcus Chen</span>
+                <span class="text-[10px] text-zinc-500 whitespace-nowrap">2h ago</span>
+              </div>
+              <p class="text-xs text-zinc-600 mt-0.5 line-clamp-1">Discussed fleet dispatch rollout across 120 vehicles.</p>
+            </div>
+          </div>
+
+          <!-- Conversation 2: Meeting -->
+          <div class="p-3 flex items-start gap-3 hover:bg-zinc-50 transition-colors">
+            <div class="w-7 h-7 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-xs font-semibold text-zinc-900 truncate">Elena Rostova</span>
+                <span class="text-[10px] text-zinc-500 whitespace-nowrap">Yesterday</span>
+              </div>
+              <p class="text-xs text-zinc-600 mt-0.5 line-clamp-1">Technical demo went well; CTO requested API whitepaper.</p>
+            </div>
+          </div>
+
+          <!-- Conversation 3: Email -->
+          <div class="p-3 flex items-start gap-3 hover:bg-zinc-50 transition-colors">
+            <div class="w-7 h-7 rounded-md bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-xs font-semibold text-zinc-900 truncate">Alex Rivera</span>
+                <span class="text-[10px] text-zinc-500 whitespace-nowrap">2 days ago</span>
+              </div>
+              <p class="text-xs text-zinc-600 mt-0.5 line-clamp-1">Followed up on quarterly contract renewal and tier upgrades.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Fixed Bottom Tab Bar -->
+    <!-- Destination count: 4 (Home ACTIVE, Leads, Tasks, More) -->
+    <nav class="fixed bottom-0 max-w-[375px] w-full bg-white border-t border-zinc-200 z-50 flex items-center justify-around h-14 px-2">
+      <!-- Home (ACTIVE) -->
+      <a href="#" class="flex flex-col items-center justify-center flex-1 h-full text-[#2563eb] min-h-[44px] min-w-[44px]">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+        <span class="text-[10px] font-semibold mt-0.5">Home</span>
+      </a>
+
+      <!-- Leads -->
+      <a href="#" class="flex flex-col items-center justify-center flex-1 h-full text-zinc-500 hover:text-zinc-800 transition-colors min-h-[44px] min-w-[44px]">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+        </svg>
+        <span class="text-[10px] font-medium mt-0.5">Leads</span>
+      </a>
+
+      <!-- Tasks -->
+      <a href="#" class="flex flex-col items-center justify-center flex-1 h-full text-zinc-500 hover:text-zinc-800 transition-colors min-h-[44px] min-w-[44px]">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span class="text-[10px] font-medium mt-0.5">Tasks</span>
+      </a>
+
+      <!-- More -->
+      <a href="#" class="flex flex-col items-center justify-center flex-1 h-full text-zinc-500 hover:text-zinc-800 transition-colors min-h-[44px] min-w-[44px]">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="1"></circle>
+          <circle cx="19" cy="12" r="1"></circle>
+          <circle cx="5" cy="12" r="1"></circle>
+        </svg>
+        <span class="text-[10px] font-medium mt-0.5">More</span>
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>

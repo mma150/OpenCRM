@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Profile</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed": "#dbe1ff",
+            "on-tertiary-fixed": "#360f00",
+            "inverse-primary": "#b4c5ff",
+            "on-surface-variant": "#434655",
+            "surface-tint": "#0053db",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-secondary-fixed-variant": "#3323cc",
+            "secondary-fixed": "#e2dfff",
+            "error": "#ba1a1a",
+            "on-tertiary-container": "#ffede6",
+            "surface-bright": "#fbf8ff",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-error": "#ffffff",
+            "tertiary-container": "#bc4800",
+            "surface-container-highest": "#e3e1ec",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "on-secondary-container": "#fffbff",
+            "on-secondary-fixed": "#0f0069",
+            "outline-variant": "#c3c6d7",
+            "surface-container-low": "#f4f2fd",
+            "surface-dim": "#dad9e3",
+            "surface-variant": "#e3e1ec",
+            "error-container": "#ffdad6",
+            "secondary": "#4b41e1",
+            "tertiary-fixed-dim": "#ffb596",
+            "on-secondary": "#ffffff",
+            "on-primary-fixed": "#00174b",
+            "on-error-container": "#93000a",
+            "tertiary": "#943700",
+            "on-tertiary": "#ffffff",
+            "background": "#fbf8ff",
+            "inverse-surface": "#2f3038",
+            "on-primary": "#ffffff",
+            "surface": "#fbf8ff",
+            "on-background": "#1a1b22",
+            "surface-container-high": "#e8e7f1",
+            "surface-container": "#eeedf7",
+            "primary-fixed-dim": "#b4c5ff",
+            "outline": "#737686",
+            "primary": "#004ac6",
+            "on-primary-container": "#eeefff",
+            "on-surface": "#1a1b22",
+            "primary-container": "#2563eb",
+            "inverse-on-surface": "#f1effa",
+            "tertiary-fixed": "#ffdbcd",
+            "secondary-container": "#645efb"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-md": "1.5rem",
+            "gutter": "1rem",
+            "space-xs": "0.25rem",
+            "margin-lg": "2rem",
+            "space-sm": "0.5rem",
+            "space-2xl": "2rem",
+            "gutter-lg": "1.5rem",
+            "space-xl": "1.5rem",
+            "space-lg": "1rem",
+            "margin": "1rem",
+            "space-md": "0.75rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "headline-xl": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "metric-mono": ["Inter"],
+            "body-md": ["Inter"],
+            "label-md": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-surface text-on-surface antialiased flex h-screen overflow-hidden selection:bg-primary-fixed selection:text-primary">
+<!-- ================= SIDEBAR (Shared Component: SideNavBar) ================= -->
+<!-- Contextual mapping: 'Users' is the exact active screen destination -->
+<aside class="fixed left-0 top-0 bottom-0 w-60 z-30 flex flex-col justify-between p-4 bg-surface-container-lowest border-r border-outline-variant shadow-sm shrink-0">
+<!-- Top Branding & Navigation -->
+<div class="flex flex-col gap-5">
+<!-- Wordmark & Logo Header -->
+<div class="flex items-center justify-between px-2 pt-1">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-bold text-headline-sm">
+<span class="material-symbols-outlined text-[18px]">view_quilt</span>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">OpenCRM</span>
+</div>
+</div>
+<span class="text-body-sm font-body-sm text-outline px-1.5 py-0.5 rounded border border-outline-variant">OSS</span>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex flex-col gap-1"><a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span>Home</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">filter_alt</span>
+<span>Leads</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">contact_page</span>
+<span>Contacts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">apartment</span>
+<span>Companies</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">monetization_on</span>
+<span>Opportunities</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">task_alt</span>
+<span>Tasks</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">pulse_alert</span>
+<span>Activity</span>
+</a></nav>
+</div>
+<!-- Sidebar Bottom / Footer Tabs -->
+<div class="flex flex-col gap-1 border-t border-outline-variant pt-3">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">menu_book</span>
+<span>Documentation</span>
+</a>
+<div class="px-3 py-2 flex items-center justify-between text-body-sm font-body-sm text-outline">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>
+<span>v0.8.4 (Self-hosted)</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- ================= MAIN VIEWPORT ================= -->
+<div class="pl-60 flex-1 flex flex-col h-screen overflow-y-auto">
+<!-- Top Header Bar (Shared Component: TopNavBar execution) -->
+<header class="sticky top-0 z-20 flex justify-between items-center h-14 px-8 w-full bg-surface-container-lowest border-b border-outline-variant shadow-sm">
+<!-- Breadcrumb indicator -->
+<div class="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant"><span class="hover:text-on-surface cursor-pointer">Acme Sales Org</span>
+<span class="text-outline">/</span>
+<span class="text-outline">Settings</span>
+<span class="text-outline">/</span>
+<span class="text-on-surface font-semibold">Profile</span></div>
+<!-- Header Trailing Action & Profile Menu Area -->
+<div class="flex items-center gap-4 relative"><div class="flex items-center gap-1 border-r border-outline-variant pr-4">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 relative" title="Notifications">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-primary-container text-white text-[10px] font-bold rounded-full flex items-center justify-center">3</span>
+</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" title="Help">
+<span class="material-symbols-outlined text-[20px]">help</span>
+</button>
+</div>
+<div class="relative">
+<button class="flex items-center gap-2.5 py-1 px-2 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant hover:bg-surface-container-high transition-colors duration-150 cursor-pointer" id="profileDropdownBtn">
+<div aria-label="User avatar initials SJ" class="w-7 h-7 rounded-full bg-primary-container text-white flex items-center justify-center font-label-sm text-label-sm font-semibold">
+SJ
+</div>
+<span class="font-label-md text-label-md text-on-surface font-medium">Sarah Jenkins</span>
+<span class="material-symbols-outlined text-[18px] text-outline">expand_more</span>
+</button>
+<div class="absolute right-0 top-11 mt-1 w-56 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg py-1.5 z-40" id="profileDropdownMenu">
+<a class="flex items-center justify-between px-3 py-2 text-on-surface font-label-md text-label-md bg-surface-container-low/60 hover:bg-surface-container-low transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px] text-primary">person</span>
+<span class="font-semibold text-primary">Profile</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</a>
+<div class="my-1 border-t border-outline-variant"></div>
+<div class="px-3 pt-2 pb-1">
+<span class="font-label-xs text-label-xs text-outline font-semibold block mb-1.5">Theme</span>
+<div class="grid grid-cols-3 gap-1 bg-surface-container-low p-1 rounded-md border border-outline-variant">
+<button class="flex items-center justify-center gap-1 py-1 bg-surface-container-lowest text-primary font-semibold rounded font-label-xs text-label-xs shadow-sm border border-outline-variant transition-colors">
+<span class="material-symbols-outlined text-[12px] text-primary">check</span>
+Light
+</button>
+<button class="flex items-center justify-center py-1 text-on-surface-variant hover:text-on-surface rounded font-label-xs text-label-xs transition-colors">
+Dark
+</button>
+<button class="flex items-center justify-center py-1 text-on-surface-variant hover:text-on-surface rounded font-label-xs text-label-xs transition-colors">
+System
+</button>
+</div>
+</div>
+<div class="my-1 border-t border-outline-variant"></div>
+<a class="flex items-center gap-2.5 px-3 py-2 text-error font-label-md text-label-md hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+<span>Log out</span>
+</a>
+</div>
+</div></div>
+</header>
+<!-- Page Content Container -->
+<main class="flex-1 max-w-6xl w-full mx-auto p-8"><div class="max-w-2xl mx-auto w-full space-y-6">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">Profile</h1>
+<p class="font-body-md text-body-md text-outline mt-1">Update your name and password.</p>
+</div>
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 shadow-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-medium pb-4 border-b border-outline-variant">Your details</h2>
+<div class="mt-5 space-y-4">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5" for="name">Name</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface rounded-lg px-3 py-2 font-body-md text-body-md focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-colors" id="name" name="name" type="text" value="Sarah Jenkins"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5" for="email">Email address</label>
+<input class="w-full bg-surface-container-low/40 border border-outline-variant text-outline rounded-lg px-3 py-2 font-body-md text-body-md cursor-not-allowed select-none" disabled="" id="email" name="email" readonly="" type="email" value="sarah.j@acme.corp"/>
+<p class="font-label-xs text-label-xs text-outline mt-1.5">Only an Admin can change your email.</p>
+</div>
+<div class="pt-1">
+<span class="block font-label-md text-label-md text-on-surface mb-1.5">Role</span>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low border border-outline-variant text-on-surface font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[16px] text-primary">verified_user</span>
+<span>Sales Manager</span>
+</div>
+</div>
+<div class="pt-2">
+<button class="bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-medium px-4 py-2 rounded-lg transition-colors inline-flex items-center justify-center shadow-sm" type="button">
+Save changes
+</button>
+</div>
+</div>
+</section>
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 shadow-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-medium pb-4 border-b border-outline-variant">Change password</h2>
+<div class="mt-5 space-y-4">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5" for="current-password">Current password</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface rounded-lg pl-3 pr-10 py-2 font-body-md text-body-md focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-colors" id="current-password" placeholder="••••••••••••" type="password"/>
+<button aria-label="Toggle password visibility" class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5" for="new-password">New password</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface rounded-lg pl-3 pr-10 py-2 font-body-md text-body-md focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-colors" id="new-password" type="password"/>
+<button aria-label="Toggle password visibility" class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+<p class="font-label-xs text-label-xs text-outline mt-1.5">At least 10 characters.</p>
+</div>
+<p class="font-label-xs text-label-xs text-outline pt-0.5">
+Changing your password signs you out on your other devices.
+</p>
+<div class="pt-2">
+<button class="bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-medium px-4 py-2 rounded-lg transition-colors inline-flex items-center justify-center shadow-sm" type="button">
+Change password
+</button>
+</div>
+</div>
+</section>
+</div></main>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const profileBtn = document.getElementById('profileDropdownBtn');
+      const profileMenu = document.getElementById('profileDropdownMenu');
+
+      if (profileBtn && profileMenu) {
+        profileBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          profileMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!profileMenu.contains(e.target) && !profileBtn.contains(e.target)) {
+            profileMenu.classList.add('hidden');
+          }
+        });
+      }
+    });
+  </script>
+</body></html>

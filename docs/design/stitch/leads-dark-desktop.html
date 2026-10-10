@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Leads (Dark)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #fbf8ff;
+      color: #1a1c1e;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    .material-symbols-outlined.fill-1 {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+  </style>
+</head>
+<body class="bg-[#09090b] text-[#e4e4e7] antialiased min-h-screen flex">
+<!-- Left Sidebar (240px) -->
+<aside class="w-60 min-h-screen bg-[#121215] border-r border-[#27272a] flex flex-col justify-between shrink-0 fixed top-0 bottom-0 left-0 z-30">
+<div class="flex flex-col">
+<!-- App Brand / Logo -->
+<div class="h-14 px-5 flex items-center gap-2.5 border-b border-[#27272a]">
+<div class="w-7 h-7 rounded-lg bg-[#2563eb] flex items-center justify-center text-white shadow-sm">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24">
+<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+<polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+<line x1="12" x2="12" y1="22.08" y2="12"></line>
+</svg>
+</div>
+<div class="flex items-center gap-2"><span class="font-semibold text-base tracking-tight text-[#f4f4f5]">OpenCRM</span><span class="text-[10px] font-semibold bg-[#27272a] text-[#a1a1aa] px-1.5 py-0.5 rounded border border-[#3f3f46] uppercase tracking-wider">OSS</span></div>
+</div>
+<!-- Navigation Links -->
+<nav class="p-3 space-y-1"><!-- Home -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#18181b] rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#71717a]">home</span>
+          Home
+        </a>
+<!-- Leads (Active) -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-[#60a5fa] bg-[#1e293b]/50 rounded-lg border border-[#2563eb]/20 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#60a5fa]">filter_alt</span>
+          Leads
+        </a>
+<!-- Contacts -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#18181b] rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#71717a]">contact_page</span>
+          Contacts
+        </a>
+<!-- Companies -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#18181b] rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#71717a]">corporate_fare</span>
+          Companies
+        </a>
+<!-- Opportunities -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#18181b] rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#71717a]">monetization_on</span>
+          Opportunities
+        </a>
+<!-- Tasks -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#18181b] rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#71717a]">task_alt</span>
+          Tasks
+        </a>
+<!-- Activity -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#18181b] rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#71717a]">history</span>
+          Activity
+        </a></nav>
+</div>
+<!-- Bottom Sidebar Section -->
+<div class="p-3 border-t border-[#27272a] space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#18181b] rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#71717a]">settings</span>
+        Settings
+      </a>
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#18181b] rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#71717a]">menu_book</span>
+        Documentation
+      </a>
+<div class="px-3 pt-2 text-[11px] font-medium text-[#71717a] flex items-center justify-between">
+<span>v0.8.4 (Self-hosted)</span>
+<span class="material-symbols-outlined text-[14px] text-[#22c55e]">check_circle</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Layout -->
+<div class="pl-60 flex-1 flex flex-col min-w-0 bg-[#09090b]">
+<!-- Top Bar -->
+<header class="h-14 bg-[#121215] border-b border-[#27272a] px-8 flex items-center justify-between sticky top-0 z-20">
+<!-- Breadcrumb / Page Title Area -->
+<div class="flex items-center gap-2 text-sm">
+<span class="text-[#71717a] font-normal">Acme Sales Org</span>
+<span class="text-[#3f3f46]">/</span>
+<span class="text-[#f4f4f5] font-medium">Leads</span>
+</div>
+<!-- Right Area: notifications & user menu -->
+<div class="flex items-center gap-3">
+<!-- Notification Bell with unread badge -->
+<button class="relative p-2 text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#18181b] rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#ef4444] rounded-full ring-2 ring-[#121215]"></span>
+</button>
+<button class="p-2 text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#18181b] rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">help</span>
+</button>
+<div class="h-4 w-[1px] bg-[#27272a] mx-0.5"></div>
+<!-- User Menu Button -->
+<button class="flex items-center gap-2 pl-1 pr-2 py-1 hover:bg-[#18181b] rounded-lg transition-colors text-left">
+<div class="w-7 h-7 rounded-full bg-[#1e293b] text-[#60a5fa] border border-[#2563eb]/30 font-semibold text-xs flex items-center justify-center">
+            JS
+          </div>
+<span class="text-sm font-medium text-[#f4f4f5]">John Smith</span>
+<span class="material-symbols-outlined text-[18px] text-[#71717a]">expand_more</span>
+</button>
+</div>
+</header>
+<!-- Page Body -->
+<main class="p-8 max-w-[1240px] w-full mx-auto">
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-[#f4f4f5]">Leads</h1>
+<p class="text-sm text-[#a1a1aa] mt-0.5">Track every lead and what happens next.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-[#e4e4e7] bg-[#18181b] border border-[#3f3f46] rounded-lg hover:bg-[#27272a] hover:border-[#52525b] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-[#a1a1aa]">upload_file</span>
+            Import
+          </button>
+<button class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-white bg-[#2563eb] hover:bg-[#1d4ed8] rounded-lg transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            New lead
+          </button>
+</div>
+</div>
+<!-- Main Card Container -->
+<div class="bg-[#18181b] border border-[#27272a] rounded-lg shadow-sm overflow-visible">
+<!-- Card Toolbar -->
+<div class="p-4 border-b border-[#27272a] flex flex-wrap items-center justify-between gap-3">
+<!-- Left: Search and Filters -->
+<div class="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+<!-- Search Input -->
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-[#71717a]">search</span>
+<input class="w-full pl-9 pr-3.5 py-1.5 text-sm bg-[#121215] border border-[#27272a] rounded-lg placeholder-[#71717a] text-[#f4f4f5] focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-[#2563eb] transition-all" placeholder="Search by name, company..." type="text"/>
+</div>
+<!-- Filter Status -->
+<div class="relative">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#d4d4d8] bg-[#121215] border border-[#27272a] rounded-lg hover:bg-[#27272a] transition-colors">
+<span class="text-xs text-[#71717a] font-normal">Status:</span>
+<span>All</span>
+<span class="material-symbols-outlined text-[16px] text-[#71717a]">expand_more</span>
+</button>
+</div>
+<!-- Filter Owner -->
+<div class="relative">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#d4d4d8] bg-[#121215] border border-[#27272a] rounded-lg hover:bg-[#27272a] transition-colors">
+<span class="text-xs text-[#71717a] font-normal">Owner:</span>
+<span>All owners</span>
+<span class="material-symbols-outlined text-[16px] text-[#71717a]">expand_more</span>
+</button>
+</div>
+<!-- Filter Source -->
+<div class="relative">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#d4d4d8] bg-[#121215] border border-[#27272a] rounded-lg hover:bg-[#27272a] transition-colors">
+<span class="text-xs text-[#71717a] font-normal">Source:</span>
+<span>All sources</span>
+<span class="material-symbols-outlined text-[16px] text-[#71717a]">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Right: Export Action -->
+<div class="flex items-center gap-2">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#d4d4d8] bg-[#121215] border border-[#27272a] rounded-lg hover:bg-[#27272a] hover:border-[#3f3f46] transition-colors">
+<span class="material-symbols-outlined text-[18px] text-[#a1a1aa]">download</span>
+              Export CSV
+            </button>
+</div>
+</div>
+<!-- Table Container -->
+<div class="w-full overflow-visible">
+<table class="w-full text-left border-collapse text-sm">
+<thead>
+<tr class="border-b border-[#27272a] bg-[#121215] text-[11px] font-medium text-[#a1a1aa] uppercase tracking-wider">
+<th class="py-3 px-4 w-[240px]">NAME &amp; COMPANY</th>
+<th class="py-3 px-4 w-[130px]">STATUS</th>
+<th class="py-3 px-4 w-[120px]">SOURCE</th>
+<th class="py-3 px-4 w-[180px]">OWNER</th>
+<th class="py-3 px-4 w-[140px]">LAST CONTACT</th>
+<th class="py-3 px-4 w-[170px]">NEXT FOLLOW-UP</th>
+<th class="py-3 px-4 w-[60px] text-right">ACTIONS</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#27272a] text-[#e4e4e7]">
+<!-- Row 1: Marcus Chen (Qualified) -->
+<tr class="hover:bg-[#1f1f23] transition-colors">
+<td class="py-3 px-4">
+<div class="font-medium text-[#f4f4f5]">Marcus Chen</div>
+<div class="text-xs text-[#a1a1aa]">Northwind Logistics</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#1e293b]/70 text-[#60a5fa] border border-[#2563eb]/40">
+<span class="w-1.5 h-1.5 rounded-full bg-[#3b82f6]"></span>
+                    Qualified
+                  </span>
+</td>
+<td class="py-3 px-4 text-xs font-medium text-[#a1a1aa]">
+                  Website
+                </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-[#27272a] text-[#e4e4e7] font-medium text-[11px] flex items-center justify-center border border-[#3f3f46]">
+                      SJ
+                    </div>
+<span class="text-xs font-medium text-[#d4d4d8]">Sarah Jenkins</span>
+</div>
+</td>
+<td class="py-3 px-4 text-xs text-[#a1a1aa]">
+                  2 hours ago
+                </td>
+<td class="py-3 px-4 text-xs text-[#d4d4d8] font-medium">
+                  Tomorrow, 10:00 AM
+                </td>
+<td class="py-3 px-4 text-right">
+<button class="p-1 text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#27272a] rounded transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Elena Rostova (Contacted) -->
+<tr class="hover:bg-[#1f1f23] transition-colors">
+<td class="py-3 px-4">
+<div class="font-medium text-[#f4f4f5]">Elena Rostova</div>
+<div class="text-xs text-[#a1a1aa]">Kestrel Robotics</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#451a03]/60 text-[#fde047] border border-[#854d0e]/60">
+<span class="w-1.5 h-1.5 rounded-full bg-[#eab308]"></span>
+                    Contacted
+                  </span>
+</td>
+<td class="py-3 px-4 text-xs font-medium text-[#a1a1aa]">
+                  Referral
+                </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-[#27272a] text-[#e4e4e7] font-medium text-[11px] flex items-center justify-center border border-[#3f3f46]">
+                      MP
+                    </div>
+<span class="text-xs font-medium text-[#d4d4d8]">Maya Patel</span>
+</div>
+</td>
+<td class="py-3 px-4 text-xs text-[#a1a1aa]">
+                  Yesterday
+                </td>
+<td class="py-3 px-4 text-xs text-[#d4d4d8] font-medium">
+                  Oct 14, 2:30 PM
+                </td>
+<td class="py-3 px-4 text-right">
+<button class="p-1 text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#27272a] rounded transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Liam Gallagher (New - Overdue Follow-up) - WITH OPEN ACTIONS MENU -->
+<tr class="bg-[#1f1f23]/60 hover:bg-[#1f1f23] transition-colors relative">
+<td class="py-3 px-4">
+<div class="font-medium text-[#f4f4f5]">Liam Gallagher</div>
+<div class="text-xs text-[#a1a1aa]">Brightpath Dental</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#27272a] text-[#d4d4d8] border border-[#3f3f46]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#71717a]"></span>
+                    New
+                  </span>
+</td>
+<td class="py-3 px-4 text-xs font-medium text-[#a1a1aa]">
+                  Cold call
+                </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-[#27272a] text-[#e4e4e7] font-medium text-[11px] flex items-center justify-center border border-[#3f3f46]">
+                      SJ
+                    </div>
+<span class="text-xs font-medium text-[#d4d4d8]">Sarah Jenkins</span>
+</div>
+</td>
+<td class="py-3 px-4 text-xs text-[#a1a1aa]">
+                  3 days ago
+                </td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-[#450a0a]/70 text-[#fca5a5] border border-[#991b1b]/60">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                    Oct 12 (Overdue)
+                  </span>
+</td>
+<td class="py-3 px-4 text-right relative">
+<!-- Active Trigger -->
+<button class="p-1 text-[#60a5fa] bg-[#1e293b] rounded transition-colors ring-1 ring-[#2563eb]/50">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+<!-- Open Actions Dropdown Menu -->
+<div class="absolute right-4 top-10 w-44 bg-[#18181b] rounded-lg shadow-xl border border-[#3f3f46] py-1 text-left z-40">
+<a class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-[#e4e4e7] hover:bg-[#27272a] transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px] text-[#a1a1aa]">edit</span>
+                      Edit
+                    </a>
+<a class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-[#e4e4e7] hover:bg-[#27272a] transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px] text-[#a1a1aa]">chat</span>
+                      Log conversation
+                    </a>
+<a class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-[#e4e4e7] hover:bg-[#27272a] transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px] text-[#a1a1aa]">swap_horiz</span>
+                      Convert
+                    </a>
+<div class="h-[1px] bg-[#27272a] my-1"></div>
+<a class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-[#f87171] hover:bg-[#450a0a]/40 transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px] text-[#f87171]">delete</span>
+                      Delete
+                    </a>
+</div>
+</td>
+</tr>
+<!-- Row 4: Claire Beaumont (Converted) -->
+<tr class="hover:bg-[#1f1f23] transition-colors">
+<td class="py-3 px-4">
+<div class="font-medium text-[#f4f4f5]">Claire Beaumont</div>
+<div class="text-xs text-[#a1a1aa]">Aegis Cloud Architecture</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#052e16]/60 text-[#4ade80] border border-[#166534]/60">
+<span class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
+                    Converted
+                  </span>
+</td>
+<td class="py-3 px-4 text-xs font-medium text-[#a1a1aa]">
+                  Event
+                </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-[#27272a] text-[#e4e4e7] font-medium text-[11px] flex items-center justify-center border border-[#3f3f46]">
+                      MP
+                    </div>
+<span class="text-xs font-medium text-[#d4d4d8]">Maya Patel</span>
+</div>
+</td>
+<td class="py-3 px-4 text-xs text-[#a1a1aa]">
+                  5 days ago
+                </td>
+<td class="py-3 px-4 text-xs text-[#a1a1aa]">
+                  Account created
+                </td>
+<td class="py-3 px-4 text-right">
+<button class="p-1 text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#27272a] rounded transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Devon Vance (Lost) -->
+<tr class="hover:bg-[#1f1f23] transition-colors">
+<td class="py-3 px-4">
+<div class="font-medium text-[#f4f4f5]">Devon Vance</div>
+<div class="text-xs text-[#a1a1aa]">Vance Industrial Supply</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#450a0a]/60 text-[#f87171] border border-[#991b1b]/60">
+<span class="w-1.5 h-1.5 rounded-full bg-[#ef4444]"></span>
+                    Lost
+                  </span>
+</td>
+<td class="py-3 px-4 text-xs font-medium text-[#a1a1aa]">
+                  Cold call
+                </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-[#27272a] text-[#e4e4e7] font-medium text-[11px] flex items-center justify-center border border-[#3f3f46]">
+                      SJ
+                    </div>
+<span class="text-xs font-medium text-[#d4d4d8]">Sarah Jenkins</span>
+</div>
+</td>
+<td class="py-3 px-4 text-xs text-[#a1a1aa]">
+                  1 week ago
+                </td>
+<td class="py-3 px-4 text-xs text-[#71717a]">
+                  —
+                </td>
+<td class="py-3 px-4 text-right">
+<button class="p-1 text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#27272a] rounded transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 6: Sophia Aris (Qualified) -->
+<tr class="hover:bg-[#1f1f23] transition-colors">
+<td class="py-3 px-4">
+<div class="font-medium text-[#f4f4f5]">Sophia Aris</div>
+<div class="text-xs text-[#a1a1aa]">Pinnacle Retail Group</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#1e293b]/70 text-[#60a5fa] border border-[#2563eb]/40">
+<span class="w-1.5 h-1.5 rounded-full bg-[#3b82f6]"></span>
+                    Qualified
+                  </span>
+</td>
+<td class="py-3 px-4 text-xs font-medium text-[#a1a1aa]">
+                  Referral
+                </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-[#27272a] text-[#e4e4e7] font-medium text-[11px] flex items-center justify-center border border-[#3f3f46]">
+                      MP
+                    </div>
+<span class="text-xs font-medium text-[#d4d4d8]">Maya Patel</span>
+</div>
+</td>
+<td class="py-3 px-4 text-xs text-[#a1a1aa]">
+                  4 hours ago
+                </td>
+<td class="py-3 px-4 text-xs text-[#d4d4d8] font-medium">
+                  Oct 15, 11:00 AM
+                </td>
+<td class="py-3 px-4 text-right">
+<button class="p-1 text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#27272a] rounded transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 7: Tariq Mansour (Contacted) -->
+<tr class="hover:bg-[#1f1f23] transition-colors">
+<td class="py-3 px-4">
+<div class="font-medium text-[#f4f4f5]">Tariq Mansour</div>
+<div class="text-xs text-[#a1a1aa]">Helios Solar Energy</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#451a03]/60 text-[#fde047] border border-[#854d0e]/60">
+<span class="w-1.5 h-1.5 rounded-full bg-[#eab308]"></span>
+                    Contacted
+                  </span>
+</td>
+<td class="py-3 px-4 text-xs font-medium text-[#a1a1aa]">
+                  Other
+                </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-[#27272a] text-[#e4e4e7] font-medium text-[11px] flex items-center justify-center border border-[#3f3f46]">
+                      SJ
+                    </div>
+<span class="text-xs font-medium text-[#d4d4d8]">Sarah Jenkins</span>
+</div>
+</td>
+<td class="py-3 px-4 text-xs text-[#a1a1aa]">
+                  2 days ago
+                </td>
+<td class="py-3 px-4 text-xs text-[#d4d4d8] font-medium">
+                  Oct 16, 4:00 PM
+                </td>
+<td class="py-3 px-4 text-right">
+<button class="p-1 text-[#71717a] hover:text-[#d4d4d8] hover:bg-[#27272a] rounded transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Card Footer -->
+<div class="px-6 py-4 border-t border-[#27272a] bg-[#18181b] flex items-center justify-between text-sm">
+<div class="text-xs text-[#a1a1aa]">
+            Showing <span class="font-medium text-[#f4f4f5]">7</span> of <span class="font-medium text-[#f4f4f5]">64</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 text-xs font-medium text-[#52525b] bg-[#121215] border border-[#27272a] rounded-lg cursor-not-allowed" disabled="">
+              Previous
+            </button>
+<button class="px-3 py-1.5 text-xs font-medium text-[#d4d4d8] bg-[#18181b] border border-[#3f3f46] rounded-lg hover:bg-[#27272a] transition-colors shadow-sm">
+              Next
+            </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body>
+</html>

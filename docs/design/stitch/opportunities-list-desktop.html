@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Opportunities List</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-secondary-fixed-variant": "#3323cc",
+            "primary-fixed": "#dbe1ff",
+            "primary-container": "#2563eb",
+            "surface-container-low": "#f4f2fd",
+            "on-secondary-fixed": "#0f0069",
+            "tertiary-fixed": "#ffdbcd",
+            "background": "#fbf8ff",
+            "primary-fixed-dim": "#b4c5ff",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "tertiary": "#943700",
+            "tertiary-container": "#bc4800",
+            "on-primary": "#ffffff",
+            "secondary-fixed": "#e2dfff",
+            "on-surface": "#1a1b22",
+            "on-primary-container": "#eeefff",
+            "on-secondary": "#ffffff",
+            "outline-variant": "#c3c6d7",
+            "on-primary-fixed": "#00174b",
+            "on-error-container": "#93000a",
+            "outline": "#737686",
+            "error": "#ba1a1a",
+            "surface-container-highest": "#e3e1ec",
+            "on-tertiary-fixed": "#360f00",
+            "inverse-primary": "#b4c5ff",
+            "tertiary-fixed-dim": "#ffb596",
+            "surface-variant": "#e3e1ec",
+            "surface-dim": "#dad9e3",
+            "on-surface-variant": "#434655",
+            "on-background": "#1a1b22",
+            "secondary-fixed-dim": "#c3c0ff",
+            "surface": "#fbf8ff",
+            "primary": "#004ac6",
+            "surface-tint": "#0053db",
+            "surface-container-high": "#e8e7f1",
+            "on-tertiary-container": "#ffede6",
+            "secondary": "#4b41e1",
+            "error-container": "#ffdad6",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-error": "#ffffff",
+            "surface-bright": "#fbf8ff",
+            "surface-container": "#eeedf7",
+            "secondary-container": "#645efb",
+            "inverse-on-surface": "#f1effa",
+            "on-tertiary": "#ffffff",
+            "on-secondary-container": "#fffbff",
+            "inverse-surface": "#2f3038",
+            "surface-container-lowest": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-md": "0.75rem",
+            "space-xl": "1.5rem",
+            "space-lg": "1rem",
+            "space-xs": "0.25rem",
+            "space-2xl": "2rem",
+            "gutter": "1rem",
+            "gutter-lg": "1.5rem",
+            "space-sm": "0.5rem",
+            "margin-md": "1.5rem",
+            "margin": "1rem",
+            "margin-lg": "2rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "label-md": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-xl": ["Inter"],
+            "body-sm": ["Inter"],
+            "metric-mono": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-sm": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-zinc-50 font-body-md text-zinc-900 antialiased selection:bg-blue-100 selection:text-blue-900 min-h-screen flex">
+<!-- 1. Left Sidebar (Fixed 240px / w-60) -->
+<aside class="w-60 h-screen fixed left-0 top-0 bottom-0 bg-white border-r border-zinc-200 flex flex-col justify-between p-4 z-30 select-none">
+<div class="flex flex-col gap-6">
+<!-- Brand Header -->
+<div class="flex items-center gap-3 px-2 pt-1">
+<div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[19px]">dataset</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-[17px] font-semibold text-zinc-900 tracking-tight leading-none">OpenCRM</span>
+<span class="px-1.5 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-[10px] font-semibold text-zinc-600 tracking-wide uppercase leading-none">OSS</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-1">
+<!-- Home -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors text-sm font-normal" href="#">
+<span class="material-symbols-outlined text-[20px] text-zinc-500">home</span>
+<span>Home</span>
+</a>
+<!-- Leads -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors text-sm font-normal" href="#">
+<span class="material-symbols-outlined text-[20px] text-zinc-500">filter_alt</span>
+<span>Leads</span>
+</a>
+<!-- Contacts -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors text-sm font-normal" href="#">
+<span class="material-symbols-outlined text-[20px] text-zinc-500">contact_page</span>
+<span>Contacts</span>
+</a>
+<!-- Companies -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors text-sm font-normal" href="#">
+<span class="material-symbols-outlined text-[20px] text-zinc-500">business</span>
+<span>Companies</span>
+</a>
+<!-- Opportunities (Active) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 font-medium transition-colors text-sm" href="#" style="font-variation-settings: 'FILL' 1;">
+<span class="material-symbols-outlined text-[20px] text-blue-600">monetization_on</span>
+<span>Opportunities</span>
+</a>
+<!-- Tasks -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors text-sm font-normal" href="#">
+<span class="material-symbols-outlined text-[20px] text-zinc-500">task_alt</span>
+<span>Tasks</span>
+</a>
+<!-- Activity -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors text-sm font-normal" href="#">
+<span class="material-symbols-outlined text-[20px] text-zinc-500">history</span>
+<span>Activity</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Sidebar Footer -->
+<div class="flex flex-col gap-1 pt-4 border-t border-zinc-200">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[20px] text-zinc-500">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[20px] text-zinc-500">menu_book</span>
+<span>Documentation</span>
+</a>
+<div class="mt-2 px-3 py-2 flex items-center justify-between text-xs text-zinc-500">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-100"></span>
+<span>v0.8.4 (Self-hosted)</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- 2. Main Canvas Frame (Offset by sidebar width 240px) -->
+<div class="ml-60 flex-1 flex flex-col min-h-screen">
+<!-- Top Bar (Sticky, h-14, 56px height) -->
+<header class="h-14 border-b border-zinc-200 bg-white flex items-center justify-between px-8 sticky top-0 z-20">
+<!-- Left side: Breadcrumb -->
+<div class="flex items-center gap-2 text-sm text-zinc-500 font-normal">
+<span class="hover:text-zinc-800 cursor-pointer">Acme Sales Org</span>
+<span class="text-zinc-400">/</span>
+<span class="text-zinc-900 font-medium">Opportunities</span>
+</div>
+<!-- Right side ONLY: Bell, Help, Profile Dropdown -->
+<div class="flex items-center gap-4">
+<!-- Notification Bell with Red '3' Badge -->
+<button class="relative p-1.5 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 rounded-lg transition-colors focus:outline-none">
+<span class="material-symbols-outlined text-[20px] block">notifications</span>
+<span class="absolute top-1 right-1 w-4 h-4 bg-red-600 text-white text-[10px] font-semibold rounded-full flex items-center justify-center leading-none">3</span>
+</button>
+<!-- Help Icon -->
+<button class="p-1.5 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 rounded-lg transition-colors focus:outline-none">
+<span class="material-symbols-outlined text-[20px] block">help</span>
+</button>
+<div class="h-4 w-px bg-zinc-200"></div>
+<!-- User Dropdown Profile -->
+<button class="flex items-center gap-2.5 pl-1 py-1 pr-2 rounded-lg hover:bg-zinc-100 transition-colors focus:outline-none group">
+<div class="w-7 h-7 rounded-full bg-zinc-900 text-white font-medium text-xs flex items-center justify-center">
+            JS
+          </div>
+<div class="text-left flex flex-col">
+<span class="text-xs font-medium text-zinc-900 leading-tight">John Smith</span>
+<span class="text-[10px] text-zinc-500 leading-tight">Admin</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-zinc-400 group-hover:text-zinc-600 ml-1">expand_more</span>
+</button>
+</div>
+</header>
+<!-- 3. Main Content Area -->
+<main class="flex-1 bg-zinc-50/50 p-8 flex flex-col gap-6">
+<!-- Page Header: Title + Subtitle + Action buttons -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-2xl font-bold text-zinc-900 tracking-tight">Opportunities</h1>
+<p class="text-sm text-zinc-500 mt-0.5">Track deal progression, pipeline value, and revenue forecast.</p>
+</div>
+<div class="flex items-center gap-3">
+<!-- Segmented View Switcher: Board vs List -->
+<div class="inline-flex p-1 bg-zinc-100 border border-zinc-200 rounded-lg">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-600 hover:text-zinc-900 transition-colors">
+<span class="material-symbols-outlined text-[16px]">view_kanban</span>
+              Board
+            </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-white text-zinc-900 shadow-sm border border-zinc-200/80 transition-colors">
+<span class="material-symbols-outlined text-[16px]">view_list</span>
+              List
+            </button>
+</div>
+<!-- Primary Button: + New opportunity -->
+<button class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 text-sm transition-colors focus:ring-2 focus:ring-blue-500/20">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            New opportunity
+          </button>
+</div>
+</div>
+<!-- Main Table Card -->
+<div class="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden flex flex-col">
+<!-- Table Toolbar: Search + Dropdown Filters + Export -->
+<div class="p-3.5 border-b border-zinc-200 flex flex-wrap items-center justify-between gap-3 bg-white">
+<div class="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+<!-- Search Input -->
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 text-[18px]">search</span>
+<input class="w-full h-9 pl-8 pr-3 bg-white border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20" placeholder="Search opportunities, accounts, contacts..." type="text"/>
+</div>
+<!-- Filters -->
+<!-- Stage -->
+<div class="relative">
+<select class="h-9 pl-3 pr-8 bg-white border border-zinc-200 rounded-lg text-xs font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer">
+<option>All stages</option>
+<option>New</option>
+<option>Qualified</option>
+<option>Proposal</option>
+<option>Negotiation</option>
+<option>Won</option>
+<option>Lost</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 text-[16px] pointer-events-none">expand_more</span>
+</div>
+<!-- Owner -->
+<div class="relative">
+<select class="h-9 pl-3 pr-8 bg-white border border-zinc-200 rounded-lg text-xs font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer">
+<option>All owners</option>
+<option>Sarah Jenkins</option>
+<option>Alex Rivera</option>
+<option>Maya Patel</option>
+<option>John Smith</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 text-[16px] pointer-events-none">expand_more</span>
+</div>
+<!-- Close Date -->
+<div class="relative">
+<select class="h-9 pl-3 pr-8 bg-white border border-zinc-200 rounded-lg text-xs font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer">
+<option>This quarter</option>
+<option>This month</option>
+<option>Next quarter</option>
+<option>Fiscal Year 2025</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 text-[16px] pointer-events-none">expand_more</span>
+</div>
+<!-- Reset Button -->
+<button class="h-9 px-2.5 text-xs font-medium text-zinc-500 hover:text-zinc-800 transition-colors">
+              Reset
+            </button>
+</div>
+<!-- Right Action: Export CSV -->
+<div class="flex items-center">
+<button class="h-9 px-3 border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-zinc-500">download</span>
+              Export CSV
+            </button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm border-collapse">
+<thead>
+<tr class="bg-zinc-50/80 border-b border-zinc-200 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider select-none">
+<th class="py-3 px-4 w-10 text-center">
+<input class="w-4 h-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer" type="checkbox"/>
+</th>
+<th class="py-3 px-4">Opportunity</th>
+<th class="py-3 px-4">Stage</th>
+<th class="py-3 px-4 text-right">Value</th>
+<th class="py-3 px-4">Expected Close</th>
+<th class="py-3 px-4">Owner</th>
+<th class="py-3 px-4">Last Activity</th>
+<th class="py-3 px-4 text-center w-12">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-zinc-100">
+<!-- Row 1 -->
+<tr class="hover:bg-zinc-50/70 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input class="w-4 h-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-zinc-900 group-hover:text-blue-600 cursor-pointer transition-colors leading-snug">Northwind Logistics - Fleet Expansion</div>
+<div class="text-xs text-zinc-400">Northwind Trans Inc.</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200/60">
+                    Proposal
+                  </span>
+</td>
+<td class="py-3.5 px-4 text-right font-medium text-zinc-900 font-mono tracking-tight">$48,000</td>
+<td class="py-3.5 px-4 text-zinc-600 text-xs">Nov 15, 2025</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-violet-100 text-violet-700 font-semibold text-[10px] flex items-center justify-center">SJ</span>
+<span class="text-xs text-zinc-700">Sarah Jenkins</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-zinc-500 text-xs">2 hours ago</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 text-zinc-400 hover:text-zinc-700 rounded hover:bg-zinc-100 transition-colors">
+<span class="material-symbols-outlined text-[18px] block">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-zinc-50/70 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input class="w-4 h-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-zinc-900 group-hover:text-blue-600 cursor-pointer transition-colors leading-snug">Kestrel Robotics - Vision Platform</div>
+<div class="text-xs text-zinc-400">Kestrel Systems</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200/60">
+                    Qualified
+                  </span>
+</td>
+<td class="py-3.5 px-4 text-right font-medium text-zinc-900 font-mono tracking-tight">$64,000</td>
+<td class="py-3.5 px-4 text-zinc-600 text-xs">Nov 18, 2025</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-cyan-100 text-cyan-700 font-semibold text-[10px] flex items-center justify-center">AR</span>
+<span class="text-xs text-zinc-700">Alex Rivera</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-zinc-500 text-xs">Yesterday</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 text-zinc-400 hover:text-zinc-700 rounded hover:bg-zinc-100 transition-colors">
+<span class="material-symbols-outlined text-[18px] block">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-zinc-50/70 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input class="w-4 h-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-zinc-900 group-hover:text-blue-600 cursor-pointer transition-colors leading-snug">Aegis Cloud - SOC2 Compliance Suite</div>
+<div class="text-xs text-zinc-400">Aegis Security Corp</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200/60">
+                    Negotiation
+                  </span>
+</td>
+<td class="py-3.5 px-4 text-right font-medium text-zinc-900 font-mono tracking-tight">$58,000</td>
+<td class="py-3.5 px-4 text-zinc-600 text-xs">Dec 01, 2025</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-rose-100 text-rose-700 font-semibold text-[10px] flex items-center justify-center">MP</span>
+<span class="text-xs text-zinc-700">Maya Patel</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-zinc-500 text-xs">4 hours ago</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 text-zinc-400 hover:text-zinc-700 rounded hover:bg-zinc-100 transition-colors">
+<span class="material-symbols-outlined text-[18px] block">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-zinc-50/70 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input class="w-4 h-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-zinc-900 group-hover:text-blue-600 cursor-pointer transition-colors leading-snug">Brightpath Dental - Multi-clinic ERP</div>
+<div class="text-xs text-zinc-400">Brightpath Health</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-700 border border-zinc-200">
+                    New
+                  </span>
+</td>
+<td class="py-3.5 px-4 text-right font-medium text-zinc-900 font-mono tracking-tight">$22,500</td>
+<td class="py-3.5 px-4 text-zinc-600 text-xs">Dec 12, 2025</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-zinc-200 text-zinc-800 font-semibold text-[10px] flex items-center justify-center">JS</span>
+<span class="text-xs text-zinc-700">John Smith</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-zinc-500 text-xs">1 day ago</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 text-zinc-400 hover:text-zinc-700 rounded hover:bg-zinc-100 transition-colors">
+<span class="material-symbols-outlined text-[18px] block">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-zinc-50/70 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input class="w-4 h-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-zinc-900 group-hover:text-blue-600 cursor-pointer transition-colors leading-snug">Pinnacle Retail - POS Sync & Omnichannel</div>
+<div class="text-xs text-zinc-400">Pinnacle Omnichannel</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Won
+                  </span>
+</td>
+<td class="py-3.5 px-4 text-right font-medium text-zinc-900 font-mono tracking-tight">$36,500</td>
+<td class="py-3.5 px-4 text-zinc-600 text-xs">Oct 28, 2025</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-violet-100 text-violet-700 font-semibold text-[10px] flex items-center justify-center">SJ</span>
+<span class="text-xs text-zinc-700">Sarah Jenkins</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-zinc-500 text-xs">3 days ago</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 text-zinc-400 hover:text-zinc-700 rounded hover:bg-zinc-100 transition-colors">
+<span class="material-symbols-outlined text-[18px] block">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-zinc-50/70 transition-colors group opacity-85">
+<td class="py-3.5 px-4 text-center">
+<input class="w-4 h-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-zinc-600 group-hover:text-blue-600 cursor-pointer transition-colors leading-snug">Ironclad Security - Multi-cloud SIEM</div>
+<div class="text-xs text-zinc-400">Ironclad Cyber</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200/60">
+                    Lost
+                  </span>
+</td>
+<td class="py-3.5 px-4 text-right font-medium text-zinc-400 font-mono tracking-tight line-through">$46,000</td>
+<td class="py-3.5 px-4 text-zinc-500 text-xs">Oct 14, 2025</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-zinc-200 text-zinc-800 font-semibold text-[10px] flex items-center justify-center">JS</span>
+<span class="text-xs text-zinc-700">John Smith</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-zinc-500 text-xs">5 days ago</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 text-zinc-400 hover:text-zinc-700 rounded hover:bg-zinc-100 transition-colors">
+<span class="material-symbols-outlined text-[18px] block">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-zinc-50/70 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input class="w-4 h-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-zinc-900 group-hover:text-blue-600 cursor-pointer transition-colors leading-snug">Vanguard Biotech - Lab Tracker Integration</div>
+<div class="text-xs text-zinc-400">Vanguard Sciences</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200/60">
+                    Proposal
+                  </span>
+</td>
+<td class="py-3.5 px-4 text-right font-medium text-zinc-900 font-mono tracking-tight">$22,000</td>
+<td class="py-3.5 px-4 text-zinc-600 text-xs">Dec 05, 2025</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-zinc-200 text-zinc-800 font-semibold text-[10px] flex items-center justify-center">JS</span>
+<span class="text-xs text-zinc-700">John Smith</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-zinc-500 text-xs">2 days ago</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 text-zinc-400 hover:text-zinc-700 rounded hover:bg-zinc-100 transition-colors">
+<span class="material-symbols-outlined text-[18px] block">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 8 -->
+<tr class="hover:bg-zinc-50/70 transition-colors group">
+<td class="py-3.5 px-4 text-center">
+<input class="w-4 h-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-zinc-900 group-hover:text-blue-600 cursor-pointer transition-colors leading-snug">Echo Wave Systems - SLA Add-on</div>
+<div class="text-xs text-zinc-400">Echo Wave LLC</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200/60">
+                    Qualified
+                  </span>
+</td>
+<td class="py-3.5 px-4 text-right font-medium text-zinc-900 font-mono tracking-tight">$16,000</td>
+<td class="py-3.5 px-4 text-zinc-600 text-xs">Dec 14, 2025</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-rose-100 text-rose-700 font-semibold text-[10px] flex items-center justify-center">MP</span>
+<span class="text-xs text-zinc-700">Maya Patel</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-zinc-500 text-xs">Just now</td>
+<td class="py-3.5 px-4 text-center">
+<button class="p-1 text-zinc-400 hover:text-zinc-700 rounded hover:bg-zinc-100 transition-colors">
+<span class="material-symbols-outlined text-[18px] block">more_horiz</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Summary Row (Directly above pagination, exactly matching instructions) -->
+<div class="px-6 py-3 bg-zinc-50/60 border-t border-zinc-200 flex items-center justify-between text-xs">
+<div class="text-zinc-900 font-semibold">
+            Total open value: $312,400
+          </div>
+<div class="text-zinc-500">
+            8 opportunities displayed
+          </div>
+</div>
+<!-- Pagination Footer -->
+<div class="px-6 py-3.5 bg-white border-t border-zinc-200 flex items-center justify-between">
+<div class="text-xs text-zinc-500">
+            Showing <span class="font-medium text-zinc-900">8</span> of <span class="font-medium text-zinc-900">41</span> opportunities
+          </div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 border border-zinc-200 text-xs font-medium text-zinc-400 rounded-lg cursor-not-allowed bg-zinc-50" disabled="">
+              Previous
+            </button>
+<button class="px-3 py-1.5 border border-zinc-200 text-xs font-medium text-zinc-700 rounded-lg hover:bg-zinc-50 transition-colors shadow-sm bg-white">
+              Next
+            </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Profile Settings</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-high": "#2a2a2c",
+            "on-tertiary-fixed-variant": "#723600",
+            "on-primary-container": "#00285d",
+            "secondary-fixed-dim": "#b4c5ff",
+            "surface-container-highest": "#353437",
+            "secondary-container": "#0053db",
+            "surface-bright": "#39393b",
+            "on-primary-fixed-variant": "#004395",
+            "on-secondary": "#002a78",
+            "outline": "#8c909f",
+            "on-tertiary": "#502400",
+            "tertiary-fixed": "#ffdcc6",
+            "on-tertiary-fixed": "#311400",
+            "error-container": "#93000a",
+            "on-secondary-fixed": "#00174b",
+            "on-primary": "#002e6a",
+            "secondary-fixed": "#dbe1ff",
+            "inverse-on-surface": "#313032",
+            "on-error-container": "#ffdad6",
+            "primary-fixed-dim": "#adc6ff",
+            "background": "#131315",
+            "primary-container": "#4d8eff",
+            "on-surface-variant": "#c2c6d6",
+            "tertiary-container": "#df7412",
+            "surface": "#131315",
+            "on-primary-fixed": "#001a42",
+            "surface-container-lowest": "#0e0e10",
+            "on-secondary-container": "#cdd7ff",
+            "surface-variant": "#353437",
+            "primary": "#adc6ff",
+            "secondary": "#b4c5ff",
+            "inverse-surface": "#e5e1e4",
+            "outline-variant": "#424754",
+            "tertiary-fixed-dim": "#ffb786",
+            "inverse-primary": "#005ac2",
+            "primary-fixed": "#d8e2ff",
+            "surface-container": "#201f22",
+            "surface-dim": "#131315",
+            "on-surface": "#e5e1e4",
+            "surface-tint": "#adc6ff",
+            "tertiary": "#ffb786",
+            "error": "#ffb4ab",
+            "on-tertiary-container": "#461f00",
+            "on-secondary-fixed-variant": "#003ea8",
+            "on-error": "#690005",
+            "on-background": "#e5e1e4",
+            "surface-container-low": "#1c1b1d"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-lg": "1.5rem",
+            "space-xs": "0.25rem",
+            "gutter-mobile": "0.75rem",
+            "margin": "1.5rem",
+            "space-sm": "0.5rem",
+            "space-xl": "2rem",
+            "margin-mobile": "1rem",
+            "space-md": "1rem",
+            "margin-desktop": "2rem",
+            "gutter": "1rem",
+            "gutter-desktop": "1.5rem"
+          },
+          "fontFamily": {
+            "headline-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "headline-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-xl": ["Inter"],
+            "label-xs": ["Inter"],
+            "headline-xl-mobile": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-lg-mobile": ["Inter"]
+          },
+          "fontSize": {
+            "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "-0.005em", "fontWeight": "500" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.025em", "fontWeight": "600" }],
+            "label-xs": ["11px", { "lineHeight": "14px", "letterSpacing": "0.03em", "fontWeight": "600" }],
+            "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg-mobile": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+  </style>
+</head>
+<body class="bg-[#0e0e10] text-on-surface antialiased flex h-screen overflow-hidden font-body-md select-none">
+<!-- Left Sidebar (SideNav Blueprint) -->
+<aside class="fixed top-0 left-0 h-screen w-60 bg-surface-container-low border-r border-outline-variant flex flex-col justify-between z-30">
+<div class="flex flex-col">
+<!-- App Header / Logo -->
+<div class="h-14 flex items-center justify-between px-4 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-secondary-container flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-white text-[18px]">hub</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">OpenCRM</span>
+</div>
+<span class="font-label-xs text-label-xs px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-medium border border-outline-variant">OSS</span>
+</div>
+<!-- Main Navigation -->
+<nav class="p-space-sm space-y-1">
+<!-- Home (Inactive) -->
+<a class="flex items-center gap-space-sm text-on-surface-variant font-label-md text-label-md rounded-lg px-3 py-2 hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+<span>Home</span>
+</a>
+<!-- Users (Inactive) -->
+<a class="flex items-center gap-space-sm text-on-surface-variant font-label-md text-label-md rounded-lg px-3 py-2 hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Users</span>
+</a>
+<!-- Profile (Active State) -->
+<a class="flex items-center gap-space-sm text-primary font-label-md text-label-md font-semibold bg-surface-container-high rounded-lg px-3 py-2 border-l-2 border-primary" href="#">
+<span class="material-symbols-outlined filled text-primary">person</span>
+<span>Profile</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Sidebar Section -->
+<div class="p-space-sm border-t border-outline-variant space-y-1">
+<a class="flex items-center gap-space-sm text-on-surface-variant font-label-md text-label-md rounded-lg px-3 py-2 hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant font-label-md text-label-md rounded-lg px-3 py-2 hover:bg-surface-container hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span>Documentation</span>
+</a>
+<div class="pt-2 px-3 pb-1 flex items-center justify-between text-on-surface-variant opacity-70">
+<span class="font-label-xs text-label-xs">v0.8.4 (Self-hosted)</span>
+<span class="material-symbols-outlined text-[14px] text-primary">check_circle</span>
+</div>
+</div>
+</aside>
+<!-- Main Viewport Context -->
+<div class="flex-1 ml-60 flex flex-col h-screen overflow-hidden bg-[#0e0e10]">
+<!-- Top Bar (TopNav Blueprint) -->
+<header class="h-14 bg-surface border-b border-outline-variant flex items-center justify-between px-6 z-20 shrink-0">
+<!-- Breadcrumb Path -->
+<div class="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant">
+<span>Acme Sales Org</span>
+<span class="text-outline">/</span>
+<span>Settings</span>
+<span class="text-outline">/</span>
+<span class="text-on-surface font-semibold">Profile</span>
+</div>
+<!-- Action Items & Popover Menu Container -->
+<div class="relative flex items-center gap-2">
+<button aria-label="Notifications" class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button aria-label="Help" class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150">
+<span class="material-symbols-outlined">help</span>
+</button>
+<!-- User Profile Trigger Button -->
+<button class="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface border border-outline-variant transition-colors duration-150 ml-1">
+<div class="w-6 h-6 rounded bg-secondary-container text-on-primary flex items-center justify-center font-label-xs text-label-xs font-semibold">
+            JS
+          </div>
+<span class="font-label-md text-label-md font-medium text-on-surface">John Smith</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">expand_more</span>
+</button>
+<!-- USER MENU IS OPEN / POPPED OVER -->
+<div class="absolute right-0 top-11 w-56 rounded-lg bg-surface-container border border-outline-variant shadow-lg py-1.5 z-50">
+<!-- Item 1: Profile -->
+<a class="flex items-center justify-between px-3 py-2 text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px] text-primary">person</span>
+<span>Profile</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</a>
+<!-- Divider & Theme Section -->
+<div class="my-1 border-t border-outline-variant"></div>
+<div class="px-3 pt-2 pb-1">
+<span class="font-label-xs text-label-xs text-on-surface-variant font-semibold">Theme</span>
+<!-- Segmented Theme Options -->
+<div class="grid grid-cols-3 gap-1 bg-surface-container-lowest p-1 rounded-md border border-outline-variant mt-1.5">
+<button class="flex items-center justify-center py-1 text-on-surface-variant hover:text-on-surface rounded font-label-xs text-label-xs transition-colors">
+                Light
+              </button>
+<button class="flex items-center justify-center gap-1 py-1 bg-surface-container-high text-primary font-semibold rounded font-label-xs text-label-xs shadow-sm border border-outline-variant">
+<span class="material-symbols-outlined text-[12px] filled text-primary">check</span>
+                Dark
+              </button>
+<button class="flex items-center justify-center py-1 text-on-surface-variant hover:text-on-surface rounded font-label-xs text-label-xs transition-colors">
+                System
+              </button>
+</div>
+</div>
+<!-- Divider & Log out -->
+<div class="my-1 border-t border-outline-variant"></div>
+<a class="flex items-center gap-2.5 px-3 py-2 text-error font-label-md text-label-md hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+<span>Log out</span>
+</a>
+</div>
+</div>
+</header>
+<!-- Scrollable Content Canvas -->
+<main class="flex-1 overflow-y-auto px-6 py-8">
+<div class="max-w-[640px] mx-auto w-full space-y-6">
+<!-- Page Header -->
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">Profile</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Update your name and password.</p>
+</div>
+<!-- Card 1: Your Details -->
+<section class="bg-surface-container-low border border-outline-variant rounded-lg p-6">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-medium pb-4 border-b border-outline-variant">Your details</h2>
+<div class="mt-5 space-y-4">
+<!-- Field 1: Name -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5" for="name">Name</label>
+<input class="w-full bg-[#121214] border border-outline-variant text-on-surface rounded-lg px-3 py-2 font-body-md text-body-md focus:outline-none focus:border-primary-container focus:ring-0 transition-colors" id="name" name="name" type="text" value="John Smith"/>
+</div>
+<!-- Field 2: Email (Disabled / Read-only) -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5" for="email">Email address</label>
+<input class="w-full bg-surface-container opacity-60 cursor-not-allowed border border-outline-variant text-on-surface-variant rounded-lg px-3 py-2 font-body-md text-body-md select-none" disabled="" id="email" name="email" readonly="" type="email" value="john.smith@acme.corp"/>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1.5">Only an Admin can change your email.</p>
+</div>
+<!-- Field 3: Role Badge -->
+<div class="pt-1">
+<span class="block font-label-md text-label-md text-on-surface mb-1.5">Role</span>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container border border-outline-variant text-on-surface font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px] text-primary">verified_user</span>
+<span>Sales Manager</span>
+</div>
+</div>
+<!-- Action -->
+<div class="pt-3">
+<button class="bg-secondary-container hover:bg-primary-container text-white font-label-md text-label-md font-medium px-4 py-2 rounded-lg transition-colors inline-flex items-center justify-center" type="button">
+                Save changes
+              </button>
+</div>
+</div>
+</section>
+<!-- Card 2: Change Password -->
+<section class="bg-surface-container-low border border-outline-variant rounded-lg p-6">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-medium pb-4 border-b border-outline-variant">Change password</h2>
+<div class="mt-5 space-y-4">
+<!-- Field 1: Current Password -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5" for="current-password">Current password</label>
+<div class="relative">
+<input class="w-full bg-[#121214] border border-outline-variant text-on-surface rounded-lg pl-3 pr-10 py-2 font-body-md text-body-md focus:outline-none focus:border-primary-container focus:ring-0 transition-colors" id="current-password" placeholder="••••••••••••" type="password"/>
+<button aria-label="Toggle password visibility" class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- Field 2: New Password -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5" for="new-password">New password</label>
+<input class="w-full bg-[#121214] border border-outline-variant text-on-surface rounded-lg px-3 py-2 font-body-md text-body-md focus:outline-none focus:border-primary-container focus:ring-0 transition-colors" id="new-password" type="password"/>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1.5">At least 10 characters.</p>
+</div>
+<!-- Field 3: Confirm New Password -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5" for="confirm-password">Confirm new password</label>
+<input class="w-full bg-[#121214] border border-outline-variant text-on-surface rounded-lg px-3 py-2 font-body-md text-body-md focus:outline-none focus:border-primary-container focus:ring-0 transition-colors" id="confirm-password" type="password"/>
+</div>
+<!-- Helper Sign-out Notice -->
+<p class="font-label-xs text-label-xs text-on-surface-variant pt-1">
+              Changing your password signs you out on your other devices.
+            </p>
+<!-- Action -->
+<div class="pt-2">
+<button class="bg-secondary-container hover:bg-primary-container text-white font-label-md text-label-md font-medium px-4 py-2 rounded-lg transition-colors inline-flex items-center justify-center" type="button">
+                Change password
+              </button>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

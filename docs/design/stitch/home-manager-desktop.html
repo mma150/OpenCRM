@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpenCRM - Home (Manager)</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed": "#dbe1ff",
+            "on-tertiary-fixed": "#360f00",
+            "inverse-primary": "#b4c5ff",
+            "on-surface-variant": "#434655",
+            "surface-tint": "#0053db",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#c3c0ff",
+            "on-secondary-fixed-variant": "#3323cc",
+            "secondary-fixed": "#e2dfff",
+            "error": "#ba1a1a",
+            "on-tertiary-container": "#ffede6",
+            "surface-bright": "#fbf8ff",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-error": "#ffffff",
+            "tertiary-container": "#bc4800",
+            "surface-container-highest": "#e3e1ec",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "on-secondary-container": "#fffbff",
+            "on-secondary-fixed": "#0f0069",
+            "outline-variant": "#c3c6d7",
+            "surface-container-low": "#f4f2fd",
+            "surface-dim": "#dad9e3",
+            "surface-variant": "#e3e1ec",
+            "error-container": "#ffdad6",
+            "secondary": "#4b41e1",
+            "tertiary-fixed-dim": "#ffb596",
+            "on-secondary": "#ffffff",
+            "on-primary-fixed": "#00174b",
+            "on-error-container": "#93000a",
+            "tertiary": "#943700",
+            "on-tertiary": "#ffffff",
+            "background": "#fbf8ff",
+            "inverse-surface": "#2f3038",
+            "on-primary": "#ffffff",
+            "surface": "#fbf8ff",
+            "on-background": "#1a1b22",
+            "surface-container-high": "#e8e7f1",
+            "surface-container": "#eeedf7",
+            "primary-fixed-dim": "#b4c5ff",
+            "outline": "#737686",
+            "primary": "#004ac6",
+            "on-primary-container": "#eeefff",
+            "on-surface": "#1a1b22",
+            "primary-container": "#2563eb",
+            "inverse-on-surface": "#f1effa",
+            "tertiary-fixed": "#ffdbcd",
+            "secondary-container": "#645efb"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-md": "1.5rem",
+            "gutter": "1rem",
+            "space-xs": "0.25rem",
+            "margin-lg": "2rem",
+            "space-sm": "0.5rem",
+            "space-2xl": "2rem",
+            "gutter-lg": "1.5rem",
+            "space-xl": "1.5rem",
+            "space-lg": "1rem",
+            "margin": "1rem",
+            "space-md": "0.75rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "headline-xl": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "metric-mono": ["Inter"],
+            "body-md": ["Inter"],
+            "label-md": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "metric-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500" }]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-surface text-on-surface antialiased flex h-screen overflow-hidden selection:bg-primary-fixed selection:text-primary">
+<!-- ================= SIDEBAR (Shared Component: SideNavBar) ================= -->
+<!-- Contextual mapping: 'Users' is the exact active screen destination -->
+<aside class="fixed left-0 top-0 bottom-0 w-60 z-30 flex flex-col justify-between p-4 bg-surface-container-lowest border-r border-outline-variant shadow-sm shrink-0">
+<!-- Top Branding & Navigation -->
+<div class="flex flex-col gap-5">
+<!-- Wordmark & Logo Header -->
+<div class="flex items-center justify-between px-2 pt-1">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-bold text-headline-sm">
+<span class="material-symbols-outlined text-[18px]">view_quilt</span>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">OpenCRM</span>
+</div>
+</div>
+<span class="text-body-sm font-body-sm text-outline px-1.5 py-0.5 rounded border border-outline-variant">OSS</span>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex flex-col gap-1"><!-- Tab: Home (ACTIVE) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-low text-primary font-medium hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span>Home</span>
+</a>
+<!-- Tab: Leads -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">filter_alt</span>
+<span>Leads</span>
+</a>
+<!-- Tab: Contacts -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">contact_page</span>
+<span>Contacts</span>
+</a>
+<!-- Tab: Companies -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">apartment</span>
+<span>Companies</span>
+</a>
+<!-- Tab: Opportunities -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">monetization_on</span>
+<span>Opportunities</span>
+</a>
+<!-- Tab: Tasks -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">task_alt</span>
+<span>Tasks</span>
+</a>
+<!-- Tab: Activity -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">timeline</span>
+<span>Activity</span>
+</a></nav>
+</div>
+<!-- Sidebar Bottom / Footer Tabs -->
+<div class="flex flex-col gap-1 border-t border-outline-variant pt-3">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-normal hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">menu_book</span>
+<span>Documentation</span>
+</a>
+<div class="px-3 py-2 flex items-center justify-between text-body-sm font-body-sm text-outline">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>
+<span>v0.8.4 (Self-hosted)</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- ================= MAIN VIEWPORT ================= -->
+<div class="pl-60 flex-1 flex flex-col h-screen overflow-y-auto">
+<!-- Top Header Bar (Shared Component: TopNavBar execution) -->
+<header class="sticky top-0 z-20 flex justify-between items-center h-14 px-8 w-full bg-surface-container-lowest border-b border-outline-variant shadow-sm">
+<!-- Breadcrumb indicator -->
+<div class="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant"><span class="hover:text-on-surface cursor-pointer">Acme Sales Org</span>
+<span class="text-outline">/</span>
+<span class="text-on-surface font-medium">Home</span></div>
+<!-- Header Trailing Action & Profile Menu Area -->
+<div class="flex items-center gap-4 relative"><div class="flex items-center gap-1 border-r border-outline-variant pr-4">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150 relative" title="Notifications">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1 right-1 w-4 h-4 bg-primary text-on-primary rounded-full text-[10px] font-semibold flex items-center justify-center leading-none">3</span>
+</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-150" title="Help">
+<span class="material-symbols-outlined text-[20px]">help</span>
+</button>
+</div>
+<!-- Profile trigger -->
+<div class="relative">
+<button class="flex items-center gap-2.5 p-1 rounded-lg hover:bg-surface-container-low transition-colors duration-150 cursor-pointer" id="profileDropdownBtn">
+<div aria-label="User avatar initials SJ" class="w-7 h-7 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center font-label-sm text-label-sm text-on-surface font-medium">
+      SJ
+    </div>
+<span class="font-label-md text-label-md text-on-surface font-medium">Sarah Jenkins</span>
+<span class="material-symbols-outlined text-[18px] text-outline">expand_more</span>
+</button>
+</div></div>
+</header>
+<!-- Page Content Container -->
+<main class="flex-1 max-w-6xl w-full mx-auto p-8"><!-- Header Row -->
+<div class="flex items-center justify-between mb-6">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-on-surface font-headline-lg">Good morning, Sarah</h1>
+<p class="text-sm text-outline font-body-md mt-1">Sales Manager · Thursday 8 October</p>
+</div>
+<button class="h-9 px-3.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-2 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline">calendar_today</span>
+<span class="font-medium">This month</span>
+<span class="material-symbols-outlined text-[18px] text-outline">expand_more</span>
+</button>
+</div>
+<!-- 4 Stat Cards Grid -->
+<div class="grid grid-cols-4 gap-4 mb-6">
+<div class="p-5 rounded-lg bg-surface-container-lowest border border-outline-variant shadow-sm">
+<div class="text-label-sm font-label-sm uppercase tracking-wider text-outline font-medium mb-1.5">Team open leads</div>
+<div class="text-3xl font-bold text-on-surface tracking-tight font-headline-xl">64</div>
+</div>
+<div class="p-5 rounded-lg bg-surface-container-lowest border border-outline-variant shadow-sm">
+<div class="text-label-sm font-label-sm uppercase tracking-wider text-outline font-medium mb-1.5">Team pipeline value</div>
+<div class="text-3xl font-bold text-on-surface tracking-tight font-headline-xl">$312,400</div>
+</div>
+<div class="p-5 rounded-lg bg-surface-container-lowest border border-outline-variant shadow-sm">
+<div class="text-label-sm font-label-sm uppercase tracking-wider text-outline font-medium mb-1.5">Won this month</div>
+<div class="text-3xl font-bold text-emerald-800 tracking-tight font-headline-xl">$58,200</div>
+</div>
+<div class="p-5 rounded-lg bg-surface-container-lowest border border-outline-variant shadow-sm">
+<div class="text-label-sm font-label-sm uppercase tracking-wider text-outline font-medium mb-1.5">Overdue tasks</div>
+<div class="text-3xl font-bold text-amber-800 tracking-tight font-headline-xl">7</div>
+</div>
+</div>
+<!-- Team Performance Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm mb-6 overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
+<div>
+<h2 class="font-semibold text-on-surface font-headline-sm">Team performance</h2>
+<p class="font-body-sm text-body-sm text-outline mt-0.5">Individual rep performance and conversion for the current month</p>
+</div>
+</div>
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="py-2.5 px-6 font-label-sm text-label-sm text-outline font-medium uppercase tracking-wider">Rep</th>
+<th class="py-2.5 px-6 font-label-sm text-label-sm text-outline font-medium uppercase tracking-wider text-right">Leads handled</th>
+<th class="py-2.5 px-6 font-label-sm text-label-sm text-outline font-medium uppercase tracking-wider text-right">Conversations logged</th>
+<th class="py-2.5 px-6 font-label-sm text-label-sm text-outline font-medium uppercase tracking-wider text-right">Opportunities won</th>
+<th class="py-2.5 px-6 font-label-sm text-label-sm text-outline font-medium uppercase tracking-wider text-right">Opportunities lost</th>
+<th class="py-2.5 px-6 font-label-sm text-label-sm text-outline font-medium uppercase tracking-wider text-right">Won value</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1: Marcus Chen -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-3 px-6">
+<div class="flex items-center gap-3">
+<div class="w-7 h-7 rounded-full bg-primary-fixed text-primary font-medium flex items-center justify-center font-label-sm text-label-sm">MC</div>
+<span class="font-body-md text-body-md text-on-surface font-medium">Marcus Chen</span>
+</div>
+</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">22</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">48</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">5</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-outline">2</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md font-medium text-on-surface">$24,500</td>
+</tr>
+<!-- Row 2: Elena Rostova -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-3 px-6">
+<div class="flex items-center gap-3">
+<div class="w-7 h-7 rounded-full bg-secondary-fixed text-secondary font-medium flex items-center justify-center font-label-sm text-label-sm">ER</div>
+<span class="font-body-md text-body-md text-on-surface font-medium">Elena Rostova</span>
+</div>
+</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">18</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">39</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">4</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-outline">1</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md font-medium text-on-surface">$19,200</td>
+</tr>
+<!-- Row 3: Alex Rivera -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-3 px-6">
+<div class="flex items-center gap-3">
+<div class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface font-medium flex items-center justify-center font-label-sm text-label-sm">AR</div>
+<span class="font-body-md text-body-md text-on-surface font-medium">Alex Rivera</span>
+</div>
+</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">14</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">31</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">2</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-outline">2</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md font-medium text-on-surface">$8,500</td>
+</tr>
+<!-- Row 4: Priya Nair -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-3 px-6">
+<div class="flex items-center gap-3">
+<div class="w-7 h-7 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-medium flex items-center justify-center font-label-sm text-label-sm">PN</div>
+<span class="font-body-md text-body-md text-on-surface font-medium">Priya Nair</span>
+</div>
+</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">10</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">24</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">1</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-outline">1</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md font-medium text-on-surface">$6,000</td>
+</tr>
+</tbody>
+<tfoot>
+<tr class="bg-surface-container-low/40 border-t border-outline-variant font-semibold">
+<td class="py-3 px-6 text-on-surface font-body-md text-body-md">Total</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">64</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">142</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">12</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">6</td>
+<td class="py-3 px-6 text-right font-body-md text-body-md text-on-surface">$58,200</td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+<!-- Two Columns Section -->
+<div class="grid grid-cols-2 gap-6">
+<!-- Left Card: Pipeline by stage -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-1">
+<h2 class="font-semibold text-on-surface font-headline-sm">Pipeline by stage</h2>
+<span class="text-body-sm font-body-sm text-outline">Team totals · $312,400 active value</span>
+</div>
+<p class="font-body-sm text-body-sm text-outline mb-6">Distribution of active deals across funnel stages</p>
+<div class="flex flex-col gap-4">
+<!-- Stage 1 -->
+<div>
+<div class="flex items-center justify-between text-body-sm font-body-sm mb-1.5">
+<span class="font-medium text-on-surface">New</span>
+<span class="text-outline">24 deals · <span class="font-medium text-on-surface">$62,000</span></span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-low overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 20%;"></div>
+</div>
+</div>
+<!-- Stage 2 -->
+<div>
+<div class="flex items-center justify-between text-body-sm font-body-sm mb-1.5">
+<span class="font-medium text-on-surface">Qualified</span>
+<span class="text-outline">18 deals · <span class="font-medium text-on-surface">$94,400</span></span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-low overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 30%;"></div>
+</div>
+</div>
+<!-- Stage 3 -->
+<div>
+<div class="flex items-center justify-between text-body-sm font-body-sm mb-1.5">
+<span class="font-medium text-on-surface">Proposal</span>
+<span class="text-outline">14 deals · <span class="font-medium text-on-surface">$108,000</span></span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-low overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 35%;"></div>
+</div>
+</div>
+<!-- Stage 4 -->
+<div>
+<div class="flex items-center justify-between text-body-sm font-body-sm mb-1.5">
+<span class="font-medium text-on-surface">Negotiation</span>
+<span class="text-outline">8 deals · <span class="font-medium text-on-surface">$48,000</span></span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-low overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 15%;"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4 mt-6 border-t border-outline-variant flex items-center justify-between text-body-sm text-outline">
+<span>64 total opportunities</span>
+<span class="font-medium text-on-surface">Avg deal size: $4,881</span>
+</div>
+</div>
+<!-- Right Card: Recent team activity -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-4">
+<h2 class="font-semibold text-on-surface font-headline-sm">Recent team activity</h2>
+</div>
+<div class="flex flex-col divide-y divide-surface-container">
+<!-- Activity 1 -->
+<div class="py-3 first:pt-0 flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-primary mt-0.5">swap_horiz</span>
+<div class="flex-1">
+<p class="text-body-sm font-body-sm text-on-surface">
+<span class="font-medium">Marcus Chen</span> moved opportunity to <span class="font-medium">Negotiation</span>
+</p>
+<p class="text-body-sm font-body-sm text-outline mt-0.5">Northwind Logistics</p>
+</div>
+<span class="text-body-sm font-body-sm text-outline shrink-0">18m ago</span>
+</div>
+<!-- Activity 2 -->
+<div class="py-3 flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-primary mt-0.5">call</span>
+<div class="flex-1">
+<p class="text-body-sm font-body-sm text-on-surface">
+<span class="font-medium">Elena Rostova</span> logged call with <span class="font-medium">VP Procurement</span>
+</p>
+<p class="text-body-sm font-body-sm text-outline mt-0.5">Brightpath Dental</p>
+</div>
+<span class="text-body-sm font-body-sm text-outline shrink-0">42m ago</span>
+</div>
+<!-- Activity 3 -->
+<div class="py-3 flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-primary mt-0.5">description</span>
+<div class="flex-1">
+<p class="text-body-sm font-body-sm text-on-surface">
+<span class="font-medium">Priya Nair</span> created proposal draft
+            </p>
+<p class="text-body-sm font-body-sm text-outline mt-0.5">Kestrel Robotics</p>
+</div>
+<span class="text-body-sm font-body-sm text-outline shrink-0">2h ago</span>
+</div>
+<!-- Activity 4 -->
+<div class="py-3 flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-primary mt-0.5">edit_note</span>
+<div class="flex-1">
+<p class="text-body-sm font-body-sm text-on-surface">
+<span class="font-medium">Alex Rivera</span> added meeting notes
+            </p>
+<p class="text-body-sm font-body-sm text-outline mt-0.5">Horizon Media</p>
+</div>
+<span class="text-body-sm font-body-sm text-outline shrink-0">3h ago</span>
+</div>
+<!-- Activity 5 -->
+<div class="py-3 last:pb-0 flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-primary mt-0.5">mail</span>
+<div class="flex-1">
+<p class="text-body-sm font-body-sm text-on-surface">
+<span class="font-medium">Marcus Chen</span> sent revised MSA contract
+            </p>
+<p class="text-body-sm font-body-sm text-outline mt-0.5">Pinnacle Systems</p>
+</div>
+<span class="text-body-sm font-body-sm text-outline shrink-0">5h ago</span>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant mt-2">
+<a class="font-label-md text-label-md text-primary font-medium hover:underline inline-flex items-center gap-1" href="#">
+<span>View activity feed</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div></main>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const profileBtn = document.getElementById('profileDropdownBtn');
+      const profileMenu = document.getElementById('profileDropdownMenu');
+
+      if (profileBtn && profileMenu) {
+        profileBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          profileMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!profileMenu.contains(e.target) && !profileBtn.contains(e.target)) {
+            profileMenu.classList.add('hidden');
+          }
+        });
+      }
+    });
+  </script>
+</body></html>

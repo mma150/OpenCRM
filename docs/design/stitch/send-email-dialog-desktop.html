@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html class="h-full bg-surface" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>OpenCRM - Send Email</title>
+  <!-- Inter Google Font -->
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Tailwind Theme Configuration Verbatim with OpenCRM Design System -->
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface": "#fbf8ff",
+            "surface-dim": "#dad9e3",
+            "surface-bright": "#fbf8ff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f4f2fd",
+            "surface-container": "#eeedf7",
+            "surface-container-high": "#e8e7f1",
+            "surface-container-highest": "#e3e1ec",
+            "primary": "#004ac6",
+            "primary-container": "#2563eb",
+            "on-primary": "#ffffff",
+            "on-surface": "#1a1b22",
+            "on-surface-variant": "#434655",
+            "outline": "#737686",
+            "outline-variant": "#c3c6d7",
+            "secondary": "#4b41e1",
+            "error": "#ba1a1a"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="h-full bg-zinc-50 text-zinc-900 font-sans antialiased flex overflow-hidden">
+
+  <!-- ==================== BASE APP SHELL (DIMMED UNDER MODAL) ==================== -->
+  <!-- SIDEBAR (OpenCRM standard shell, Contacts ACTIVE) -->
+  <aside class="fixed top-0 left-0 h-screen w-60 bg-white border-r border-zinc-200 shadow-sm z-10 flex flex-col justify-between p-4 select-none pointer-events-none aria-hidden" aria-hidden="true">
+    <div class="flex flex-col gap-5">
+      <!-- App Header & Workspace Selector -->
+      <div class="flex flex-col px-1 pt-1 gap-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-semibold shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">domain</span>
+          </div>
+          <div>
+            <div class="text-[15px] font-semibold text-zinc-900 leading-tight">OpenCRM</div>
+            <div class="text-[11px] text-zinc-500">Sales Pipeline</div>
+          </div>
+        </div>
+        <div class="mt-3 flex items-center justify-between p-1.5 px-2 bg-zinc-50 rounded-lg border border-zinc-200">
+          <div class="truncate">
+            <span class="block text-xs font-medium text-zinc-900 truncate">Acme Sales Org</span>
+            <span class="block text-[11px] text-zinc-500 truncate">Acme Corp</span>
+          </div>
+          <span class="material-symbols-outlined text-[16px] text-zinc-400">unfold_more</span>
+        </div>
+      </div>
+
+      <!-- Main Nav: Contacts ACTIVE -->
+      <nav class="flex flex-col gap-1">
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600" href="#">
+          <span class="material-symbols-outlined text-[20px]">home</span>
+          <span class="text-sm font-medium">Home</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600" href="#">
+          <span class="material-symbols-outlined text-[20px]">filter_list</span>
+          <span class="text-sm font-medium">Leads</span>
+        </a>
+        <!-- Contacts Active Tab -->
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 font-medium" href="#">
+          <span class="material-symbols-outlined text-[20px]">contacts</span>
+          <span class="text-sm font-medium">Contacts</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600" href="#">
+          <span class="material-symbols-outlined text-[20px]">domain</span>
+          <span class="text-sm font-medium">Companies</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600" href="#">
+          <span class="material-symbols-outlined text-[20px]">monetization_on</span>
+          <span class="text-sm font-medium">Opportunities</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600" href="#">
+          <span class="material-symbols-outlined text-[20px]">check_circle</span>
+          <span class="text-sm font-medium">Tasks</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600" href="#">
+          <span class="material-symbols-outlined text-[20px]">history</span>
+          <span class="text-sm font-medium">Activity</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="flex flex-col gap-1 pt-3 border-t border-zinc-200">
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600" href="#">
+        <span class="material-symbols-outlined text-[20px]">settings</span>
+        <span class="text-sm font-medium">Settings</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-600" href="#">
+        <span class="material-symbols-outlined text-[20px]">description</span>
+        <span class="text-sm font-medium">Documentation</span>
+      </a>
+      <div class="px-3 py-1.5 mt-1 flex items-center justify-between text-xs text-zinc-500">
+        <span>v0.8.4 (Self-hosted)</span>
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN BACKGROUND VIEWPORT (CONTACT DETAIL - ELENA ROSTOVA) ==================== -->
+  <div class="flex-1 ml-60 flex flex-col h-screen overflow-hidden pointer-events-none select-none aria-hidden" aria-hidden="true">
+    <!-- TopNavBar -->
+    <header class="h-14 bg-white border-b border-zinc-200 px-6 flex items-center justify-between shrink-0">
+      <nav class="flex items-center gap-1.5 text-xs text-zinc-500">
+        <span>Contacts</span>
+        <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+        <span class="text-zinc-900 font-medium">Elena Rostova</span>
+      </nav>
+      <div class="flex items-center gap-3">
+        <button class="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400">
+          <span class="material-symbols-outlined text-[20px]">help_outline</span>
+        </button>
+        <button class="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400">
+          <span class="material-symbols-outlined text-[20px]">notifications</span>
+        </button>
+        <div class="h-4 w-px bg-zinc-200 mx-1"></div>
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">
+            JS
+          </div>
+          <span class="text-xs font-medium text-zinc-700">John Smith</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contact Detail Background Content -->
+    <main class="flex-1 overflow-y-auto px-6 py-5 bg-zinc-50">
+      <div class="max-w-6xl mx-auto flex flex-col gap-5">
+        <!-- Header Profile Card -->
+        <div class="bg-white border border-zinc-200 rounded-lg p-5 flex items-center justify-between shadow-sm">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 font-semibold text-base flex items-center justify-center">
+              ER
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-lg font-semibold text-zinc-900">Elena Rostova</h1>
+                <span class="px-2 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">Active</span>
+              </div>
+              <p class="text-xs text-zinc-500 mt-0.5">Director of Operations • Northwind Logistics • Owner: Sarah Jenkins</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="h-8 px-3 rounded-lg border border-zinc-200 text-xs font-medium text-zinc-700 bg-white">Send email</button>
+            <button class="h-8 px-3 rounded-lg bg-blue-600 text-xs font-medium text-white">Log conversation</button>
+          </div>
+        </div>
+
+        <!-- 2 Column Layout (Timeline & Details) -->
+        <div class="grid grid-cols-12 gap-5">
+          <div class="col-span-8 bg-white border border-zinc-200 rounded-lg p-5 shadow-sm">
+            <h2 class="text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-4">Activity Timeline</h2>
+            <div class="space-y-4">
+              <div class="flex gap-3 text-xs">
+                <span class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-[14px]">videocam</span>
+                </span>
+                <div>
+                  <p class="font-medium text-zinc-900">Product demo completed with Elena & team</p>
+                  <p class="text-zinc-500 text-[11px] mt-0.5">Yesterday at 3:30 PM • Sarah Jenkins</p>
+                </div>
+              </div>
+              <div class="flex gap-3 text-xs">
+                <span class="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-[14px]">request_quote</span>
+                </span>
+                <div>
+                  <p class="font-medium text-zinc-900">Quote Q-0042 created ($21,933.62)</p>
+                  <p class="text-zinc-500 text-[11px] mt-0.5">Oct 24, 2025 at 10:15 AM</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-span-4 bg-white border border-zinc-200 rounded-lg p-5 shadow-sm">
+            <h2 class="text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-3">Contact Details</h2>
+            <div class="space-y-3 text-xs">
+              <div>
+                <span class="text-zinc-400 block text-[11px]">Email</span>
+                <span class="font-medium text-zinc-900">elena.rostova@northwind.example</span>
+              </div>
+              <div>
+                <span class="text-zinc-400 block text-[11px]">Company</span>
+                <span class="font-medium text-zinc-900">Northwind Logistics</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MODAL BACKDROP (DIMMED OVERLAY) ==================== -->
+  <div class="fixed inset-0 bg-zinc-900/40 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
+
+    <!-- ==================== SEND EMAIL DIALOG ==================== -->
+    <div class="w-full max-w-2xl bg-white border border-zinc-200 rounded-lg shadow-xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+
+      <!-- Dialog Header -->
+      <div class="px-6 py-4 border-b border-zinc-200 flex items-center justify-between bg-white shrink-0">
+        <div>
+          <h2 id="modal-title" class="text-base font-semibold text-zinc-900">Send email</h2>
+          <p class="text-xs text-zinc-500 mt-0.5">Send a tracked message directly to this contact.</p>
+        </div>
+        <button class="w-8 h-8 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 flex items-center justify-center transition-colors" title="Close" aria-label="Close dialog">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <!-- Dialog Body / Form Fields -->
+      <div class="p-6 flex flex-col gap-4 overflow-y-auto max-h-[calc(85vh-130px)] bg-white text-xs">
+
+        <!-- Field: TO -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4">
+          <label class="w-20 text-xs font-medium text-zinc-700 shrink-0">To</label>
+          <div class="flex-1 min-h-[38px] px-2.5 py-1.5 border border-zinc-200 rounded-lg bg-zinc-50 flex flex-wrap items-center gap-2">
+            <!-- Contact Chip -->
+            <div class="inline-flex items-center gap-1.5 pl-2 pr-1.5 py-1 bg-white border border-zinc-200 rounded-md text-xs shadow-xs text-zinc-800">
+              <span class="w-4 h-4 rounded-full bg-blue-100 text-blue-700 font-semibold text-[10px] flex items-center justify-center">
+                ER
+              </span>
+              <span class="font-medium text-zinc-900">Elena Rostova</span>
+              <span class="text-zinc-400 font-normal">&lt;elena.rostova@northwind.example&gt;</span>
+              <button type="button" class="text-zinc-400 hover:text-zinc-600 rounded p-0.5 flex items-center" title="Remove recipient">
+                <span class="material-symbols-outlined text-[14px]">close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Field: TEMPLATE -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4">
+          <label for="email-template-select" class="w-20 text-xs font-medium text-zinc-700 shrink-0">Template</label>
+          <div class="flex-1 relative">
+            <select id="email-template-select" class="w-full h-9 pl-3 pr-8 text-xs bg-white border border-zinc-200 rounded-lg text-zinc-900 font-medium focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600">
+              <option value="follow-up" selected>Follow-up after demo</option>
+              <option value="quote-sent">Quote sent</option>
+              <option value="introduction">Introduction</option>
+              <option value="meeting-reminder">Meeting reminder</option>
+              <option value="blank">— Blank email —</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Field: SUBJECT -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4">
+          <label for="email-subject-input" class="w-20 text-xs font-medium text-zinc-700 shrink-0">Subject</label>
+          <div class="flex-1">
+            <input id="email-subject-input" type="text" class="w-full h-9 px-3 text-xs bg-white border border-zinc-200 rounded-lg text-zinc-900 font-medium focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 placeholder:text-zinc-400" value="Recap: Our demo discussion &amp; next steps for Northwind Logistics"/>
+          </div>
+        </div>
+
+        <!-- Rich formatting toolbar helper -->
+        <div class="flex items-center justify-between border-t border-zinc-100 pt-2 text-zinc-500">
+          <div class="flex items-center gap-1">
+            <button type="button" class="w-7 h-7 rounded hover:bg-zinc-100 flex items-center justify-center text-zinc-600 font-bold" title="Bold">B</button>
+            <button type="button" class="w-7 h-7 rounded hover:bg-zinc-100 flex items-center justify-center text-zinc-600 italic" title="Italic">I</button>
+            <button type="button" class="w-7 h-7 rounded hover:bg-zinc-100 flex items-center justify-center text-zinc-600" title="Link">
+              <span class="material-symbols-outlined text-[16px]">link</span>
+            </button>
+            <button type="button" class="w-7 h-7 rounded hover:bg-zinc-100 flex items-center justify-center text-zinc-600" title="Bullet List">
+              <span class="material-symbols-outlined text-[16px]">format_list_bulleted</span>
+            </button>
+          </div>
+          <span class="text-[11px] text-zinc-400">Supports Markdown &amp; variable tags</span>
+        </div>
+
+        <!-- Field: BODY TEXT AREA -->
+        <div class="flex flex-col gap-1.5">
+          <textarea rows="9" class="w-full p-3 text-xs leading-relaxed font-sans bg-white border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 resize-y" placeholder="Write your email message...">Hi Elena,
+
+Thank you for taking the time to speak with our team today regarding Northwind Logistics' requirements.
+
+As discussed, I have attached our solution summary and technical specifications for the fleet management rollout. A few key takeaways from our conversation:
+• Onboarding timeframe: 2 weeks
+• Native integration with existing workflow
+• Dedicated customer success manager
+
+Please review the attached Quote Q-0042.pdf and let me know if you have any questions or if you'd like to adjust the line items.
+
+Best regards,
+John Smith
+OpenCRM Team</textarea>
+        </div>
+
+        <!-- Field: ATTACHMENT CHIP -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 pt-1">
+          <label class="w-20 text-xs font-medium text-zinc-700 shrink-0">Attachments</label>
+          <div class="flex-1 flex flex-wrap items-center gap-2">
+            <!-- Attachment chip Quote Q-0042.pdf -->
+            <div class="inline-flex items-center gap-2 px-2.5 py-1.5 bg-zinc-50 border border-zinc-200 rounded-md text-xs text-zinc-800 shadow-2xs">
+              <span class="material-symbols-outlined text-[18px] text-red-600">picture_as_pdf</span>
+              <div class="flex flex-col">
+                <span class="font-medium text-zinc-900">Quote Q-0042.pdf</span>
+                <span class="text-[10px] text-zinc-400">248 KB • Ready</span>
+              </div>
+              <button type="button" class="ml-1 text-zinc-400 hover:text-zinc-600 p-0.5 rounded" title="Remove attachment">
+                <span class="material-symbols-outlined text-[14px]">close</span>
+              </button>
+            </div>
+
+            <!-- Add attachment action button -->
+            <button type="button" class="h-8 px-2.5 border border-dashed border-zinc-300 hover:border-zinc-400 text-zinc-600 rounded-md text-xs font-medium flex items-center gap-1 transition-colors">
+              <span class="material-symbols-outlined text-[15px]">attach_file</span>
+              <span>Attach file</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Informational Note: "This email will appear on the contact's timeline." -->
+        <div class="mt-1 p-2.5 bg-blue-50/60 border border-blue-100 rounded-lg flex items-center gap-2 text-xs text-blue-900">
+          <span class="material-symbols-outlined text-[16px] text-blue-600 shrink-0">info</span>
+          <span>This email will appear on the contact's timeline.</span>
+        </div>
+
+      </div>
+
+      <!-- Dialog Footer -->
+      <div class="px-6 py-3.5 bg-zinc-50 border-t border-zinc-200 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2 text-xs text-zinc-500">
+          <span class="material-symbols-outlined text-[15px] text-emerald-600">lock</span>
+          <span>Encrypted via TLS</span>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <!-- Cancel Button (Outline) -->
+          <button type="button" class="h-9 px-4 rounded-lg border border-zinc-300 hover:bg-zinc-100 text-xs font-medium text-zinc-700 transition-colors shadow-2xs">
+            Cancel
+          </button>
+          <!-- Send email Button (Primary Blue #2563eb) -->
+          <button type="button" class="h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-xs font-medium text-white flex items-center gap-1.5 transition-colors shadow-sm">
+            <span class="material-symbols-outlined text-[16px]">send</span>
+            <span>Send email</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>
