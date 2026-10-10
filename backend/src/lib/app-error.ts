@@ -5,6 +5,18 @@ export const ERROR_CODES = [
   "NOT_FOUND",
   "SERVICE_UNAVAILABLE",
   "INTERNAL_ERROR",
+  "UNAUTHENTICATED",
+  "INVALID_CREDENTIALS",
+  "FORBIDDEN",
+  "ACCOUNT_DEACTIVATED",
+  "ACCOUNT_LOCKED",
+  "RATE_LIMITED",
+  "INVALID_TOKEN",
+  "SETUP_CLOSED",
+  "EMAIL_IN_USE",
+  "LAST_ADMIN",
+  "PAYLOAD_TOO_LARGE",
+  "LEAD_CONVERTED",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
@@ -29,4 +41,11 @@ export class AppError extends Error {
     this.status = status;
     this.details = details;
   }
+}
+
+// A rule a service checks about one field (the owner cannot be assigned to, the company is
+// not one the caller can see). Same shape as a Zod failure, so a form shows the message
+// beside the field.
+export function fieldError(path: string, message: string): AppError {
+  return new AppError("VALIDATION_FAILED", 400, "Request validation failed", [{ path, message }]);
 }

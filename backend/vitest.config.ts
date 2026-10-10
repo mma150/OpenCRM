@@ -14,6 +14,13 @@ export default defineConfig({
       // Tests never use the development database (T-04-01).
       DATABASE_URL: getTestDatabaseUrl(resolveDatabaseUrl()),
       CORS_ORIGINS: "http://localhost:3000",
+      APP_URL: "http://localhost:3000",
+      TRUST_PROXY: "0",
+      SESSION_COOKIE_SECURE: "false",
+      // Outgoing email is off in tests, whatever the surrounding environment says.
+      // Tests that need email stand in for the mailer (test/helpers.ts).
+      SMTP_HOST: "",
+      MAIL_FROM: "OpenCRM Test <test@opencrm.local>",
     },
   },
 });

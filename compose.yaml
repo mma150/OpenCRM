@@ -1,5 +1,5 @@
 # Local development stack. Not a production deployment.
-# Host ports are overridable when a default is taken: DB_PORT, API_PORT, WEB_PORT.
+# Host ports are overridable when a default is taken: DB_PORT, API_PORT, WEB_PORT, MAIL_UI_PORT.
 name: opencrm
 
 services:
@@ -20,6 +20,18 @@ services:
       timeout: 3s
       retries: 20
 
+  # Development mail catcher: every email the API sends lands in its web inbox
+  # (http://localhost:8025) and nothing leaves this machine.
+  mailpit:
+    image: axllent/mailpit:v1.31.4
+    ports:
+      - "127.0.0.1:${MAIL_UI_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api:
     build:
       context: ./backend
@@ -34,6 +46,12 @@ services:
       # Wins over env_file: inside Compose the database host is "db".
       DATABASE_URL: postgresql://opencrm:opencrm@db:5432/opencrm
       CORS_ORIGINS: http://localhost:${WEB_PORT:-3000}
+      # Invite and password-reset links point at the web app.
+      APP_URL: http://localhost:${WEB_PORT:-3000}
+      # Outgoing mail goes to the mailpit service (SMTP on 1025, no login).
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      MAIL_FROM: OpenCRM <no-reply@opencrm.local>
       # tsx watch does not see edits made through a Windows bind mount without polling.
       CHOKIDAR_USEPOLLING: "1"
       # Keep the pnpm store on the same volume as node_modules (hard links, and no store on the host).
@@ -47,6 +65,8 @@ services:
       - api-node-modules:/app/node_modules
     depends_on:
       db:
+        condition: service_healthy
+      mailpit:
         condition: service_healthy
     healthcheck:
       # The slim Node image has neither curl nor wget, so use Node itself.

@@ -51,11 +51,23 @@ function buildTestApp(httpLogger = createHttpLogger()) {
 const app = buildTestApp();
 
 describe("error codes", () => {
-  it("lists exactly the four Phase 1 codes", () => {
+  it("lists exactly the documented codes", () => {
     expect([...ERROR_CODES].sort()).toEqual([
+      "ACCOUNT_DEACTIVATED",
+      "ACCOUNT_LOCKED",
+      "EMAIL_IN_USE",
+      "FORBIDDEN",
       "INTERNAL_ERROR",
+      "INVALID_CREDENTIALS",
+      "INVALID_TOKEN",
+      "LAST_ADMIN",
+      "LEAD_CONVERTED",
       "NOT_FOUND",
+      "PAYLOAD_TOO_LARGE",
+      "RATE_LIMITED",
       "SERVICE_UNAVAILABLE",
+      "SETUP_CLOSED",
+      "UNAUTHENTICATED",
       "VALIDATION_FAILED",
     ]);
   });
@@ -115,6 +127,21 @@ describe("error mapping", () => {
       code: "NOT_FOUND",
       message: "Lead not found",
       details: { id: "42" },
+    });
+  });
+
+  it("maps a body over the parser's size limit to 413 PAYLOAD_TOO_LARGE", async () => {
+    // express.json() allows 100 kB by default.
+    const response = await request(app)
+      .post("/test/validate")
+      .send({ name: "x".repeat(101 * 1024), age: 30 });
+    const body = response.body as ErrorBody;
+
+    expect(response.status).toBe(413);
+    expect(body.error).toEqual({
+      code: "PAYLOAD_TOO_LARGE",
+      message: "Request body is too large",
+      details: null,
     });
   });
 

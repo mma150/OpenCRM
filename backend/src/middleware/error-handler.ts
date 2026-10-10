@@ -15,6 +15,11 @@ function isBodyParseError(err: unknown): boolean {
   return err instanceof SyntaxError && "type" in err && err.type === "entity.parse.failed";
 }
 
+// ...and an error tagged with this type for a body over the size limit set in app.ts.
+function isBodyTooLargeError(err: unknown): boolean {
+  return err instanceof Error && "type" in err && err.type === "entity.too.large";
+}
+
 function toErrorBody(err: unknown): ErrorBody {
   if (err instanceof ZodError) {
     return {
@@ -32,6 +37,14 @@ function toErrorBody(err: unknown): ErrorBody {
       status: 400,
       code: "VALIDATION_FAILED",
       message: "Request body is not valid JSON",
+      details: null,
+    };
+  }
+  if (isBodyTooLargeError(err)) {
+    return {
+      status: 413,
+      code: "PAYLOAD_TOO_LARGE",
+      message: "Request body is too large",
       details: null,
     };
   }

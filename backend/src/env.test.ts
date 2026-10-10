@@ -25,8 +25,64 @@ describe("parseEnv", () => {
         PORT: 4100,
         DATABASE_URL: validSource.DATABASE_URL,
         CORS_ORIGINS: "http://localhost:3000",
+        APP_URL: "http://localhost:3000",
+        TRUST_PROXY: 0,
+        SESSION_COOKIE_SECURE: false,
+        SMTP_PORT: 587,
+        SMTP_SECURE: false,
       },
     });
+  });
+
+  it("treats empty values as not set, as an untouched .env.example leaves them", () => {
+    const result = parseEnv({
+      ...validSource,
+      SESSION_COOKIE_SECURE: "",
+      SMTP_HOST: "",
+      SMTP_SECURE: "",
+      SMTP_USER: "",
+      SMTP_PASSWORD: "",
+      MAIL_FROM: "",
+    });
+
+    expect(result.ok && result.env.SMTP_HOST).toBeUndefined();
+    expect(result.ok && result.env.SESSION_COOKIE_SECURE).toBe(false);
+  });
+
+  it("sends the session cookie over HTTPS only in production unless told otherwise", () => {
+    const production = parseEnv({ ...validSource, NODE_ENV: "production" });
+    const overridden = parseEnv({
+      ...validSource,
+      NODE_ENV: "production",
+      SESSION_COOKIE_SECURE: "false",
+    });
+
+    expect(production.ok && production.env.SESSION_COOKIE_SECURE).toBe(true);
+    expect(overridden.ok && overridden.env.SESSION_COOKIE_SECURE).toBe(false);
+  });
+
+  it("removes a trailing slash from APP_URL so links are built cleanly", () => {
+    const result = parseEnv({ ...validSource, APP_URL: "https://crm.example.com/" });
+
+    expect(result.ok && result.env.APP_URL).toBe("https://crm.example.com");
+  });
+
+  it("accepts SMTP settings together with MAIL_FROM", () => {
+    const result = parseEnv({
+      ...validSource,
+      SMTP_HOST: "mailpit",
+      SMTP_PORT: "1025",
+      MAIL_FROM: "OpenCRM <no-reply@opencrm.local>",
+    });
+
+    expect(result.ok && result.env.SMTP_HOST).toBe("mailpit");
+    expect(result.ok && result.env.SMTP_PORT).toBe(1025);
+  });
+
+  it("names MAIL_FROM when SMTP_HOST is set without it", () => {
+    const problems = problemsFor({ ...validSource, SMTP_HOST: "smtp.example.com" });
+
+    expect(problems.map((problem) => problem.name)).toEqual(["MAIL_FROM"]);
   });
 
   it("uses the default port when PORT is not set", () => {

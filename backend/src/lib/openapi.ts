@@ -45,6 +45,33 @@ export function envelope<T extends z.ZodType>(schema: T) {
   return z.object({ data: schema, meta: z.record(z.string(), z.unknown()) });
 }
 
+// Shorthand for the route files, so each registerPath call stays readable.
+export function jsonBody(schema: z.ZodType) {
+  return { required: true, content: { "application/json": { schema } } };
+}
+
+export function jsonResponse(description: string, schema: z.ZodType) {
+  return { description, content: { "application/json": { schema } } };
+}
+
+// `description` names the error codes this status can carry.
+export function errorResponse(description: string) {
+  return jsonResponse(description, errorResponseSchema);
+}
+
+// A signed-in route accepts the session token as a cookie (browser) or a Bearer header.
+registry.registerComponent("securitySchemes", "sessionCookie", {
+  type: "apiKey",
+  in: "cookie",
+  name: "opencrm_session",
+});
+registry.registerComponent("securitySchemes", "bearerToken", { type: "http", scheme: "bearer" });
+
+export const sessionSecurity: Record<string, string[]>[] = [
+  { sessionCookie: [] },
+  { bearerToken: [] },
+];
+
 export function buildOpenApiDocument() {
   return new OpenApiGeneratorV31(registry.definitions).generateDocument({
     openapi: "3.1.0",
