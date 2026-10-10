@@ -91,8 +91,9 @@ frontend/
     ├── app/                        Thin route files only: layout.tsx, globals.css and two route groups
     │   ├── (auth)/                 Signed-out pages: login, setup, forgot-password, reset-password, accept-invite
     │   ├── (app)/                  Signed-in pages inside the app frame: page.tsx (Home), profile, settings/users,
-    │   │                           leads (the list), leads/new, leads/[id], leads/[id]/edit, and the same four
-    │   │                           routes under contacts/ and companies/, activity
+    │   │                           settings/pipeline, leads (the list), leads/new, leads/[id], leads/[id]/edit,
+    │   │                           and the same four routes under contacts/, companies/ and opportunities/
+    │   │                           (whose first page is the board and the list), activity
     │   └── status/                 The API status page (no sign-in)
     ├── features/
     │   ├── health/                 health-status.tsx  health.slice.ts  health.api.ts
@@ -103,16 +104,28 @@ frontend/
     │   │                           use-owner-filter.ts (the Owner filter of a list of owned records)
     │   ├── leads/                  leads.{types,api,slice}.ts, leads-page.tsx (the list), lead-detail-page.tsx,
     │   │                           lead-form.tsx and lead-form-pages.tsx (new, edit), lead-dialogs.tsx,
+    │   │                           convert-lead-dialog.tsx (a lead becomes a contact, company and opportunity),
     │   │                           lead-loader.tsx, lead-labels.ts, lead-status-badge.tsx
     │   ├── contacts/               contacts.{types,api,slice}.ts, contacts-page.tsx (the list), contact-detail-page.tsx,
     │   │                           contact-form.tsx and contact-form-pages.tsx (new, edit), contact-dialogs.tsx,
-    │   │                           contact-loader.tsx, company-contacts.tsx (the Contacts card on a company's page)
+    │   │                           contact-loader.tsx, company-contacts.tsx (the Contacts card on a company's page),
+    │   │                           contact-picker.tsx (the searchable contact picker and the Contact filter)
     │   ├── companies/              companies.{types,api,slice}.ts, companies-page.tsx (the list), company-detail-page.tsx,
     │   │                           company-form.tsx and company-form-pages.tsx (new, edit), company-dialogs.tsx,
     │   │                           company-loader.tsx, company-labels.ts, company-website.tsx (the website as a link),
     │   │                           company-picker.tsx (the searchable company picker and the Company filter)
+    │   ├── opportunities/          opportunities.{types,api,slice}.ts (the list, the board and one opportunity),
+    │   │                           opportunities-page.tsx (the Board / List switch, the toolbar), opportunity-board.tsx,
+    │   │                           opportunity-list.tsx, opportunity-detail-page.tsx, stage-stepper.tsx,
+    │   │                           opportunity-form.tsx and opportunity-form-pages.tsx (new, edit),
+    │   │                           opportunity-dialogs.tsx (close as won or lost, reassign, delete),
+    │   │                           use-opportunity-stage.ts (move and reopen), opportunity-loader.tsx,
+    │   │                           opportunity-labels.ts, opportunity-stage-badge.tsx, record-opportunities.tsx
+    │   │                           (the Opportunities card on a company's and a contact's page)
+    │   ├── pipeline-stages/        pipeline-stages.{types,api,slice}.ts, use-pipeline-stages.ts, stage-labels.ts,
+    │   │                           pipeline-settings-page.tsx (/settings/pipeline) and stage-dialogs.tsx
     │   ├── timeline/               A record's history, for any kind of record: record-types.ts (the one table of
-    │   │                           record types: lead, contact, company), timeline.{types,api,slice}.ts,
+    │   │                           record types: lead, contact, company, opportunity), timeline.{types,api,slice}.ts,
     │   │                           timeline.tsx (the card), timeline-composer.tsx (the form), timeline-entry.tsx,
     │   │                           timeline-entry-icon.tsx, timeline-labels.ts, log-conversation-button.tsx (phones)
     │   ├── activity/               The team feed at /activity: activity.{types,api,slice}.ts, activity-page.tsx,
@@ -125,13 +138,15 @@ frontend/
     │                               SegmentedControl, PageHeader, PageState, FormField, SelectControl,
     │                               PasswordInput, badges, ... and what every owned record shares:
     │                               record-list.tsx, record-menus.tsx, record-dialogs.tsx (reassign, delete),
-    │                               record-loader.tsx
+    │                               record-loader.tsx, record-picker.tsx (search for one record: the company
+    │                               and contact pickers are built on it)
     ├── lib/
     │   ├── api/http.ts             The one axios instance and the ApiError type
     │   ├── api/error-messages.ts   describeApiError: the words for every error code
     │   ├── api/schema.d.ts         Generated from the OpenAPI document, committed, never edited
     │   └── utils.ts ...            Small helpers: cn, form-errors, validation, safe-next, return-to, format,
-    │                               user-labels, use-is-phone, record-access (what a role may do with a record)
+    │                               user-labels, use-is-phone, record-access (what a role may do with a record),
+    │                               use-preselected-record (the record a "new" form starts with, from the address)
     ├── store/                      index.ts (makeStore), hooks.ts (typed hooks), thunk.ts, store-provider.tsx
     ├── test/                       Test helpers: render-with-store.tsx, navigation-mock.ts
     └── env.ts                      The only reader of process.env (validated with Zod)
@@ -174,7 +189,9 @@ Then mount the router in `backend/src/routes.ts` (`router.use("/leads", leadsRou
 
 Then add the reducer to `makeStore` in `frontend/src/store/index.ts`, add a route file under `frontend/src/app/` that only renders the feature component, and add one line to `nav-items.ts` if the feature has a page of its own in the navigation.
 
-A feature of **owned records** (leads, contacts, companies) builds its list, record page and dialogs from the shared record components instead of copying another feature's: see [What owned records share](frontend.md#what-owned-records-share). If the record has a timeline, it adds one line to `RECORD_TYPES` in `frontend/src/features/timeline/record-types.ts` (see [The timeline](frontend.md#the-timeline)).
+A feature of **owned records** (leads, contacts, companies, opportunities) builds its list, record page and dialogs from the shared record components instead of copying another feature's: see [What owned records share](frontend.md#what-owned-records-share). If the record has a timeline, it adds one line to `RECORD_TYPES` in `frontend/src/features/timeline/record-types.ts` (see [The timeline](frontend.md#the-timeline)). If other records link to it, it gets a picker built on the shared `RecordPicker` (see [The record pickers](frontend.md#the-record-pickers)) and, on the pages of the records it belongs to, a short card passed as `extra` to `RecordLayout` (`record-opportunities.tsx` is the example).
+
+A feature can span two backend modules' worth of screens only when each keeps its own folder: the pipeline's stages live in `features/pipeline-stages/` (the API module `pipeline-stages`), the opportunities that sit in them in `features/opportunities/`.
 
 ## Where configuration lives
 

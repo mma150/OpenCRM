@@ -257,7 +257,7 @@ check("Required files exist", () => {
     "frontend/package.json",
     "frontend/pnpm-lock.yaml",
     "frontend/pnpm-workspace.yaml",
-    "frontend/src/app/page.tsx",
+    "frontend/src/app/(app)/page.tsx",
     "frontend/src/env.ts",
     "frontend/src/lib/api/schema.d.ts",
     // mobile

@@ -50,13 +50,31 @@ function toApiError(error: unknown): ApiError {
   return apiError;
 }
 
+// Called when the API answers with the code UNAUTHENTICATED: the session is missing or has
+// expired. StoreProvider registers the handler, so there is one place that signs the user out.
+let onUnauthenticated: (() => void) | null = null;
+
+export function setUnauthenticatedHandler(handler: (() => void) | null): void {
+  onUnauthenticated = handler;
+}
+
 // The only axios instance in the app. The base URL comes from the validated env object.
+// withCredentials sends the httpOnly session cookie to the API, which is on another origin.
 export const http = axios.create({
   baseURL: env.NEXT_PUBLIC_API_URL,
   timeout: 10000,
+  withCredentials: true,
 });
 
 http.interceptors.response.use(
   (response) => response,
-  (error: unknown) => Promise.reject(toApiError(error)),
+  (error: unknown) => {
+    const apiError = toApiError(error);
+    // Keyed on the code, never on HTTP 401: a wrong password (INVALID_CREDENTIALS) is also a 401
+    // and must not sign anyone out.
+    if (apiError.code === "UNAUTHENTICATED") {
+      onUnauthenticated?.();
+    }
+    return Promise.reject(apiError);
+  },
 );
