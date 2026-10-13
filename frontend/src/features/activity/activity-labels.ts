@@ -2,7 +2,10 @@ import { recordLabel, recordPath, type RecordType } from "@/features/timeline/re
 import {
   assignmentOf,
   CONVERSATION_TYPE_LABELS,
+  documentChangeOf,
+  emailOf,
   entryText,
+  entryTitle,
   humanize,
   isMarkedLost,
   statusChangeOf,
@@ -21,10 +24,11 @@ export const activityRangeOptions = [
 ];
 
 // The Type filter: the same groups as the tabs of a record's timeline.
-export const ACTIVITY_KINDS = ["CONVERSATION", "NOTE", "SYSTEM"] as const;
+export const ACTIVITY_KINDS = ["CONVERSATION", "NOTE", "EMAIL", "SYSTEM"] as const;
 export const activityKindOptions = [
   { value: "CONVERSATION", label: "Conversations" },
   { value: "NOTE", label: "Notes" },
+  { value: "EMAIL", label: "Emails" },
   { value: "SYSTEM", label: "Changes" },
 ];
 
@@ -140,14 +144,19 @@ export function activitySentence(entry: ActivityEntry): { before: string; after:
       }
       return { before: "reassigned", after: to ? ` to ${to}` : "" };
     }
-    // Entries of the email, quote and invoice API. These are the plain words the generated
-    // types require; their screens give them their own.
     case "EMAIL":
-      return { before: "sent an email on", after: "" };
+      return { before: "sent an email from", after: "" };
+    // Which quote or invoice, and its total, are in the line under the sentence.
     case "QUOTE_STATUS":
-      return { before: "updated a quote on", after: "" };
-    case "INVOICE_STATUS":
-      return { before: "updated an invoice on", after: "" };
+    case "INVOICE_STATUS": {
+      const { noun, verb } = documentChangeOf(entry);
+      const article = noun === "Invoice" ? "an" : "a";
+      const what = `${article} ${noun.toLowerCase()}`;
+      // "marked paid" reads "marked an invoice as paid on"; "sent" reads "sent a quote on".
+      return verb.startsWith("marked ")
+        ? { before: `marked ${what} as ${verb.slice("marked ".length)} on`, after: "" }
+        : { before: `${verb} ${what} on`, after: "" };
+    }
   }
 }
 
@@ -175,8 +184,20 @@ export function activityBadge(entry: ActivityEntry): string {
   }
 }
 
-// The line or two under the sentence: what was discussed, the note, or why it was lost.
+// The line or two under the sentence: what was discussed, the note, why it was lost, the
+// subject and start of an email, or which quote or invoice it was ("Quote Q-0001 sent").
 export function activityExcerpt(entry: ActivityEntry): string | null {
+  if (entry.kind === "QUOTE_STATUS" || entry.kind === "INVOICE_STATUS") {
+    return entryTitle(entry, recordTypeLabel(entry.record));
+  }
+  if (entry.kind === "EMAIL") {
+    const { subject, quote } = emailOf(entry);
+    // The quote an email carried comes first, where the feed turns it into a link.
+    const parts = [quote ? `Quote ${quote.number}` : null, subject, entryText(entry)].filter(
+      (part) => part !== null,
+    );
+    return parts.length > 0 ? parts.join(" — ") : null;
+  }
   if (isMarkedLost(entry)) {
     const { reason, note } = statusChangeOf(entry);
     const parts = [reason ? humanize(reason) : null, note].filter((part) => part !== null);

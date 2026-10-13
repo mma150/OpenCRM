@@ -6,6 +6,9 @@ import type { Me } from "@/features/auth/auth.types";
 import { listContacts } from "@/features/contacts/contacts.api";
 import { contactList, elena, liam, marcus } from "@/features/contacts/contacts.fixtures";
 import type { ContactList } from "@/features/contacts/contacts.types";
+import { getEmailStatus } from "@/features/email-settings/email-settings.api";
+import { listEmailTemplates } from "@/features/email-templates/email-templates.api";
+import { getEmailDefaults } from "@/features/emails/emails.api";
 import { assignableUsers, managerUser, readOnlyUser } from "@/features/leads/leads.fixtures";
 import { listOpportunities } from "@/features/opportunities/opportunities.api";
 import { fleet, opportunityList } from "@/features/opportunities/opportunities.fixtures";
@@ -28,6 +31,9 @@ vi.mock("@/features/opportunities/opportunities.api");
 vi.mock("@/features/users/users.api");
 vi.mock("@/features/tasks/tasks.api");
 vi.mock("@/features/timeline/timeline.api");
+vi.mock("@/features/emails/emails.api");
+vi.mock("@/features/email-settings/email-settings.api");
+vi.mock("@/features/email-templates/email-templates.api");
 vi.mock("sonner");
 
 type TestUser = ReturnType<typeof renderWithStore>["user"];
@@ -239,8 +245,36 @@ describe("CompanyDetailPage", () => {
     expect(await moreActionNames(user)).toEqual(["Delete"]);
   });
 
+  it("offers Send email to every role that may write, and opens the composer for the company", async () => {
+    for (const me of [managerUser, repUser]) {
+      const { unmount } = await renderCompany(northwind, me);
+      expect(screen.getByRole("button", { name: "Send email" })).toBeInTheDocument();
+      unmount();
+    }
+    expect(getEmailStatus).not.toHaveBeenCalled();
+
+    vi.mocked(getEmailStatus).mockResolvedValue({ enabled: true });
+    vi.mocked(listEmailTemplates).mockResolvedValue([]);
+    vi.mocked(getEmailDefaults).mockResolvedValue({
+      recipients: [
+        { name: "Elena Rostova", email: "elena@northwind.example", contactId: "c1" },
+        { name: "Marcus Chen", email: "m.chen@northwind.example", contactId: "c2" },
+      ],
+    });
+    const { user } = await renderCompany();
+    await user.click(screen.getByRole("button", { name: "Send email" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "Send email" });
+    expect(getEmailDefaults).toHaveBeenCalledWith({ type: "COMPANY", id: northwind.id });
+    // Its contacts are offered, not all written to at once.
+    const suggestions = await within(dialog).findByRole("list", { name: "Suggested recipients" });
+    expect(within(suggestions).getAllByRole("button")).toHaveLength(2);
+  });
+
   it("gives a Read-only user no actions, and still shows the contacts and the timeline", async () => {
     await renderCompany(northwind, readOnlyUser);
+
+    expect(screen.queryByRole("button", { name: "Send email" })).not.toBeInTheDocument();
 
     expect(screen.queryByRole("link", { name: "Add contact" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Edit" })).not.toBeInTheDocument();

@@ -2,6 +2,8 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Me } from "@/features/auth/auth.types";
+import { getInvoiceSummary } from "@/features/invoices/invoices.api";
+import { emptySummary, summary as invoiceSummary } from "@/features/invoices/invoices.fixtures";
 import { managerUser, readOnlyUser } from "@/features/leads/leads.fixtures";
 import { completeTask } from "@/features/tasks/tasks.api";
 import { callBack, sendQuote } from "@/features/tasks/tasks.fixtures";
@@ -16,6 +18,7 @@ import { DashboardPage } from "./dashboard-page";
 
 vi.mock("./dashboard.api");
 vi.mock("@/features/tasks/tasks.api");
+vi.mock("@/features/invoices/invoices.api");
 vi.mock("sonner");
 
 const unavailable: ApiError = { code: "SERVICE_UNAVAILABLE", message: "Down", details: null };
@@ -46,6 +49,7 @@ const firstColumn = (table: HTMLElement) =>
 describe("DashboardPage", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(getInvoiceSummary).mockResolvedValue(invoiceSummary);
   });
 
   it("greets the user and shows the headline numbers, each a link to its list", async () => {
@@ -168,6 +172,74 @@ describe("DashboardPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Retry" }));
     expect(await screen.findByRole("list", { name: "Your numbers" })).toBeInTheDocument();
+  });
+
+  describe("the Invoices card", () => {
+    const invoiceTile = (label: string) => {
+      const link = within(screen.getByRole("list", { name: "Invoice totals" }))
+        .getByText(label)
+        .closest("a");
+      if (!link) {
+        throw new Error(`No invoice tile labelled ${label}`);
+      }
+      return link;
+    };
+
+    it("shows what is outstanding and overdue for every role, each a link to the invoices", async () => {
+      for (const me of [repUser, readOnlyUser, managerUser, adminUser]) {
+        const { unmount } = await renderHome(me);
+
+        await screen.findByRole("list", { name: "Invoice totals" });
+        expect(invoiceTile("Outstanding")).toHaveTextContent("$13,804.20");
+        expect(invoiceTile("Outstanding")).toHaveTextContent("2 sent · 1 overdue");
+        expect(invoiceTile("Outstanding")).toHaveAttribute("href", "/invoices");
+        expect(invoiceTile("Overdue")).toHaveTextContent("$7,547.35");
+        expect(invoiceTile("Overdue")).toHaveTextContent("1 invoice");
+        expect(invoiceTile("Overdue")).toHaveAttribute("href", "/invoices?status=OVERDUE");
+        // Home shows two of the three totals; "Paid this month" is on the invoices page.
+        expect(screen.queryByText("Paid this month")).not.toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "All invoices" })).toHaveAttribute(
+          "href",
+          "/invoices",
+        );
+        // The totals are not the user's own figures like the rest of the dashboard.
+        expect(screen.getByText(/Across every invoice you can see/)).toBeInTheDocument();
+        unmount();
+      }
+    });
+
+    it("shows zeros on a brand-new install", async () => {
+      vi.mocked(getInvoiceSummary).mockResolvedValue(emptySummary);
+      await renderHome(repUser, empty);
+
+      await screen.findByRole("list", { name: "Invoice totals" });
+      expect(invoiceTile("Outstanding")).toHaveTextContent("$0");
+      expect(invoiceTile("Overdue")).toHaveTextContent("0 invoices");
+    });
+
+    it("has its own loading state and its own error with Retry, and leaves the rest of Home alone", async () => {
+      vi.mocked(getInvoiceSummary).mockRejectedValueOnce(unavailable);
+      const { user } = await renderHome();
+
+      const alert = await screen.findByRole("alert");
+      expect(alert).toHaveTextContent(
+        "The invoice totals could not be loaded. The service is temporarily unavailable. Try again in a moment.",
+      );
+      expect(screen.getByRole("list", { name: "Your numbers" })).toBeInTheDocument();
+      expect(screen.getByRole("list", { name: "Tasks due" })).toBeInTheDocument();
+
+      await user.click(within(alert).getByRole("button", { name: "Retry" }));
+      expect(await screen.findByRole("list", { name: "Invoice totals" })).toBeInTheDocument();
+      expect(getMyDashboard).toHaveBeenCalledTimes(1);
+    });
+
+    it("stays a placeholder while the totals are on their way", async () => {
+      vi.mocked(getInvoiceSummary).mockReturnValue(new Promise(() => undefined));
+      await renderHome();
+
+      expect(screen.getByRole("status", { name: "Loading invoice totals" })).toBeInTheDocument();
+      expect(screen.getByRole("list", { name: "Your numbers" })).toBeInTheDocument();
+    });
   });
 
   describe("the Team section", () => {

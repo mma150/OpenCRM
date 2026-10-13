@@ -76,6 +76,54 @@ export const created = entry(8, {
   author: ada,
 });
 
+// Entries of the email, quote and invoice API. They are not in `allEntries`, which the
+// older tests count: a test that needs them asks for them by name.
+export const QUOTE = { id: "99999999-9999-4999-8999-999999999991", number: "Q-0001" };
+export const INVOICE = { id: "99999999-9999-4999-8999-999999999992", number: "INV-0001" };
+
+export const emailSent = entry(20, {
+  kind: "EMAIL",
+  body: "Hi Marcus,\n\nHere is the recap of our demo.\n\nRob",
+  details: {
+    to: ["marcus.chen@acme.example", "ops@acme.example"],
+    cc: ["mia@example.com"],
+    subject: "Recap of our demo",
+    status: "SENT",
+    templateId: null,
+    quote: null,
+  },
+  occurredAt: "2026-10-09T09:00:00.000Z",
+});
+export const emailWithQuote = entry(21, {
+  kind: "EMAIL",
+  body: "Please find our quote below.",
+  details: {
+    to: ["marcus.chen@acme.example"],
+    cc: [],
+    subject: "Your quote",
+    status: "SENT",
+    templateId: null,
+    quote: QUOTE,
+  },
+  occurredAt: "2026-10-09T10:00:00.000Z",
+});
+
+// A QUOTE_STATUS or INVOICE_STATUS entry, as the API writes it on the opportunity.
+export function quoteStatus(from: string | null, to: string | null, id = 30): TimelineEntry {
+  return entry(id, {
+    kind: "QUOTE_STATUS",
+    details: { quote: QUOTE, from, to, total: 4360.87 },
+    occurredAt: "2026-10-09T11:00:00.000Z",
+  });
+}
+export function invoiceStatus(from: string | null, to: string | null, id = 40): TimelineEntry {
+  return entry(id, {
+    kind: "INVOICE_STATUS",
+    details: { invoice: INVOICE, from, to, total: 4360.87 },
+    occurredAt: "2026-10-09T12:00:00.000Z",
+  });
+}
+
 export const allEntries: TimelineEntry[] = [
   call,
   meeting,

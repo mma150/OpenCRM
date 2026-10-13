@@ -1,6 +1,6 @@
 "use client";
 
-import { Ellipsis, LogOut } from "lucide-react";
+import { Ellipsis, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -13,7 +13,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-import { isActive, type NavItem } from "./nav-items";
+import {
+  isActive,
+  isSettingsPath,
+  mainItemsOf,
+  type NavItem,
+  SETTINGS_HREF,
+  settingsItemsOf,
+} from "./nav-items";
 import { ThemeMenuItems } from "./theme-menu-items";
 
 // Every tab and menu row is at least 44px tall, so it is easy to hit with a thumb.
@@ -26,8 +33,10 @@ const menuRowClass = "min-h-11 gap-3 px-3";
 export function BottomTabBar({ items, onLogout }: { items: NavItem[]; onLogout: () => void }) {
   const pathname = usePathname();
   const tabs = items.filter((item) => item.bottomTab);
-  const moreItems = items.filter((item) => !item.bottomTab);
-  const moreActive = moreItems.some((item) => isActive(item, pathname));
+  const moreItems = mainItemsOf(items).filter((item) => !item.bottomTab);
+  // The Settings area is one row under "More": it opens the list of its pages.
+  const hasSettings = settingsItemsOf(items).length > 0;
+  const moreActive = moreItems.some((item) => isActive(item, pathname)) || isSettingsPath(pathname);
 
   return (
     <nav
@@ -72,7 +81,15 @@ export function BottomTabBar({ items, onLogout }: { items: NavItem[]; onLogout: 
                   </DropdownMenuItem>
                 );
               })}
-              {moreItems.length > 0 ? <DropdownMenuSeparator /> : null}
+              {hasSettings ? (
+                <DropdownMenuItem asChild className={menuRowClass}>
+                  <Link href={SETTINGS_HREF}>
+                    <Settings aria-hidden />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+              ) : null}
+              {moreItems.length > 0 || hasSettings ? <DropdownMenuSeparator /> : null}
               <ThemeMenuItems itemClassName="min-h-11" />
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" className={menuRowClass} onSelect={onLogout}>

@@ -2,6 +2,9 @@ import { screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Me } from "@/features/auth/auth.types";
+import { getEmailStatus } from "@/features/email-settings/email-settings.api";
+import { listEmailTemplates } from "@/features/email-templates/email-templates.api";
+import { getEmailDefaults } from "@/features/emails/emails.api";
 import { listTasks } from "@/features/tasks/tasks.api";
 import { taskList } from "@/features/tasks/tasks.fixtures";
 import { addNote, listTimeline, logConversation } from "@/features/timeline/timeline.api";
@@ -34,6 +37,9 @@ vi.mock("./leads.api");
 vi.mock("@/features/users/users.api");
 vi.mock("@/features/tasks/tasks.api");
 vi.mock("@/features/timeline/timeline.api");
+vi.mock("@/features/emails/emails.api");
+vi.mock("@/features/email-settings/email-settings.api");
+vi.mock("@/features/email-templates/email-templates.api");
 vi.mock("sonner");
 
 type TestUser = ReturnType<typeof renderWithStore>["user"];
@@ -162,8 +168,47 @@ describe("LeadDetailPage", () => {
     expect(await moreActionNames(user)).toEqual(["Mark as lost", "Delete"]);
   });
 
+  it("offers Send email to every role that may write, and opens the composer for the lead", async () => {
+    for (const me of [managerUser, repUser]) {
+      const { unmount } = await renderLead(marcus, me);
+      expect(screen.getByRole("button", { name: "Send email" })).toBeInTheDocument();
+      unmount();
+    }
+    // Nothing about email is asked until the button is pressed.
+    expect(getEmailStatus).not.toHaveBeenCalled();
+
+    vi.mocked(getEmailStatus).mockResolvedValue({ enabled: true });
+    vi.mocked(listEmailTemplates).mockResolvedValue([]);
+    vi.mocked(getEmailDefaults).mockResolvedValue({
+      recipients: [{ name: marcus.name, email: marcus.email ?? "", contactId: null }],
+    });
+    const { user } = await renderLead();
+    await user.click(screen.getByRole("button", { name: "Send email" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "Send email" });
+    expect(dialog).toHaveTextContent(marcus.name);
+    expect(getEmailDefaults).toHaveBeenCalledWith({ type: "LEAD", id: marcus.id });
+    expect(
+      await within(dialog).findByRole("button", { name: `Remove ${marcus.email ?? ""}` }),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps Send email on a lost and on a converted lead, which still take email", async () => {
+    for (const [lead, me] of [
+      [devon, adminUser],
+      [claire, adminUser],
+      [claire, repUser],
+    ] as const) {
+      const { unmount } = await renderLead(lead, me);
+      expect(screen.getByRole("button", { name: "Send email" })).toBeInTheDocument();
+      unmount();
+    }
+  });
+
   it("gives a Read-only user no actions at all", async () => {
     await renderLead(marcus, readOnlyUser);
+
+    expect(screen.queryByRole("button", { name: "Send email" })).not.toBeInTheDocument();
 
     expect(screen.queryByRole("combobox", { name: "Status" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Edit" })).not.toBeInTheDocument();

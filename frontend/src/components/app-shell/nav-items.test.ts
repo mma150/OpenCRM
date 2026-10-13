@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { isActive, navItems, navItemsFor, pageTitle } from "./nav-items";
+import {
+  isActive,
+  isSettingsPath,
+  mainItemsOf,
+  navItems,
+  navItemsFor,
+  pageTitle,
+  settingsItemsOf,
+} from "./nav-items";
 
 describe("nav items", () => {
   it("shows Users and Pipeline to an Admin only, and Activity to an Admin and a Sales Manager", () => {
@@ -11,11 +19,17 @@ describe("nav items", () => {
       "Tasks",
       "Contacts",
       "Companies",
+      "Quotes",
+      "Invoices",
       "Activity",
       "Profile",
       "Users",
       "Pipeline",
       "Custom fields",
+      "Email",
+      "Email templates",
+      "Products",
+      "Organization",
     ]);
     expect(navItemsFor("SALES_MANAGER").map((item) => item.label)).toEqual([
       "Home",
@@ -24,19 +38,63 @@ describe("nav items", () => {
       "Tasks",
       "Contacts",
       "Companies",
+      "Quotes",
+      "Invoices",
       "Activity",
       "Profile",
+      "Email templates",
+      "Products",
     ]);
-    for (const role of ["SALES_REP", "READ_ONLY"] as const) {
-      expect(navItemsFor(role).map((item) => item.label)).toEqual([
-        "Home",
-        "Leads",
-        "Opportunities",
-        "Tasks",
-        "Contacts",
-        "Companies",
-        "Profile",
-      ]);
+    const forEveryone = [
+      "Home",
+      "Leads",
+      "Opportunities",
+      "Tasks",
+      "Contacts",
+      "Companies",
+      "Quotes",
+      "Invoices",
+      "Profile",
+    ];
+    expect(navItemsFor("SALES_REP").map((item) => item.label)).toEqual([
+      ...forEveryone,
+      "Email templates",
+      "Products",
+    ]);
+    // A Read-only user cannot send email, so templates are not offered; the catalog is.
+    expect(navItemsFor("READ_ONLY").map((item) => item.label)).toEqual([
+      ...forEveryone,
+      "Products",
+    ]);
+  });
+
+  it("splits the destinations into the main list and the Settings area", () => {
+    const admin = navItemsFor("ADMIN");
+    expect(mainItemsOf(admin).some((item) => item.group === "settings")).toBe(false);
+    expect(settingsItemsOf(admin).map((item) => item.href)).toEqual([
+      "/settings/users",
+      "/settings/pipeline",
+      "/settings/custom-fields",
+      "/settings/email",
+      "/settings/email-templates",
+      "/settings/products",
+      "/settings/organization",
+    ]);
+    expect(settingsItemsOf(navItemsFor("READ_ONLY")).map((item) => item.href)).toEqual([
+      "/settings/products",
+    ]);
+    // Every settings page says what it is for on the list at /settings.
+    expect(settingsItemsOf(admin).every((item) => item.description)).toBe(true);
+    expect(isSettingsPath("/settings")).toBe(true);
+    expect(isSettingsPath("/settings/email")).toBe(true);
+    expect(isSettingsPath("/settingsx")).toBe(false);
+  });
+
+  it("shows Quotes and Invoices to every role, under More on phones", () => {
+    for (const href of ["/quotes", "/invoices"]) {
+      const item = navItems.find((candidate) => candidate.href === href);
+      expect(item?.roles).toBeUndefined();
+      expect(item?.bottomTab).toBe(false);
     }
   });
 
@@ -107,6 +165,11 @@ describe("nav items", () => {
     expect(pageTitle("/settings/users")).toBe("Settings / Users");
     expect(pageTitle("/settings/pipeline")).toBe("Settings / Pipeline");
     expect(pageTitle("/settings/custom-fields")).toBe("Settings / Custom fields");
+    expect(pageTitle("/settings")).toBe("Settings");
+    expect(pageTitle("/settings/email")).toBe("Settings / Email");
+    expect(pageTitle("/settings/email-templates")).toBe("Settings / Email templates");
+    expect(pageTitle("/quotes/123/edit")).toBe("Quotes");
+    expect(pageTitle("/invoices/123")).toBe("Invoices");
     expect(pageTitle("/import")).toBe("Import");
     expect(pageTitle("/somewhere-else")).toBe("OpenCRM");
   });

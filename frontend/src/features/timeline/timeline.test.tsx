@@ -12,9 +12,15 @@ import {
   allEntries,
   call,
   created,
+  emailSent,
+  emailWithQuote,
+  INVOICE,
+  invoiceStatus,
   leadRecord,
   meeting,
   note,
+  QUOTE,
+  quoteStatus,
   savedEntry,
   timelinePage,
 } from "./timeline.fixtures";
@@ -121,6 +127,66 @@ describe("Timeline", () => {
       "aria-expanded",
       "true",
     );
+  });
+
+  it("shows an email with its subject, who it went to, and its text", async () => {
+    await renderTimeline(timelinePage([emailSent, created]));
+
+    const [email] = entries().getAllByRole("listitem");
+    expect(titles()[0]).toBe("Email sent: Recap of our demo");
+    expect(email).toHaveTextContent("To: marcus.chen@acme.example, ops@acme.example");
+    expect(email).toHaveTextContent("Cc: mia@example.com");
+    expect(within(email as HTMLElement).getByText(/Here is the recap of our demo/)).toHaveClass(
+      "whitespace-pre-wrap",
+    );
+    // No quote went with it, so there is nothing to open.
+    expect(within(email as HTMLElement).queryByRole("link")).not.toBeInTheDocument();
+  });
+
+  it("leaves out Cc when there is none, and links an email to the quote it carried", async () => {
+    await renderTimeline(timelinePage([emailWithQuote]));
+
+    const email = within(entries().getAllByRole("listitem")[0] as HTMLElement);
+    expect(email.queryByText(/^Cc:/)).not.toBeInTheDocument();
+    expect(email.getByRole("link", { name: "Quote Q-0001" })).toHaveAttribute(
+      "href",
+      `/quotes/${QUOTE.id}`,
+    );
+  });
+
+  it("cuts a long email short until Show more is pressed", async () => {
+    const long = { ...emailSent, body: "A long email. ".repeat(100) };
+    const { user } = await renderTimeline(timelinePage([long]));
+
+    expect(screen.getByText(/A long email\./)).toHaveClass("line-clamp-6");
+    await user.click(screen.getByRole("button", { name: "Show more" }));
+    expect(screen.getByText(/A long email\./)).not.toHaveClass("line-clamp-6");
+  });
+
+  it("links the number of a quote and of an invoice to its page", async () => {
+    await renderTimeline(
+      timelinePage([invoiceStatus("SENT", "PAID"), quoteStatus("DRAFT", "SENT"), created]),
+    );
+
+    expect(titles().slice(0, 2)).toEqual([
+      "Invoice INV-0001 marked paid",
+      "Quote Q-0001 sent · $4,360.87",
+    ]);
+    expect(entries().getByRole("link", { name: "INV-0001" })).toHaveAttribute(
+      "href",
+      `/invoices/${INVOICE.id}`,
+    );
+    expect(entries().getByRole("link", { name: "Q-0001" })).toHaveAttribute(
+      "href",
+      `/quotes/${QUOTE.id}`,
+    );
+  });
+
+  it("names a deleted quote without a link: it is gone", async () => {
+    await renderTimeline(timelinePage([quoteStatus("DRAFT", null)]));
+
+    expect(titles()).toEqual(["Quote Q-0001 deleted"]);
+    expect(entries().queryByRole("link")).not.toBeInTheDocument();
   });
 
   it("offers no way to edit or delete an entry", async () => {

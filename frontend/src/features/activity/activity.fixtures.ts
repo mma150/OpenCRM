@@ -1,9 +1,13 @@
 import {
   call,
   created,
+  emailSent,
+  emailWithQuote,
+  invoiceStatus,
   lostReasonUpdated,
   markedLost,
   note,
+  quoteStatus,
   reassigned,
   statusChanged,
 } from "@/features/timeline/timeline.fixtures";
@@ -77,6 +81,21 @@ export const mixedActivity: ActivityEntry[] = [
   activity(statusChanged, daysAgoAt(0, 1)),
 ];
 
+export const fleetRecord: ActivityEntry["record"] = {
+  type: "OPPORTUNITY",
+  id: "ffffffff-ffff-4fff-8fff-fffffffffff1",
+  name: "Fleet rollout",
+};
+
+// Emails, and what happened to a quote and an invoice of an opportunity.
+export const emailActivity: ActivityEntry[] = [
+  activity(emailSent, daysAgoAt(0, 6)),
+  activity(emailWithQuote, daysAgoAt(0, 5), fleetRecord),
+  activity(quoteStatus("DRAFT", "SENT"), daysAgoAt(0, 4), fleetRecord),
+  activity(invoiceStatus("SENT", "PAID"), daysAgoAt(0, 3), fleetRecord),
+  activity(quoteStatus("DRAFT", null, 31), daysAgoAt(0, 2), fleetRecord),
+];
+
 export const allActivity: ActivityEntry[] = [
   todayCall,
   todayNote,
@@ -86,7 +105,7 @@ export const allActivity: ActivityEntry[] = [
   olderLostReason,
 ];
 
-export const summary = { conversations: 12, notes: 5, statusChanges: 3, emails: 0 };
+export const summary = { conversations: 12, notes: 5, statusChanges: 3, emails: 7 };
 
 export function activityList(
   entries: ActivityEntry[] = allActivity,

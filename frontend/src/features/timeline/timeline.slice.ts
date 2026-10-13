@@ -1,5 +1,8 @@
 import { createSlice, isAnyOf } from "@reduxjs/toolkit";
 
+import { emailRecordOf } from "@/features/emails/email-record";
+import * as emailsApi from "@/features/emails/emails.api";
+import type { EmailMessage } from "@/features/emails/emails.types";
 import type { ApiError } from "@/lib/api/http";
 import type { AppDispatch, RootState } from "@/store";
 import { createAppThunk } from "@/store/thunk";
@@ -11,6 +14,7 @@ import type {
   RecordRef,
   TimelineEntry,
   TimelineFilter,
+  TimelineKind,
   TimelineListQuery,
   TimelinePage,
 } from "./timeline.types";
@@ -63,13 +67,23 @@ function listQuery(filter: TimelineFilter, page: number): TimelineListQuery {
   };
 }
 
+// The kinds the API writes itself: what its `kind=SYSTEM` filter answers with. An email is
+// not one of them: a person sent it.
+const SYSTEM_KINDS: readonly TimelineKind[] = [
+  "CREATED",
+  "STATUS_CHANGE",
+  "ASSIGNMENT",
+  "QUOTE_STATUS",
+  "INVOICE_STATUS",
+];
+
 // True when an entry belongs under a filter tab.
-function matchesFilter(entry: TimelineEntry, filter: TimelineFilter): boolean {
+export function matchesFilter(entry: TimelineEntry, filter: TimelineFilter): boolean {
   switch (filter) {
     case "ALL":
       return true;
     case "SYSTEM":
-      return entry.kind !== "CONVERSATION" && entry.kind !== "NOTE";
+      return SYSTEM_KINDS.includes(entry.kind);
     default:
       return entry.kind === filter;
   }
@@ -149,7 +163,7 @@ function showNewEntry(
   }
 }
 
-// The two thunks below are mutations: the composer dispatches one, awaits `.unwrap()` and
+// The three thunks below are mutations: a form dispatches one, awaits `.unwrap()` and
 // shows the rejection itself, so they do not touch `status` or `error`. The new entry is
 // put into the list at once.
 export const logConversation = createAppThunk(
@@ -176,6 +190,25 @@ export const addNote = createAppThunk(
   ) => {
     try {
       const entry = await timelineApi.addNote(arg.record, arg.input);
+      showNewEntry(entry, arg.record, { dispatch, getState });
+      return entry;
+    } catch (error) {
+      return rejectWithValue(error as ApiError);
+    }
+  },
+);
+
+// Sends an email from a record (POST /emails). The API answers with the EMAIL entry it
+// wrote, which joins the timeline like a saved conversation; the record's own slice moves
+// its "Last contact" on the same action. Nothing is written when the email did not go out.
+export const sendEmail = createAppThunk(
+  "timeline/sendEmail",
+  async (
+    arg: { record: RecordRef; input: EmailMessage },
+    { dispatch, getState, rejectWithValue },
+  ) => {
+    try {
+      const entry = await emailsApi.sendEmail({ record: emailRecordOf(arg.record), ...arg.input });
       showNewEntry(entry, arg.record, { dispatch, getState });
       return entry;
     } catch (error) {
@@ -239,24 +272,27 @@ const timelineSlice = createSlice({
           };
         }
       })
-      .addMatcher(isAnyOf(logConversation.fulfilled, addNote.fulfilled), (state, action) => {
-        const entry = action.payload;
-        if (
-          !state.data ||
-          !state.query ||
-          !sameRecord(action.meta.arg.record, state.query.record) ||
-          !matchesFilter(entry, state.query.filter)
-        ) {
-          return;
-        }
-        // Newest first by when it happened: a conversation logged for last week goes
-        // below this week's entries, as it will after a reload.
-        const index = state.data.entries.findIndex(
-          (existing) => existing.occurredAt <= entry.occurredAt,
-        );
-        state.data.entries.splice(index === -1 ? state.data.entries.length : index, 0, entry);
-        state.data.total += 1;
-      });
+      .addMatcher(
+        isAnyOf(logConversation.fulfilled, addNote.fulfilled, sendEmail.fulfilled),
+        (state, action) => {
+          const entry = action.payload;
+          if (
+            !state.data ||
+            !state.query ||
+            !sameRecord(action.meta.arg.record, state.query.record) ||
+            !matchesFilter(entry, state.query.filter)
+          ) {
+            return;
+          }
+          // Newest first by when it happened: a conversation logged for last week goes
+          // below this week's entries, as it will after a reload.
+          const index = state.data.entries.findIndex(
+            (existing) => existing.occurredAt <= entry.occurredAt,
+          );
+          state.data.entries.splice(index === -1 ? state.data.entries.length : index, 0, entry);
+          state.data.total += 1;
+        },
+      );
   },
 });
 

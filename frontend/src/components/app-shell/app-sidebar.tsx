@@ -7,11 +7,23 @@ import { usePathname } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-import { isActive, type NavItem } from "./nav-items";
+import {
+  isActive,
+  isSettingsPath,
+  mainItemsOf,
+  type NavItem,
+  SETTINGS_HREF,
+  settingsItemsOf,
+} from "./nav-items";
 import { Wordmark } from "./wordmark";
 
-function SidebarLink({ item, pathname }: { item: NavItem; pathname: string }) {
-  const active = isActive(item, pathname);
+function SidebarLink({
+  item,
+  active,
+}: {
+  item: Pick<NavItem, "href" | "label" | "icon">;
+  active: boolean;
+}) {
   const Icon = item.icon;
 
   return (
@@ -45,8 +57,8 @@ function SidebarLink({ item, pathname }: { item: NavItem; pathname: string }) {
 // Phones get BottomTabBar instead; there is no slide-in drawer.
 export function AppSidebar({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
-  const mainItems = items.filter((item) => !item.group);
-  const settingsItems = items.filter((item) => item.group === "settings");
+  const mainItems = mainItemsOf(items);
+  const hasSettings = settingsItemsOf(items).length > 0;
 
   return (
     <aside className="bg-sidebar sticky top-0 hidden h-dvh w-16 shrink-0 flex-col border-r md:flex lg:w-60">
@@ -59,22 +71,19 @@ export function AppSidebar({ items }: { items: NavItem[] }) {
       <nav aria-label="Main" className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
         <ul className="flex flex-col gap-1">
           {mainItems.map((item) => (
-            <SidebarLink key={item.href} item={item} pathname={pathname} />
+            <SidebarLink key={item.href} item={item} active={isActive(item, pathname)} />
           ))}
         </ul>
 
-        {settingsItems.length > 0 ? (
-          <div className="mt-auto flex flex-col gap-1 border-t pt-3">
-            <p className="text-muted-foreground flex h-8 items-center justify-center gap-3 px-3 text-xs font-medium tracking-wide uppercase lg:justify-start">
-              <Settings aria-hidden className="size-4 shrink-0 lg:hidden" />
-              <span className="md:max-lg:sr-only">Settings</span>
-            </p>
-            <ul className="flex flex-col gap-1">
-              {settingsItems.map((item) => (
-                <SidebarLink key={item.href} item={item} pathname={pathname} />
-              ))}
-            </ul>
-          </div>
+        {/* One link for the whole Settings area, pinned to the bottom. Its pages are listed
+            by the area's own navigation (settings-nav.tsx). */}
+        {hasSettings ? (
+          <ul className="mt-auto flex flex-col gap-1 border-t pt-3">
+            <SidebarLink
+              item={{ href: SETTINGS_HREF, label: "Settings", icon: Settings }}
+              active={isSettingsPath(pathname)}
+            />
+          </ul>
         ) : null}
       </nav>
     </aside>

@@ -5,6 +5,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Me } from "@/features/auth/auth.types";
 import { northwind } from "@/features/companies/companies.fixtures";
 import { marcus } from "@/features/contacts/contacts.fixtures";
+import { getEmailStatus } from "@/features/email-settings/email-settings.api";
+import { listEmailTemplates } from "@/features/email-templates/email-templates.api";
+import { getEmailDefaults } from "@/features/emails/emails.api";
 import { assignableUsers, managerUser, readOnlyUser } from "@/features/leads/leads.fixtures";
 import { listPipelineStages } from "@/features/pipeline-stages/pipeline-stages.api";
 import {
@@ -38,6 +41,9 @@ vi.mock("@/features/pipeline-stages/pipeline-stages.api");
 vi.mock("@/features/users/users.api");
 vi.mock("@/features/tasks/tasks.api");
 vi.mock("@/features/timeline/timeline.api");
+vi.mock("@/features/emails/emails.api");
+vi.mock("@/features/email-settings/email-settings.api");
+vi.mock("@/features/email-templates/email-templates.api");
 vi.mock("sonner");
 
 const record = { type: "opportunity", id: fleet.id };
@@ -284,8 +290,34 @@ describe("OpportunityDetailPage", () => {
     ).toEqual(["Delete"]);
   });
 
+  it("offers Send email to every role that may write, also on a closed opportunity", async () => {
+    for (const [opportunity, me] of [
+      [fleet, managerUser],
+      [fleet, repUser],
+      [wonDeal, adminUser],
+      [lostDeal, adminUser],
+    ] as const) {
+      const { unmount } = await renderOpportunity(opportunity, me);
+      expect(screen.getByRole("button", { name: "Send email" })).toBeInTheDocument();
+      unmount();
+    }
+    expect(getEmailStatus).not.toHaveBeenCalled();
+
+    vi.mocked(getEmailStatus).mockResolvedValue({ enabled: true });
+    vi.mocked(listEmailTemplates).mockResolvedValue([]);
+    vi.mocked(getEmailDefaults).mockResolvedValue({ recipients: [] });
+    const { user } = await renderOpportunity();
+    await user.click(screen.getByRole("button", { name: "Send email" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "Send email" });
+    expect(dialog).toHaveTextContent(fleet.name);
+    expect(getEmailDefaults).toHaveBeenCalledWith({ type: "OPPORTUNITY", id: fleet.id });
+  });
+
   it("gives a Read-only user the record and its history, and no control that changes it", async () => {
     await renderOpportunity(fleet, readOnlyUser);
+
+    expect(screen.queryByRole("button", { name: "Send email" })).not.toBeInTheDocument();
 
     for (const name of ["Close as won", "Close as lost", "Reopen", "More actions"]) {
       expect(screen.queryByRole("button", { name })).not.toBeInTheDocument();

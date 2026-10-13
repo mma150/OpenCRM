@@ -4,6 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Me } from "@/features/auth/auth.types";
 import { northwind } from "@/features/companies/companies.fixtures";
+import { getEmailStatus } from "@/features/email-settings/email-settings.api";
+import { listEmailTemplates } from "@/features/email-templates/email-templates.api";
+import { getEmailDefaults } from "@/features/emails/emails.api";
 import { assignableUsers, managerUser, readOnlyUser } from "@/features/leads/leads.fixtures";
 import { listOpportunities } from "@/features/opportunities/opportunities.api";
 import { fleet, opportunityList } from "@/features/opportunities/opportunities.fixtures";
@@ -32,6 +35,9 @@ vi.mock("@/features/users/users.api");
 vi.mock("@/features/opportunities/opportunities.api");
 vi.mock("@/features/tasks/tasks.api");
 vi.mock("@/features/timeline/timeline.api");
+vi.mock("@/features/emails/emails.api");
+vi.mock("@/features/email-settings/email-settings.api");
+vi.mock("@/features/email-templates/email-templates.api");
 vi.mock("sonner");
 
 type TestUser = ReturnType<typeof renderWithStore>["user"];
@@ -165,8 +171,32 @@ describe("ContactDetailPage", () => {
     expect(await moreActionNames(user)).toEqual(["Delete"]);
   });
 
+  it("offers Send email to every role that may write, and opens the composer for the contact", async () => {
+    for (const me of [managerUser, repUser]) {
+      const { unmount } = await renderContact(marcus, me);
+      expect(screen.getByRole("button", { name: "Send email" })).toBeInTheDocument();
+      unmount();
+    }
+    expect(getEmailStatus).not.toHaveBeenCalled();
+
+    vi.mocked(getEmailStatus).mockResolvedValue({ enabled: true });
+    vi.mocked(listEmailTemplates).mockResolvedValue([]);
+    vi.mocked(getEmailDefaults).mockResolvedValue({ recipients: [] });
+    const { user } = await renderContact();
+    await user.click(screen.getByRole("button", { name: "Send email" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "Send email" });
+    expect(dialog).toHaveTextContent(marcus.name);
+    expect(getEmailDefaults).toHaveBeenCalledWith({ type: "CONTACT", id: marcus.id });
+    // A contact without an address still gets the composer, with To left to type.
+    expect(within(dialog).getByLabelText("To")).toHaveValue("");
+    expect(within(dialog).queryByRole("button", { name: /^Remove / })).not.toBeInTheDocument();
+  });
+
   it("gives a Read-only user no actions and no way to add to the timeline", async () => {
     await renderContact(marcus, readOnlyUser);
+
+    expect(screen.queryByRole("button", { name: "Send email" })).not.toBeInTheDocument();
 
     expect(screen.queryByRole("link", { name: "Edit" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "More actions" })).not.toBeInTheDocument();

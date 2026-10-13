@@ -47,7 +47,10 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
+/* `.paper` is the light theme whatever the user chose: the print view of a quote or an
+   invoice is white paper with dark ink in both themes. */
+:root,
+.paper {
   /* Zinc neutrals with one blue accent (#2563eb). Primary = main actions and the active nav item. */
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -127,5 +130,20 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* Paper: margins for A4 and Letter alike. The print view (print-document.tsx) leaves its
+   own toolbar out with `print:hidden`. */
+@page {
+  margin: 16mm;
+}
+
+/* Paper is white in both themes, also when the browser prints background graphics. */
+@media print {
+  html,
+  body {
+    background: #fff;
+    color-scheme: light;
   }
 }

@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { getEmailStatus } from "@/features/email-settings/email-settings.api";
 import type { ApiError } from "@/lib/api/http";
 import { adminUser, renderWithStore, repUser } from "@/test/render-with-store";
 
@@ -10,6 +11,8 @@ import type { User } from "./users.types";
 import { UsersPage } from "./users-page";
 
 vi.mock("./users.api");
+// The "outgoing email is off" note asks GET /settings/email/status.
+vi.mock("@/features/email-settings/email-settings.api");
 
 type TestUser = ReturnType<typeof renderWithStore>["user"];
 
@@ -17,6 +20,7 @@ type TestUser = ReturnType<typeof renderWithStore>["user"];
 // look inside the table.
 async function renderUsers(users: User[] = allUsers, mailEnabled = true) {
   vi.mocked(listUsers).mockResolvedValue({ users, mailEnabled });
+  vi.mocked(getEmailStatus).mockResolvedValue({ enabled: mailEnabled });
   const view = renderWithStore(<UsersPage />, { me: adminUser });
   const table = await screen.findByRole("table", { name: "Users" });
   return { ...view, table };
@@ -74,11 +78,43 @@ describe("UsersPage", () => {
     const banner = "Outgoing email is off. Invite links will be shown for you to copy.";
 
     const first = await renderUsers(allUsers, false);
-    expect(screen.getByText(banner)).toBeInTheDocument();
+    expect(await screen.findByText(banner, { exact: false })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Set up email" })).toHaveAttribute(
+      "href",
+      "/settings/email",
+    );
     first.unmount();
 
     await renderUsers(allUsers, true);
-    expect(screen.queryByText(banner)).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(getEmailStatus).toHaveBeenCalledTimes(2);
+    });
+    expect(screen.queryByText(banner, { exact: false })).not.toBeInTheDocument();
+  });
+
+  it("takes the banner from the email status, not from the users list", async () => {
+    // The list still says email is on; the status is what counts.
+    vi.mocked(listUsers).mockResolvedValue({ users: allUsers, mailEnabled: true });
+    vi.mocked(getEmailStatus).mockResolvedValue({ enabled: false });
+    renderWithStore(<UsersPage />, { me: adminUser });
+
+    expect(await screen.findByText(/Outgoing email is off/)).toBeInTheDocument();
+  });
+
+  it("does not claim email is off while the status is unknown", async () => {
+    vi.mocked(listUsers).mockResolvedValue({ users: allUsers, mailEnabled: false });
+    vi.mocked(getEmailStatus).mockRejectedValue({
+      code: "NETWORK_ERROR",
+      message: "Server text",
+      details: null,
+    });
+    renderWithStore(<UsersPage />, { me: adminUser });
+
+    await screen.findByRole("table", { name: "Users" });
+    await waitFor(() => {
+      expect(getEmailStatus).toHaveBeenCalled();
+    });
+    expect(screen.queryByText(/Outgoing email is off/)).not.toBeInTheDocument();
   });
 
   it("shows the load error with Retry", async () => {

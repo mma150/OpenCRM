@@ -39,6 +39,22 @@ export function describeApiError(error: ApiError): string {
       return "This is the last active Admin. Make someone else an Admin first.";
     case "LEAD_CONVERTED":
       return "This lead has been converted and can no longer be changed.";
+    case "EMAIL_NOT_CONFIGURED":
+      return "Outgoing email is not set up, so nothing was sent. An Admin can set it up under Settings, Email.";
+    case "EMAIL_SEND_FAILED":
+      // The API's sentence says what kind of problem it was (cannot connect, login refused)
+      // and never repeats the mail server's own text, so it is shown as it is.
+      return `The email was not sent. ${error.message}`;
+    case "ENCRYPTION_KEY_MISSING":
+      return "The password cannot be stored: the server has no SETTINGS_ENCRYPTION_KEY. Nothing was saved.";
+    case "PRODUCT_IN_USE":
+      return "This product is on a quote, so it cannot be deleted. Archive it instead.";
+    case "QUOTE_NOT_EDITABLE":
+      return "This quote is no longer a draft, so it cannot be changed or deleted. Reopen it first.";
+    case "INVALID_STATUS_CHANGE":
+      return "That is no longer possible: the status has changed in the meantime. The page now shows the current status.";
+    case "INVOICE_EXISTS":
+      return "This quote already has an invoice, so it cannot be reopened or invoiced again.";
     case "VALIDATION_FAILED":
       return "Some of the details are not valid. Check them and try again.";
     case "PAYLOAD_TOO_LARGE":

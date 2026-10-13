@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { selectAuth } from "@/features/auth/auth.slice";
+import { useEmailStatus } from "@/features/email-settings/use-email-status";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 import { EditUserDialog } from "./edit-user-dialog";
@@ -135,6 +136,7 @@ function UsersAdmin({ myId }: { myId: string }) {
   const dispatch = useAppDispatch();
   const { data, status, error } = useAppSelector(selectUsers);
   const [dialog, setDialog] = useState<OpenDialog>(null);
+  const { enabled: emailEnabled } = useEmailStatus();
   const users = data?.users ?? null;
   const close = () => {
     setDialog(null);
@@ -186,11 +188,15 @@ function UsersAdmin({ myId }: { myId: string }) {
         }
       />
 
-      {data && !data.mailEnabled ? (
+      {/* Only once the API has said so: `enabled` is null while the answer is on its way. */}
+      {emailEnabled === false ? (
         <Alert>
           <Info aria-hidden />
           <AlertDescription className="text-foreground">
-            Outgoing email is off. Invite links will be shown for you to copy.
+            Outgoing email is off. Invite links will be shown for you to copy.{" "}
+            <Link href="/settings/email" className="font-medium">
+              Set up email
+            </Link>
           </AlertDescription>
         </Alert>
       ) : null}

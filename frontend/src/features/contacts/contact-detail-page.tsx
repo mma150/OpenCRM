@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { RecordCustomFields } from "@/features/custom-fields/record-custom-fields";
+import { SendEmailButton } from "@/features/emails/send-email-button";
 import { RecordOpportunities } from "@/features/opportunities/record-opportunities";
 import { RecordTasks } from "@/features/tasks/record-tasks";
 import { LogConversationButton } from "@/features/timeline/log-conversation-button";
@@ -73,6 +74,7 @@ function ContactDetail({ contact }: { contact: Contact }) {
               actions={
                 access.canWrite ? (
                   <>
+                    <SendEmailButton record={record} recordName={contact.name} canWrite />
                     <Button asChild variant="outline" className="h-10 px-4">
                       <Link href={`/contacts/${contact.id}/edit`}>
                         <Pencil aria-hidden />

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRightLeft, MessagesSquare, ShieldAlert, StickyNote } from "lucide-react";
+import { ArrowRightLeft, MessagesSquare, Send, ShieldAlert, StickyNote } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
 
@@ -16,7 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { selectAuth } from "@/features/auth/auth.slice";
+import { LinkedTitle } from "@/features/timeline/timeline-entry";
 import { TimelineEntryIcon } from "@/features/timeline/timeline-entry-icon";
+import { entryLink } from "@/features/timeline/timeline-labels";
 import { describeApiError } from "@/lib/api/error-messages";
 import { formatDayHeading, formatTime, toDateInputValue } from "@/lib/format";
 import { initials } from "@/lib/user-labels";
@@ -63,12 +65,13 @@ const LIST_URL: ListUrlConfig<ActivityFilter, "occurredAt"> = {
 const linkClass =
   "text-primary rounded-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50";
 
-// Conversations N · Notes N · Status changes N, for everything the filters match on every
-// page. The Type filter counts too: with "Notes" selected the other two are 0.
+// Conversations N · Notes N · Emails N · Status changes N, for everything the filters match
+// on every page. The Type filter counts too: with "Notes" selected the others are 0.
 function SummaryStrip({ summary }: { summary: ActivitySummary }) {
   const items = [
     { label: "Conversations", count: summary.conversations, icon: MessagesSquare },
     { label: "Notes", count: summary.notes, icon: StickyNote },
+    { label: "Emails", count: summary.emails, icon: Send },
     { label: "Status changes", count: summary.statusChanges, icon: ArrowRightLeft },
   ];
   return (
@@ -128,7 +131,8 @@ function ActivityItem({ entry }: { entry: ActivityEntry }) {
           </div>
           {excerpt ? (
             <p className="text-muted-foreground line-clamp-2 min-w-0 text-sm wrap-anywhere">
-              {excerpt}
+              {/* The number of a quote or an invoice opens it. */}
+              <LinkedTitle title={excerpt} link={entryLink(entry)} />
             </p>
           ) : null}
         </div>

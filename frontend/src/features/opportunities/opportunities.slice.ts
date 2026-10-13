@@ -1,6 +1,6 @@
 import { createSlice, isAnyOf, type PayloadAction } from "@reduxjs/toolkit";
 
-import { logConversation } from "@/features/timeline/timeline.slice";
+import { logConversation, sendEmail } from "@/features/timeline/timeline.slice";
 import type { ApiError } from "@/lib/api/http";
 import type { RootState } from "@/store";
 import { createAppThunk } from "@/store/thunk";
@@ -401,9 +401,9 @@ const opportunitiesSlice = createSlice({
           state.current = initialState.current;
         }
       })
-      // A conversation logged on the open opportunity moves its "Last contact" forward, as
-      // the API does, without loading the opportunity again.
-      .addCase(logConversation.fulfilled, (state, action) => {
+      // A conversation logged on the open opportunity, or an email sent from it, moves its
+      // "Last contact" forward, as the API does, without loading the opportunity again.
+      .addMatcher(isAnyOf(logConversation.fulfilled, sendEmail.fulfilled), (state, action) => {
         const { record } = action.meta.arg;
         const opportunity = state.current.data;
         if (!opportunity || record.type !== "opportunity" || opportunity.id !== record.id) {

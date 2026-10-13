@@ -29,6 +29,19 @@ export function formatCurrency(amount: number): string {
   return currencyFormat.format(amount);
 }
 
+// An amount on a quote or an invoice, always with cents so a column lines up:
+// 48000 -> "$48,000.00".
+const moneyFormat = new Intl.NumberFormat(LOCALE, { style: "currency", currency: CURRENCY });
+
+export function formatMoney(amount: number): string {
+  return moneyFormat.format(amount);
+}
+
+// A tax rate or a discount: 8.25 -> "8.25%".
+export function formatPercent(value: number): string {
+  return `${formatNumber(value)}%`;
+}
+
 // A plain number as people write it: 12500.5 -> "12,500.5". Not money: no currency sign.
 const numberFormat = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 10 });
 

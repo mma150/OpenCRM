@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
+import * as emailsApi from "@/features/emails/emails.api";
 import type { ApiError } from "@/lib/api/http";
 import type { components } from "@/lib/api/schema";
 import { makeStore } from "@/store";
@@ -8,10 +9,13 @@ import * as timelineApi from "./timeline.api";
 import {
   call,
   created,
+  emailSent,
+  invoiceStatus,
   leadRecord,
   meeting,
   note,
   otherRecord,
+  quoteStatus,
   savedEntry,
   statusChanged,
   timelinePage,
@@ -21,12 +25,15 @@ import {
   fetchMoreTimeline,
   fetchTimeline,
   logConversation,
+  matchesFilter,
   refreshTimeline,
+  sendEmail,
   type TimelineQuery,
 } from "./timeline.slice";
 import type { TimelineEntry, TimelinePage } from "./timeline.types";
 
 vi.mock("./timeline.api");
+vi.mock("@/features/emails/emails.api");
 
 const all: TimelineQuery = { record: leadRecord, filter: "ALL" };
 const forbidden: ApiError = { code: "FORBIDDEN", message: "Server text", details: null };
@@ -328,6 +335,102 @@ describe("timeline slice: adding an entry", () => {
       error: null,
       data: timelinePage([created]),
     });
+  });
+});
+
+describe("timeline slice: sending an email", () => {
+  const message = { to: ["marcus.chen@acme.example"], subject: "Recap", body: "Hi Marcus" };
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it("sends from the record in the API's own words, and puts the entry at the top", async () => {
+    const store = await loadedStore(timelinePage([call, created]));
+    const sent = savedEntry({ ...emailSent, occurredAt: new Date().toISOString() });
+    vi.mocked(emailsApi.sendEmail).mockResolvedValue(sent);
+
+    const answer = await store.dispatch(sendEmail({ record: leadRecord, input: message })).unwrap();
+
+    expect(emailsApi.sendEmail).toHaveBeenCalledWith({
+      record: { type: "LEAD", id: leadRecord.id },
+      ...message,
+    });
+    expect(answer).toEqual(sent);
+    const { data } = store.getState().timeline;
+    expect(ids(data?.entries)).toEqual(ids([sent, call, created]));
+    expect(data?.total).toBe(3);
+  });
+
+  it("leaves another record's timeline alone", async () => {
+    const store = await loadedStore(timelinePage([created]));
+    vi.mocked(emailsApi.sendEmail).mockResolvedValue(savedEntry(emailSent));
+
+    await store.dispatch(sendEmail({ record: otherRecord, input: message }));
+
+    expect(ids(store.getState().timeline.data?.entries)).toEqual(ids([created]));
+  });
+
+  it.each(["NOTE", "SYSTEM"] as const)(
+    "switches back to All from the %s tab, which would hide the email",
+    async (filter) => {
+      const store = await loadedStore(timelinePage([created]), { record: leadRecord, filter });
+      const sent = savedEntry(emailSent);
+      vi.mocked(emailsApi.sendEmail).mockResolvedValue(sent);
+      vi.mocked(timelineApi.listTimeline).mockResolvedValue(timelinePage([sent, created]));
+
+      await store.dispatch(sendEmail({ record: leadRecord, input: message }));
+
+      await vi.waitFor(() => {
+        expect(store.getState().timeline.status).toBe("succeeded");
+      });
+      expect(store.getState().timeline.query?.filter).toBe("ALL");
+      expect(ids(store.getState().timeline.data?.entries)).toEqual(ids([sent, created]));
+    },
+  );
+
+  it("writes nothing when the email did not go out", async () => {
+    const store = await loadedStore(timelinePage([created]));
+    const failed: ApiError = {
+      code: "EMAIL_SEND_FAILED",
+      message: "Refused (550).",
+      details: null,
+    };
+    vi.mocked(emailsApi.sendEmail).mockRejectedValue(failed);
+
+    await expect(
+      store.dispatch(sendEmail({ record: leadRecord, input: message })).unwrap(),
+    ).rejects.toEqual(failed);
+
+    expect(store.getState().timeline).toMatchObject({
+      status: "succeeded",
+      error: null,
+      data: timelinePage([created]),
+    });
+  });
+});
+
+describe("timeline slice: which entries a tab holds", () => {
+  it("counts as Changes exactly what the API's SYSTEM filter answers with", () => {
+    const system = [
+      created,
+      statusChanged,
+      quoteStatus(null, "DRAFT"),
+      invoiceStatus(null, "DRAFT"),
+    ];
+    for (const entry of system) {
+      expect(matchesFilter(entry, "SYSTEM")).toBe(true);
+    }
+    // A person wrote these: an email is not a change of the record.
+    for (const entry of [call, note, emailSent]) {
+      expect(matchesFilter(entry, "SYSTEM")).toBe(false);
+    }
+  });
+
+  it("keeps an email out of Conversations and Notes, and in All", () => {
+    expect(matchesFilter(emailSent, "CONVERSATION")).toBe(false);
+    expect(matchesFilter(emailSent, "NOTE")).toBe(false);
+    expect(matchesFilter(emailSent, "ALL")).toBe(true);
   });
 });
 

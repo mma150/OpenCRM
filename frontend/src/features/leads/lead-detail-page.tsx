@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/select";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { RecordCustomFields } from "@/features/custom-fields/record-custom-fields";
+import { SendEmailButton } from "@/features/emails/send-email-button";
 import { RecordTasks } from "@/features/tasks/record-tasks";
 import { LogConversationButton } from "@/features/timeline/log-conversation-button";
 import { Timeline } from "@/features/timeline/timeline";
@@ -277,7 +278,11 @@ function LeadDetail({ lead }: { lead: Lead }) {
               }
               actions={
                 access.canWrite ? (
-                  <LeadActions lead={lead} canReassign={access.canReassign} onOpen={setDialog} />
+                  <>
+                    {/* A converted or lost lead still takes email. */}
+                    <SendEmailButton record={record} recordName={lead.name} canWrite />
+                    <LeadActions lead={lead} canReassign={access.canReassign} onOpen={setDialog} />
+                  </>
                 ) : undefined
               }
             />

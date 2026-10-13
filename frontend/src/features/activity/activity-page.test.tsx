@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Me } from "@/features/auth/auth.types";
 import { managerUser, readOnlyUser } from "@/features/leads/leads.fixtures";
+import { INVOICE, QUOTE } from "@/features/timeline/timeline.fixtures";
 import type { ApiError } from "@/lib/api/http";
 import { formatDayHeading, formatTime, toDateInputValue } from "@/lib/format";
 import { followNavigation, mockRouter, setMockLocation } from "@/test/navigation-mock";
@@ -15,6 +16,8 @@ import {
   authors,
   daysAgoAt,
   elenaRecord,
+  emailActivity,
+  fleetRecord,
   marcusRecord,
   mixedActivity,
   northwindRecord,
@@ -99,7 +102,53 @@ describe("ActivityPage", () => {
     const totals = screen.getByLabelText("Totals for these filters");
     expect(totals).toHaveTextContent("Conversations12");
     expect(totals).toHaveTextContent("Notes5");
+    expect(totals).toHaveTextContent("Emails7");
     expect(totals).toHaveTextContent("Status changes3");
+  });
+
+  it("filters by emails, which the API counts apart from conversations", async () => {
+    const { user } = await renderActivity();
+    await choose(user, "Type", "Emails");
+
+    await waitFor(() => {
+      expect(listActivity).toHaveBeenLastCalledWith({ ...queryFor(), kind: "EMAIL" });
+    });
+    expect(mockRouter.replace).toHaveBeenLastCalledWith("/activity?kind=EMAIL", { scroll: false });
+  });
+
+  it("says what was sent, and what happened to a quote or an invoice, with a link to it", async () => {
+    await renderActivity(adminUser, activityList(emailActivity));
+    const items = screen.getAllByRole("listitem");
+    const text = (index: number) => items[index]?.textContent ?? "";
+    const item = (index: number) => within(items[index] as HTMLElement);
+
+    expect(text(0)).toContain(`sent an email from ${marcusRecord.name}`);
+    expect(text(0)).toContain("Recap of our demo — Hi Marcus,");
+    expect(item(0).getAllByRole("link")).toHaveLength(1);
+
+    expect(text(1)).toContain(`sent an email from ${fleetRecord.name}`);
+    expect(item(1).getByRole("link", { name: "Quote Q-0001" })).toHaveAttribute(
+      "href",
+      `/quotes/${QUOTE.id}`,
+    );
+
+    expect(text(2)).toContain(`sent a quote on ${fleetRecord.name}`);
+    expect(text(2)).toContain("Quote Q-0001 sent · $4,360.87");
+    expect(item(2).getByRole("link", { name: "Q-0001" })).toHaveAttribute(
+      "href",
+      `/quotes/${QUOTE.id}`,
+    );
+
+    expect(text(3)).toContain(`marked an invoice as paid on ${fleetRecord.name}`);
+    expect(item(3).getByRole("link", { name: "INV-0001" })).toHaveAttribute(
+      "href",
+      `/invoices/${INVOICE.id}`,
+    );
+
+    // A deleted quote is named, but there is nothing left to open.
+    expect(text(4)).toContain(`deleted a quote on ${fleetRecord.name}`);
+    expect(text(4)).toContain("Quote Q-0001 deleted");
+    expect(item(4).getAllByRole("link")).toHaveLength(1);
   });
 
   it("groups the entries under Today, Yesterday and then the date", async () => {

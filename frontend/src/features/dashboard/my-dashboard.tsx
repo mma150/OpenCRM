@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Me } from "@/features/auth/auth.types";
+import { InvoiceSummaryTiles } from "@/features/invoices/invoice-summary-tiles";
 import { LEAD_STATUS_LABELS } from "@/features/leads/lead-labels";
 import { isOverdue, taskAccess } from "@/features/tasks/task-labels";
 import { TaskRow } from "@/features/tasks/task-row";
@@ -362,6 +363,26 @@ export function MyDashboardView({
                 />
               ))}
             </ul>
+          </DashboardCard>
+
+          {/* The one part of this dashboard that is not the user's own figures: it comes from
+              GET /invoices/summary, which counts every invoice the viewer may see. It loads
+              and fails on its own. */}
+          <DashboardCard
+            title="Invoices"
+            action={
+              <Link href="/invoices" className={linkClass}>
+                All invoices
+              </Link>
+            }
+          >
+            <InvoiceSummaryTiles
+              show={["outstanding", "overdue"]}
+              className="grid-cols-1 sm:grid-cols-2"
+            />
+            <p className="text-muted-foreground text-xs">
+              Across every invoice you can see, not only your own deals.
+            </p>
           </DashboardCard>
         </div>
       </div>

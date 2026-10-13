@@ -26,8 +26,9 @@ export type TimelineEntryResponse =
 // The record a timeline belongs to, and the record types there are: see `record-types.ts`.
 export type { RecordRef, RecordType } from "./record-types";
 
-// The tabs above the list. "SYSTEM" is what the API calls the record's own changes:
-// created, status changes and reassignments.
+// The tabs above the list. "SYSTEM" is what the API calls the entries it writes itself:
+// created, status changes, reassignments and what happened to a quote or an invoice.
+// There is no tab for emails: a fifth one does not fit a phone, and "All" shows them.
 export type TimelineFilter =
   "ALL" | Extract<Schemas["TimelineKindFilter"], "CONVERSATION" | "NOTE" | "SYSTEM">;
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { daysAgo, formatDate, formatDateTime, formatRelativeTime } from "@/lib/format";
@@ -7,7 +8,54 @@ import { cn } from "@/lib/utils";
 
 import type { TimelineEntry } from "./timeline.types";
 import { TimelineEntryIcon } from "./timeline-entry-icon";
-import { entryText, entryTitle } from "./timeline-labels";
+import { emailOf, entryLink, entryText, entryTitle } from "./timeline-labels";
+
+const linkClass =
+  "text-primary rounded-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50";
+
+// A title whose quote or invoice number is a link to that document: "Quote Q-0001 sent".
+// A title that does not hold the words of the link is shown as it is.
+export function LinkedTitle({
+  title,
+  link,
+}: {
+  title: string;
+  link: { href: string; label: string } | null;
+}) {
+  const at = link ? title.indexOf(link.label) : -1;
+  if (!link || at === -1) {
+    return title;
+  }
+  return (
+    <>
+      {title.slice(0, at)}
+      <Link href={link.href} className={linkClass}>
+        {link.label}
+      </Link>
+      {title.slice(at + link.label.length)}
+    </>
+  );
+}
+
+// Under the title of an email: who it went to, and the quote it carried.
+function EmailFacts({ entry }: { entry: TimelineEntry }) {
+  const { to, cc } = emailOf(entry);
+  const link = entryLink(entry);
+  return (
+    <div className="text-muted-foreground flex min-w-0 flex-col gap-0.5 text-xs wrap-anywhere">
+      {to.length > 0 ? <p>To: {to.join(", ")}</p> : null}
+      {cc.length > 0 ? <p>Cc: {cc.join(", ")}</p> : null}
+      {link ? (
+        <p>
+          With{" "}
+          <Link href={link.href} className={linkClass}>
+            {link.label}
+          </Link>
+        </p>
+      ) : null}
+    </div>
+  );
+}
 
 // Longer text than this is shown cut short with a "Show more" button, so one long
 // conversation does not push the rest of the history off the screen.
@@ -54,6 +102,7 @@ export function TimelineEntryItem({
   recordLabel: string;
 }) {
   const text = entryText(entry);
+  const isEmail = entry.kind === "EMAIL";
   const relative = formatRelativeTime(entry.occurredAt);
   // A conversation written down on a later day than it happened says so.
   const loggedLater = daysAgo(entry.createdAt, new Date(entry.occurredAt)) < 0;
@@ -63,7 +112,7 @@ export function TimelineEntryItem({
       <span
         className={cn(
           "flex size-8 shrink-0 items-center justify-center rounded-full",
-          entry.kind === "CONVERSATION"
+          entry.kind === "CONVERSATION" || isEmail
             ? "bg-primary/10 text-primary"
             : "bg-muted text-muted-foreground",
         )}
@@ -72,7 +121,13 @@ export function TimelineEntryItem({
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex min-w-0 flex-col gap-0.5">
-          <p className="text-sm font-medium wrap-anywhere">{entryTitle(entry, recordLabel)}</p>
+          <p className="text-sm font-medium wrap-anywhere">
+            {/* The link of an email is the line "With Quote Q-0001" below, not its title. */}
+            <LinkedTitle
+              title={entryTitle(entry, recordLabel)}
+              link={isEmail ? null : entryLink(entry)}
+            />
+          </p>
           <p className="text-muted-foreground text-xs wrap-anywhere">
             {entry.author.name} ·{" "}
             <time dateTime={entry.occurredAt}>{formatDateTime(entry.occurredAt)}</time>
@@ -80,6 +135,7 @@ export function TimelineEntryItem({
             {loggedLater ? ` · logged ${formatDate(entry.createdAt)}` : null}
           </p>
         </div>
+        {isEmail ? <EmailFacts entry={entry} /> : null}
         {text ? <EntryText text={text} /> : null}
       </div>
     </li>

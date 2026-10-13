@@ -6,11 +6,17 @@ import { companiesReducer } from "@/features/companies/companies.slice";
 import { contactsReducer } from "@/features/contacts/contacts.slice";
 import { customFieldsReducer } from "@/features/custom-fields/custom-fields.slice";
 import { dashboardReducer } from "@/features/dashboard/dashboard.slice";
+import { emailSettingsReducer } from "@/features/email-settings/email-settings.slice";
+import { emailTemplatesReducer } from "@/features/email-templates/email-templates.slice";
 import { healthReducer } from "@/features/health/health.slice";
+import { invoicesReducer } from "@/features/invoices/invoices.slice";
 import { leadsReducer } from "@/features/leads/leads.slice";
 import { notificationsReducer } from "@/features/notifications/notifications.slice";
 import { opportunitiesReducer } from "@/features/opportunities/opportunities.slice";
+import { organizationReducer } from "@/features/organization/organization.slice";
 import { pipelineStagesReducer } from "@/features/pipeline-stages/pipeline-stages.slice";
+import { productsReducer } from "@/features/products/products.slice";
+import { quotesReducer } from "@/features/quotes/quotes.slice";
 import { tasksReducer } from "@/features/tasks/tasks.slice";
 import { timelineReducer } from "@/features/timeline/timeline.slice";
 import { assignableUsersReducer } from "@/features/users/assignable-users.slice";
@@ -24,11 +30,17 @@ const appReducer = combineReducers({
   contacts: contactsReducer,
   customFields: customFieldsReducer,
   dashboard: dashboardReducer,
+  emailSettings: emailSettingsReducer,
+  emailTemplates: emailTemplatesReducer,
   health: healthReducer,
+  invoices: invoicesReducer,
   leads: leadsReducer,
   notifications: notificationsReducer,
   opportunities: opportunitiesReducer,
+  organization: organizationReducer,
   pipelineStages: pipelineStagesReducer,
+  products: productsReducer,
+  quotes: quotesReducer,
   tasks: tasksReducer,
   timeline: timelineReducer,
   users: usersReducer,

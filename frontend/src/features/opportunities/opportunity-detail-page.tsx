@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { RecordCustomFields } from "@/features/custom-fields/record-custom-fields";
+import { SendEmailButton } from "@/features/emails/send-email-button";
 import { openStages } from "@/features/pipeline-stages/stage-labels";
 import { usePipelineStages } from "@/features/pipeline-stages/use-pipeline-stages";
 import { RecordTasks } from "@/features/tasks/record-tasks";
@@ -139,6 +140,8 @@ function OpportunityDetail({ opportunity }: { opportunity: Opportunity }) {
               actions={
                 access.canWrite ? (
                   <>
+                    {/* A closed opportunity still takes email. */}
+                    <SendEmailButton record={record} recordName={opportunity.name} canWrite />
                     {open ? (
                       <>
                         <Button

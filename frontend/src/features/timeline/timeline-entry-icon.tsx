@@ -1,7 +1,10 @@
 import {
   ArrowRightLeft,
   CirclePlus,
+  FileText,
   MessageSquare,
+  Receipt,
+  Send,
   StickyNote,
   UserRoundPen,
   XCircle,
@@ -37,5 +40,13 @@ export function TimelineEntryIcon({
       );
     case "ASSIGNMENT":
       return <UserRoundPen aria-hidden className={className} />;
+    // An email sent from the record through the app. An email someone only wrote down is
+    // a conversation and keeps the envelope.
+    case "EMAIL":
+      return <Send aria-hidden className={className} />;
+    case "QUOTE_STATUS":
+      return <FileText aria-hidden className={className} />;
+    case "INVOICE_STATUS":
+      return <Receipt aria-hidden className={className} />;
   }
 }

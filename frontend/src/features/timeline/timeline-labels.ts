@@ -1,5 +1,7 @@
 import { type LucideIcon, Mail, MessageSquare, Phone, Users } from "lucide-react";
 
+import { formatMoney } from "@/lib/format";
+
 import type { ConversationType, TimelineEntry, TimelineFilter } from "./timeline.types";
 
 // The words and icons for timeline entries, on a record's timeline and in the activity feed.
@@ -87,9 +89,132 @@ export function isMarkedLost(entry: TimelineEntry): boolean {
   return entry.kind === "STATUS_CHANGE" && statusChangeOf(entry).to === "LOST";
 }
 
+function listOf(details: TimelineEntry["details"], key: string): string[] {
+  const value = details?.[key];
+  return Array.isArray(value) ? value.filter((item) => typeof item === "string") : [];
+}
+
+// The quote or invoice an entry names: `{ id, number }`.
+function documentOf(
+  details: TimelineEntry["details"],
+  key: "quote" | "invoice",
+): { id: string; number: string } | null {
+  const value = details?.[key];
+  if (typeof value !== "object" || value === null || !("id" in value) || !("number" in value)) {
+    return null;
+  }
+  const { id, number } = value;
+  return typeof id === "string" && typeof number === "string" ? { id, number } : null;
+}
+
+// What an EMAIL entry says: the subject, who it went to, and the quote it carried (if any).
+// The text of the email as it was sent is the entry's `body`.
+export function emailOf(entry: TimelineEntry) {
+  return {
+    subject: textOf(entry.details, "subject"),
+    to: listOf(entry.details, "to"),
+    cc: listOf(entry.details, "cc"),
+    quote: documentOf(entry.details, "quote"),
+  };
+}
+
+// What happened to a quote, from the statuses before and after. `from` is null when the
+// quote was made and `to` is null when a draft was deleted.
+function quoteChange(from: string | null, to: string | null): { verb: string; total: boolean } {
+  if (to === null) {
+    return { verb: "deleted", total: false };
+  }
+  if (from === null) {
+    return { verb: "created", total: true };
+  }
+  switch (to) {
+    case "SENT":
+      return { verb: "sent", total: true };
+    case "ACCEPTED":
+      return { verb: "accepted", total: true };
+    case "DECLINED":
+      return { verb: "declined", total: false };
+    case "DRAFT":
+      return { verb: "reopened", total: false };
+    default:
+      return { verb: "updated", total: false };
+  }
+}
+
+// The same for an invoice. Nothing is emailed or paid through the app: a person marks it.
+function invoiceChange(from: string | null, to: string | null): { verb: string; total: boolean } {
+  if (from === null) {
+    return { verb: "created", total: true };
+  }
+  switch (to) {
+    case "SENT":
+      // Back from paid or overdue is the way out of a wrong click.
+      return { verb: from === "DRAFT" ? "marked sent" : "marked unpaid", total: false };
+    case "PAID":
+      return { verb: "marked paid", total: false };
+    case "OVERDUE":
+      return { verb: "marked overdue", total: false };
+    case "VOID":
+      return { verb: "voided", total: false };
+    case "DRAFT":
+      return { verb: "restored", total: false };
+    default:
+      return { verb: "updated", total: false };
+  }
+}
+
+// What a QUOTE_STATUS or INVOICE_STATUS entry says: which document, what happened to it in
+// a word or two ("sent", "marked paid"), and its total when the sentence carries one.
+export function documentChangeOf(entry: TimelineEntry) {
+  const isQuote = entry.kind === "QUOTE_STATUS";
+  const document = documentOf(entry.details, isQuote ? "quote" : "invoice");
+  const from = textOf(entry.details, "from");
+  const to = textOf(entry.details, "to");
+  const change = isQuote ? quoteChange(from, to) : invoiceChange(from, to);
+  const total = entry.details?.total;
+  return {
+    noun: isQuote ? "Quote" : "Invoice",
+    document,
+    verb: change.verb,
+    // A deleted quote has no page any more.
+    deleted: isQuote && to === null,
+    total: change.total && typeof total === "number" ? total : null,
+  };
+}
+
+function documentTitle(entry: TimelineEntry): string {
+  const { noun, document, verb, total } = documentChangeOf(entry);
+  const sentence = document ? `${noun} ${document.number} ${verb}` : `${noun} ${verb}`;
+  return total === null ? sentence : `${sentence} · ${formatMoney(total)}`;
+}
+
+// Where an entry leads, when it names a quote or an invoice: the words to turn into a link
+// and the page they open. The words of a status entry are part of its title ("Q-0001" in
+// "Quote Q-0001 sent"); those of an email are a line of their own ("Quote Q-0001").
+export function entryLink(entry: TimelineEntry): { href: string; label: string } | null {
+  switch (entry.kind) {
+    case "EMAIL": {
+      const { quote } = emailOf(entry);
+      return quote ? { href: `/quotes/${quote.id}`, label: `Quote ${quote.number}` } : null;
+    }
+    case "QUOTE_STATUS":
+    case "INVOICE_STATUS": {
+      const { document, deleted } = documentChangeOf(entry);
+      if (!document || deleted) {
+        return null;
+      }
+      const path = entry.kind === "QUOTE_STATUS" ? "quotes" : "invoices";
+      return { href: `/${path}/${document.id}`, label: document.number };
+    }
+    default:
+      return null;
+  }
+}
+
 // The title of an entry: "Call", "Note", "Status changed: New → Contacted",
 // "Marked as lost — Price", "Lost reason updated — No budget", "Stage changed: New → Proposal",
-// "Closed as won", "Reassigned from Ada to Rob", "Lead created".
+// "Closed as won", "Reassigned from Ada to Rob", "Lead created", "Email sent: Our proposal",
+// "Quote Q-0001 sent · $4,360.87", "Invoice INV-0001 marked paid".
 export function entryTitle(entry: TimelineEntry, recordLabel: string): string {
   switch (entry.kind) {
     case "CONVERSATION":
@@ -131,19 +256,19 @@ export function entryTitle(entry: TimelineEntry, recordLabel: string): string {
       }
       return to ? `Assigned to ${to}` : "Reassigned";
     }
-    // Entries of the email, quote and invoice API. These are the plain words the generated
-    // types require; their screens give them their own.
-    case "EMAIL":
-      return "Email sent";
+    case "EMAIL": {
+      const { subject } = emailOf(entry);
+      return subject ? `Email sent: ${subject}` : "Email sent";
+    }
     case "QUOTE_STATUS":
-      return "Quote updated";
     case "INVOICE_STATUS":
-      return "Invoice updated";
+      return documentTitle(entry);
   }
 }
 
-// The text under the title: what was discussed, the note, the note given when the record
-// was marked as lost, or why an opportunity was won or lost. Null when the entry has none.
+// The text under the title: what was discussed, the note, the email as it was sent, the
+// note given when the record was marked as lost, or why an opportunity was won or lost.
+// Null when the entry has none.
 export function entryText(entry: TimelineEntry): string | null {
   if (entry.kind === "STATUS_CHANGE") {
     const change = statusChangeOf(entry);
