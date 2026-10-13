@@ -55,6 +55,11 @@ function capitalize(text: string): string {
   return `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
 }
 
+// "a company", "an opportunity".
+function withArticle(noun: string): string {
+  return `${/^[aeiou]/i.test(noun) ? "an" : "a"} ${noun}`;
+}
+
 // The inside of the dialog: a search box and the records it finds, by name. It is mounted
 // only while the dialog is open, so every opening starts with an empty box. The answers do
 // not enter the store: nothing else shows them.
@@ -286,7 +291,7 @@ export function RecordPicker({
           >
             <Icon aria-hidden className="text-muted-foreground size-4 shrink-0" />
             <span className={cn("truncate", !value && "text-muted-foreground")}>
-              {value ? value.name : `Choose a ${kind.noun}`}
+              {value ? value.name : `Choose ${withArticle(kind.noun)}`}
             </span>
           </Button>
           {value ? (
@@ -309,7 +314,7 @@ export function RecordPicker({
         {/* Near the top on a phone, so the results stay above the on-screen keyboard. */}
         <DialogContent className="max-h-[90dvh] overflow-y-auto max-sm:top-4 max-sm:translate-y-0 sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Choose a {kind.noun}</DialogTitle>
+            <DialogTitle>Choose {withArticle(kind.noun)}</DialogTitle>
             <DialogDescription>
               {description ??
                 (isFilter

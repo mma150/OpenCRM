@@ -34,6 +34,7 @@ import { RecordCustomFields } from "@/features/custom-fields/record-custom-field
 import { SendEmailButton } from "@/features/emails/send-email-button";
 import { openStages } from "@/features/pipeline-stages/stage-labels";
 import { usePipelineStages } from "@/features/pipeline-stages/use-pipeline-stages";
+import { OpportunityQuotes } from "@/features/quotes/opportunity-quotes";
 import { RecordTasks } from "@/features/tasks/record-tasks";
 import { LogConversationButton } from "@/features/timeline/log-conversation-button";
 import { Timeline } from "@/features/timeline/timeline";
@@ -233,6 +234,7 @@ function OpportunityDetail({ opportunity }: { opportunity: Opportunity }) {
         aside={
           <>
             <RecordTasks record={record} recordName={opportunity.name} canWrite={access.canWrite} />
+            <OpportunityQuotes opportunityId={opportunity.id} canWrite={access.canWrite} />
             <Card>
               <CardHeader>
                 <CardTitle>Details</CardTitle>
