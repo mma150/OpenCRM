@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { describeApiError } from "@/lib/api/error-messages";
-import { formatCurrency, formatDateTime, formatDay, toDateInputValue } from "@/lib/format";
+import { formatDateTime, formatDay, formatMoney, toDateInputValue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/store/hooks";
 
@@ -241,7 +241,7 @@ function InvoiceDetail({ invoice }: { invoice: Invoice }) {
               </RecordFact>
             ) : null}
             <RecordFact icon={<CircleDollarSign aria-hidden />}>
-              Total: {formatCurrency(invoice.total)}
+              Total: {formatMoney(invoice.total)}
             </RecordFact>
             <RecordFact icon={<CalendarDays aria-hidden />}>
               {invoice.status === "OVERDUE" ? "Overdue · due " : "Due: "}

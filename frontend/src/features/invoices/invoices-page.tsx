@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { CompanyFilter } from "@/features/companies/company-picker";
-import { formatCurrency, formatDay } from "@/lib/format";
+import { formatDay, formatMoney } from "@/lib/format";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 import { INVOICE_STATUSES, invoiceStatusOptions } from "./invoice-labels";
@@ -88,7 +88,7 @@ function InvoiceCard({ invoice }: { invoice: Invoice }) {
         </p>
       </div>
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm">
-        <span className="font-semibold">{formatCurrency(invoice.total)}</span>
+        <span className="font-semibold">{formatMoney(invoice.total)}</span>
         <span className="text-muted-foreground text-xs">
           Due:{" "}
           <span className="text-foreground font-medium">
@@ -128,7 +128,7 @@ const columns: ListColumn<Invoice>[] = [
     header: "Total",
     className: "w-28 lg:w-32",
     cell: (invoice) => (
-      <span className="block truncate font-medium">{formatCurrency(invoice.total)}</span>
+      <span className="block truncate font-medium">{formatMoney(invoice.total)}</span>
     ),
   },
   {

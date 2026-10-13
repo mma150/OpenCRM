@@ -71,6 +71,13 @@ describe("InvoicesPage", () => {
     followNavigation();
   });
 
+  it("writes a whole total with its cents, so the column lines up", async () => {
+    vi.mocked(listInvoices).mockResolvedValue(invoiceList([{ ...sent, total: 4200 }]));
+    const { table } = await renderPage();
+
+    expect(within(table).getByText("$4,200.00")).toBeInTheDocument();
+  });
+
   it("lists the invoices: number, company, status, total, issue date and due date", async () => {
     const { table } = await renderPage();
 

@@ -128,12 +128,19 @@ frontend/
 ├── eslint.config.mjs  prettier.config.mjs  postcss.config.mjs
 ├── vitest.config.ts  vitest.setup.ts  components.json  .env.example  Dockerfile
 └── src/
-    ├── app/                        Thin route files only: layout.tsx, globals.css and two route groups
+    ├── app/                        Thin route files only: layout.tsx, globals.css and three route groups
     │   ├── (auth)/                 Signed-out pages: login, setup, forgot-password, reset-password, accept-invite
-    │   ├── (app)/                  Signed-in pages inside the app frame: page.tsx (Home), profile, settings/users,
-    │   │                           settings/pipeline, settings/custom-fields, import, leads (the list), leads/new, leads/[id], leads/[id]/edit,
+    │   ├── (app)/                  Signed-in pages inside the app frame: page.tsx (Home), profile, import,
+    │   │                           leads (the list), leads/new, leads/[id], leads/[id]/edit,
     │   │                           and the same four routes under contacts/, companies/ and opportunities/
-    │   │                           (whose first page is the board and the list), activity, tasks, notifications
+    │   │                           (whose first page is the board and the list), activity, tasks, notifications,
+    │   │                           quotes (the list), quotes/new, quotes/[id], quotes/[id]/edit,
+    │   │                           invoices (the list), invoices/[id],
+    │   │                           settings (layout.tsx: the area's own navigation; page.tsx: the list of its
+    │   │                           pages), settings/users, settings/pipeline, settings/custom-fields,
+    │   │                           settings/email, settings/email-templates, settings/products,
+    │   │                           settings/organization
+    │   ├── (print)/                Signed-in pages without the app frame: quotes/[id]/print, invoices/[id]/print
     │   └── status/                 The API status page (no sign-in)
     ├── features/
     │   ├── health/                 health-status.tsx  health.slice.ts  health.api.ts
@@ -187,22 +194,55 @@ frontend/
     │   ├── notifications/          notifications.{types,api,slice}.ts, notification-bell.tsx (the bell in the top
     │   │                           bar, its polling and its panel), notifications-page.tsx (/notifications),
     │   │                           notification-item.tsx (one notification, and what opening it does)
-    │   └── dashboard/              Home: dashboard.{types,api,slice}.ts, dashboard-page.tsx, my-dashboard.tsx
-    │                               (the tiles, lists and bars of the signed-in user), team-section.tsx (the team
-    │                               table, Admin and Sales Manager), dashboard-labels.ts
+    │   ├── dashboard/              Home: dashboard.{types,api,slice}.ts, dashboard-page.tsx, my-dashboard.tsx
+    │   │                           (the tiles, lists and bars of the signed-in user), team-section.tsx (the team
+    │   │                           table, Admin and Sales Manager), dashboard-labels.ts
+    │   ├── email-settings/         email-settings.{types,api,slice}.ts, email-settings-page.tsx (/settings/email),
+    │   │                           email-settings-form.tsx (the mail server form), test-email-card.tsx,
+    │   │                           use-email-status.ts (is outgoing email on)
+    │   ├── organization/           organization.{types,api,slice}.ts, use-organization.ts,
+    │   │                           organization-settings-page.tsx (/settings/organization)
+    │   ├── products/               products.{types,api,slice}.ts, products-page.tsx (/settings/products),
+    │   │                           product-dialogs.tsx (add, edit, delete), product-labels.ts,
+    │   │                           product-picker.tsx (the product of a quote line)
+    │   ├── email-templates/        email-templates.{types,api,slice}.ts, email-templates-page.tsx
+    │   │                           (/settings/email-templates), email-template-dialogs.tsx,
+    │   │                           email-template-labels.ts (limits, the subject and body rules, who may share),
+    │   │                           placeholder-inserter.tsx and insert-at-cursor.ts (a placeholder at the cursor)
+    │   ├── emails/                 Sending an email from a record: emails.{types,api}.ts (no slice: the sendEmail
+    │   │                           thunk is in the timeline slice), send-email-dialog.tsx (the composer),
+    │   │                           send-email-button.tsx (the action on a record page), recipients-input.tsx and
+    │   │                           recipients.ts (the To and Cc boxes), email-record.ts (record types as the
+    │   │                           email API names them)
+    │   ├── quotes/                 quotes.{types,api,slice}.ts, quotes-page.tsx (the list), quote-detail-page.tsx,
+    │   │                           quote-form.tsx and quote-form-pages.tsx (new, edit), quote-line-items.tsx
+    │   │                           (the lines of the editor), quote-form-values.ts (the form, its checks, the
+    │   │                           requests), quote-totals.ts (the live totals of the editor), quote-labels.ts
+    │   │                           (statuses, what each status allows), quote-status-badge.tsx, quote-loader.tsx,
+    │   │                           quote-opportunity-filter.tsx, quote-print-page.tsx, opportunity-quotes.tsx
+    │   │                           (the Quotes card on an opportunity's page)
+    │   └── invoices/               invoices.{types,api,slice}.ts, invoices-page.tsx (the list),
+    │                               invoice-detail-page.tsx, invoice-dialogs.tsx (edit, mark paid, void),
+    │                               use-invoice-status.ts (a status change), invoice-labels.ts (statuses, the
+    │                               actions each allows), invoice-status-badge.tsx, invoice-loader.tsx,
+    │                               invoice-summary-tiles.tsx (the totals, above the list and on Home),
+    │                               invoice-print-page.tsx
     ├── components/
     │   ├── ui/                     shadcn/ui output (generated; excluded from strict lint)
-    │   ├── app-shell/              The app frame: nav-items.ts, sidebar, bottom tab bar, top bar, user menu
+    │   ├── app-shell/              The app frame: nav-items.ts, sidebar, bottom tab bar, top bar, user menu,
+    │   │                           settings-nav.tsx (the Settings area's tabs and the list at /settings)
     │   └── shared/                 ResponsiveList, ListToolbar, ListPagination, list-url-state, RecordLayout,
     │                               SegmentedControl, PageHeader, PageState, FormField, SelectControl,
     │                               PasswordInput, badges, ... and what every owned record shares:
     │                               record-list.tsx, record-menus.tsx, record-dialogs.tsx (reassign, delete),
     │                               record-loader.tsx, record-picker.tsx (search for one record: the company,
-    │                               contact, lead and opportunity pickers are built on it), follow-up.tsx (the
+    │                               contact, lead, opportunity and product pickers are built on it), follow-up.tsx (the
     │                               follow-up reminder of a lead or an opportunity), custom-fields-form.tsx,
     │                               custom-fields-card.tsx and custom-fields-filter.tsx (the custom fields of a
     │                               record form, a record page and a list's filters), list-actions.tsx
-    │                               (Export CSV and Import beside a list's "New" button)
+    │                               (Export CSV and Import beside a list's "New" button), and what a quote and
+    │                               an invoice share: sales-document.tsx (the lines and the totals box),
+    │                               print-document.tsx (the print view)
     ├── lib/
     │   ├── api/http.ts             The one axios instance and the ApiError type
     │   ├── api/error-messages.ts   describeApiError: the words for every error code
@@ -212,7 +252,8 @@ frontend/
     │                               user-labels, use-is-phone, record-access (what a role may do with a record),
     │                               time-zone (the `tz` the API is sent), use-visible-height (full-screen dialogs),
     │                               use-preselected-record (the record a "new" form starts with, from the address),
-    │                               save-file (hands a file to the browser's download folder)
+    │                               save-file (hands a file to the browser's download folder),
+    │                               sales-document (the types of the print-ready document and of a line)
     ├── store/                      index.ts (makeStore), hooks.ts (typed hooks), thunk.ts, store-provider.tsx
     ├── test/                       Test helpers: render-with-store.tsx, navigation-mock.ts
     └── env.ts                      The only reader of process.env (validated with Zod)

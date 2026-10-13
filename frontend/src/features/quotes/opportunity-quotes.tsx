@@ -87,7 +87,10 @@ export function OpportunityQuotes({
         </CardTitle>
         {canWrite ? (
           <Button asChild variant="outline" className="h-10 px-4">
-            <Link href={`/quotes/new?opportunityId=${opportunityId}`}>
+            {/* `from` brings Cancel and the back link of the editor back to this opportunity. */}
+            <Link
+              href={`/quotes/new?opportunityId=${opportunityId}&from=${encodeURIComponent(`/opportunities/${opportunityId}`)}`}
+            >
               <Plus aria-hidden />
               New quote
             </Link>
@@ -148,7 +151,7 @@ export function OpportunityQuotes({
                         {" · "}
                         <Link
                           href={`/invoices/${quote.invoice.id}`}
-                          className={`${linkClass} text-primary font-medium`}
+                          className={`${linkClass} text-primary font-medium whitespace-nowrap`}
                         >
                           Invoice {quote.invoice.number}
                         </Link>

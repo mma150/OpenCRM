@@ -61,7 +61,7 @@ describe("OpportunityQuotes", () => {
     await screen.findByRole("list", { name: "Quotes" });
     expect(screen.getByRole("link", { name: "New quote" })).toHaveAttribute(
       "href",
-      `/quotes/new?opportunityId=${fleet.id}`,
+      `/quotes/new?opportunityId=${fleet.id}&from=${encodeURIComponent(`/opportunities/${fleet.id}`)}`,
     );
 
     rerender(<OpportunityQuotes opportunityId={fleet.id} canWrite={false} />);
