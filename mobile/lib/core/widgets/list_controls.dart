@@ -102,6 +102,15 @@ class FilterChipBar<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Chips that fit start at the left edge, like the rest of the page, instead of being
+    // centred by a wide screen.
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: _chips(context),
+    );
+  }
+
+  Widget _chips(BuildContext context) {
     return Semantics(
       container: true,
       label: label,

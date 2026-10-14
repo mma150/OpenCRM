@@ -25,6 +25,7 @@ class LeadsQuery {
   const LeadsQuery({
     this.search = '',
     this.status,
+    this.ownerId,
     this.sort = LeadSort.newest,
   });
 
@@ -32,6 +33,10 @@ class LeadsQuery {
 
   /// Null shows every status.
   final LeadStatus? status;
+
+  /// One owner's leads only: Home sets it to the user's own id for an Admin or a Sales
+  /// Manager, whose figures there are their own. Null shows every lead the user may see.
+  final String? ownerId;
   final LeadSort sort;
 
   ListQuery toListQuery(int page) {
@@ -40,7 +45,7 @@ class LeadsQuery {
       sort: sort.field,
       order: sort.order,
       page: page,
-      filters: {'status': status?.apiValue},
+      filters: {'status': status?.apiValue, 'ownerId': ownerId},
     );
   }
 }

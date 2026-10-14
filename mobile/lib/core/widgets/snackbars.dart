@@ -15,7 +15,11 @@ void showErrorSnackBar(BuildContext context, String message) {
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
-        content: Text(message, style: TextStyle(color: colors.onPrimary)),
+        // The tone's pale background as the text, readable in both themes.
+        content: Text(
+          message,
+          style: TextStyle(color: colors.tone(Tone.danger).background),
+        ),
         backgroundColor: colors.tone(Tone.danger).foreground,
         duration: const Duration(seconds: 6),
       ),

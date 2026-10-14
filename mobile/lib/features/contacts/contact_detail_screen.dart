@@ -277,6 +277,8 @@ class _RecordLinkRow extends StatelessWidget {
       button: true,
       label: '$caption: $name',
       excludeSemantics: true,
+      // The InkWell's own tap is excluded with the rest, so a screen reader gets it here.
+      onTap: onTap,
       child: InkWell(
         borderRadius: AppSpacing.borderRadius,
         onTap: onTap,

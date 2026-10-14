@@ -55,9 +55,13 @@ function StatTile({
         <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
           {label}
         </span>
+        {/* Smaller on a phone, where a tile is half the screen: at text-2xl an everyday
+            "$126,000.50" broke onto a second line. Wrapping stays for a number that is
+            longer still. */}
         <span
+          data-slot="stat-value"
           className={cn(
-            "flex items-center gap-1.5 text-2xl font-semibold tracking-tight wrap-anywhere",
+            "flex items-center gap-1.5 text-lg font-semibold tracking-tight wrap-anywhere sm:text-2xl",
             alert && "text-destructive",
           )}
         >

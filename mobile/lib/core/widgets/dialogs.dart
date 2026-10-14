@@ -24,6 +24,7 @@ Future<bool> showConfirmDialog(
           style: destructive
               ? FilledButton.styleFrom(
                   backgroundColor: context.colors.tone(Tone.danger).foreground,
+                  foregroundColor: context.colors.tone(Tone.danger).background,
                 )
               : null,
           onPressed: () => Navigator.of(context).pop(true),

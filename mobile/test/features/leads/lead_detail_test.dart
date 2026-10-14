@@ -251,6 +251,35 @@ void main() {
       },
     );
 
+    testWidgets('the records a converted lead became open their pages', (
+      tester,
+    ) async {
+      final api =
+          _api(
+              leadJson(
+                status: 'CONVERTED',
+                convertedTo: {
+                  'contact': {'id': 'contact-1', 'name': 'Marcus Chen'},
+                  'company': {'id': 'company-1', 'name': 'Northwind'},
+                  'opportunity': {'id': 'opp-1', 'name': 'Fleet deal'},
+                },
+              ),
+            )
+            ..on('GET', '/contacts', (request) => page([contactJson()]))
+            ..on('GET', '/contacts/contact-1', (request) => contactJson())
+            ..on('GET', '/contacts/contact-1/timeline', (request) => page([]));
+      final app = await pumpApp(tester, api: api, user: rep, location: _path);
+
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Company: Northwind')),
+        isSemantics(isButton: true, hasTapAction: true),
+      );
+      expect(find.bySemanticsLabel('Opportunity: Fleet deal'), findsOneWidget);
+      await tapVisible(tester, find.text('Contact: Marcus Chen'));
+
+      expect(app.location, Routes.contact('contact-1'));
+    });
+
     testWidgets('a converted lead can still be reassigned by a manager', (
       tester,
     ) async {

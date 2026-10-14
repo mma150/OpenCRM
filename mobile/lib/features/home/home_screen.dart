@@ -16,6 +16,8 @@ import 'package:opencrm/features/home/dashboard_providers.dart';
 import 'package:opencrm/features/home/team_section.dart';
 import 'package:opencrm/features/leads/lead.dart';
 import 'package:opencrm/features/leads/leads_providers.dart';
+import 'package:opencrm/features/opportunities/opportunities_providers.dart';
+import 'package:opencrm/features/pipeline_stages/pipeline_stages.dart';
 import 'package:opencrm/features/tasks/task.dart';
 import 'package:opencrm/features/tasks/task_row.dart';
 import 'package:opencrm/features/tasks/task_sheet.dart';
@@ -123,23 +125,60 @@ class _Sections extends StatelessWidget {
   }
 }
 
-class _StatTiles extends StatelessWidget {
+/// Home's figures are the user's own. An Admin or a Sales Manager sees other people's
+/// records too, so the list a figure opens is narrowed to their own, as on the web; for
+/// everyone else the list already is.
+String? _mine(WidgetRef ref) {
+  final me = ref.read(currentUserProvider);
+  return me.role.seesTeam ? me.id : null;
+}
+
+/// Opens the leads a figure counts.
+void _openLeads(BuildContext context, WidgetRef ref, {LeadStatus? status}) {
+  ref
+      .read(leadsQueryProvider.notifier)
+      .show(status: status, ownerId: _mine(ref));
+  context.go(Routes.leads);
+}
+
+/// Opens the opportunities a figure counts: the pipeline, or the list of one stage or
+/// status.
+void _openOpportunities(
+  BuildContext context,
+  WidgetRef ref, {
+  String? stageId,
+  StageKind? status,
+}) {
+  ref
+      .read(opportunitiesQueryProvider.notifier)
+      .show(stageId: stageId, status: status, ownerId: _mine(ref));
+  ref
+      .read(opportunitiesViewProvider.notifier)
+      .show(
+        stageId == null && status == null
+            ? OpportunitiesView.pipeline
+            : OpportunitiesView.list,
+      );
+  context.go(Routes.opportunities);
+}
+
+class _StatTiles extends ConsumerWidget {
   const _StatTiles(this.data);
 
   final MyDashboard data;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tiles = [
       _StatTile(
         label: 'Open leads',
         value: '${data.openLeads}',
-        onTap: () => context.go(Routes.leads),
+        onTap: () => _openLeads(context, ref),
       ),
       _StatTile(
         label: 'Pipeline value',
         value: formatCurrency(data.pipelineValue),
-        onTap: () => context.go(Routes.opportunities),
+        onTap: () => _openOpportunities(context, ref),
       ),
       _StatTile(
         label: 'Tasks due today',
@@ -159,6 +198,7 @@ class _StatTiles extends StatelessWidget {
         hint: data.wonThisMonthCount == 1
             ? '1 opportunity'
             : '${data.wonThisMonthCount} opportunities',
+        onTap: () => _openOpportunities(context, ref, status: StageKind.won),
       ),
     ];
     return LayoutBuilder(
@@ -218,6 +258,8 @@ class _StatTile extends StatelessWidget {
       button: onTap != null,
       label: '$label: $value${hint == null ? '' : ', $hint'}',
       excludeSemantics: true,
+      // The InkWell's own tap is excluded with the rest, so a screen reader gets it here.
+      onTap: onTap,
       child: Material(
         color: colors?.background ?? context.colors.surface,
         shape: RoundedRectangleBorder(
@@ -371,12 +413,13 @@ class _FollowUpRow extends StatelessWidget {
           MutedText(note, maxLines: 2, small: true),
       ],
     );
-    // Opportunities have no page in the app yet, so only a lead's row opens something.
-    if (!followUp.isLead) {
-      return MergeSemantics(child: content);
-    }
+    // A row opens the page of its lead or opportunity.
     return InkWell(
-      onTap: () => context.go(Routes.lead(followUp.id)),
+      onTap: () => context.go(
+        followUp.isLead
+            ? Routes.lead(followUp.id)
+            : Routes.opportunity(followUp.id),
+      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: AppSpacing.touchTarget),
         child: Row(
@@ -441,13 +484,13 @@ class _BarRow extends StatelessWidget {
   }
 }
 
-class _PipelineByStage extends StatelessWidget {
+class _PipelineByStage extends ConsumerWidget {
   const _PipelineByStage(this.data);
 
   final MyDashboard data;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final stages = data.pipelineStages;
     final largest = stages.fold<double>(
       0,
@@ -463,13 +506,31 @@ class _PipelineByStage extends StatelessWidget {
                 for (final (index, stage) in stages.indexed)
                   Padding(
                     padding: EdgeInsets.only(
-                      top: index == 0 ? 0 : AppSpacing.lg,
+                      top: index == 0 ? 0 : AppSpacing.sm,
                     ),
-                    child: _BarRow(
-                      label: stage.name,
-                      value:
-                          '${formatCurrency(stage.totalValue)} · ${stage.count} open',
-                      share: largest == 0 ? 0 : stage.totalValue / largest,
+                    // A row opens the list of that stage's opportunities.
+                    child: InkWell(
+                      borderRadius: AppSpacing.borderRadius,
+                      onTap: () => _openOpportunities(
+                        context,
+                        ref,
+                        stageId: stage.stageId,
+                      ),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minHeight: AppSpacing.touchTarget,
+                        ),
+                        child: Center(
+                          child: _BarRow(
+                            label: stage.name,
+                            value:
+                                '${formatCurrency(stage.totalValue)} · ${stage.count} open',
+                            share: largest == 0
+                                ? 0
+                                : stage.totalValue / largest,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
               ],
@@ -501,10 +562,7 @@ class _OpenLeadsByStatus extends ConsumerWidget {
               // A row opens the Leads tab with that status chosen.
               child: InkWell(
                 borderRadius: AppSpacing.borderRadius,
-                onTap: () {
-                  ref.read(leadsQueryProvider.notifier).filterByStatus(status);
-                  context.go(Routes.leads);
-                },
+                onTap: () => _openLeads(context, ref, status: status),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(
                     minHeight: AppSpacing.touchTarget,

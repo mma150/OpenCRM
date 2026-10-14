@@ -49,6 +49,10 @@ class OpportunitiesScreen extends ConsumerWidget {
     final sort = ref.watch(
       opportunitiesQueryProvider.select((query) => query.sort),
     );
+    // Home narrows both views to the user's own opportunities.
+    final ownerId = ref.watch(
+      opportunitiesQueryProvider.select((query) => query.ownerId),
+    );
 
     return AppScaffold(
       title: 'Opportunities',
@@ -100,6 +104,27 @@ class OpportunitiesScreen extends ConsumerWidget {
               ),
             ),
           ),
+          if (ownerId != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.page,
+                0,
+                AppSpacing.page,
+                AppSpacing.sm,
+              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: InputChip(
+                  avatar: const Icon(Icons.person_outline, size: 18),
+                  label: const Text('Only my opportunities'),
+                  materialTapTargetSize: MaterialTapTargetSize.padded,
+                  deleteButtonTooltipMessage: "Show everyone's opportunities",
+                  onDeleted: () => ref
+                      .read(opportunitiesQueryProvider.notifier)
+                      .filterByOwner(null),
+                ),
+              ),
+            ),
           Expanded(
             child: switch (view) {
               OpportunitiesView.pipeline => const OpportunityBoard(),

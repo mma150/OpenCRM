@@ -99,6 +99,12 @@ void main() {
         ..on('GET', '/companies/company-1/timeline', (request) => page([]));
       final app = await pumpApp(tester, api: api, user: rep, location: _path);
 
+      expect(
+        tester.getSemantics(
+          find.bySemanticsLabel(RegExp('Company: Northwind Logistics')),
+        ),
+        isSemantics(isButton: true, hasTapAction: true),
+      );
       await tapVisible(tester, find.text('Northwind Logistics'));
 
       expect(app.location, Routes.company('company-1'));

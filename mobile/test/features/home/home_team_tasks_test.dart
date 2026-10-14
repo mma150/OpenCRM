@@ -8,6 +8,8 @@ import '../../support/fixtures.dart';
 import '../../support/pump_app.dart';
 
 void main() {
+  _largeAmounts();
+
   group('the Team section', () {
     testWidgets(
       'a manager sees a card per person and the totals',
@@ -177,5 +179,33 @@ void main() {
       expect(app.location, Routes.leads);
       expect(api.sent('GET', '/leads').last.query['status'], 'CONTACTED');
     });
+  });
+}
+
+/// The Pixel 8 (411 wide) with text at 130%: two figures to a row.
+const _pixelLargeText = Surface(
+  '411x914 dark, text 130%',
+  Size(411, 914),
+  dark: true,
+  textScale: 1.3,
+);
+
+void _largeAmounts() {
+  testWidgets('a large amount stays on one line', (tester) async {
+    final api = FakeApi()
+      ..on(
+        'GET',
+        '/dashboard/team',
+        (request) => teamDashboardJson(
+          totals: teamFiguresJson(openPipelineValue: 10000533551.74),
+        ),
+      );
+    await pumpApp(tester, api: api, user: manager, surface: _pixelLargeText);
+
+    final amount = find.text(r'$10,000,533,551.74');
+    await scrollTo(tester, amount);
+    // As tall as a short amount on another card: one line, not two.
+    final oneLine = tester.getSize(find.text(r'$84,500').first).height;
+    expect(tester.getSize(amount).height, lessThanOrEqualTo(oneLine + 0.5));
   });
 }

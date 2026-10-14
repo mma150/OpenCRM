@@ -19,6 +19,8 @@ Future<void> _scrollTo(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
+  _homeNarrowsToOwn();
+
   testWidgets('greets the user and shows their numbers', variant: phones, (
     tester,
   ) async {
@@ -189,6 +191,11 @@ void main() {
       ..on('GET', '/leads/lead-1/timeline', (request) => page([]));
     final app = await pumpApp(tester, api: api, user: rep);
 
+    // A screen reader can open it too: the tile is a button with a tap action.
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Open leads: 7')),
+      isSemantics(isButton: true, hasTapAction: true),
+    );
     await tapVisible(tester, find.bySemanticsLabel('Open leads: 7'));
     expect(app.location, Routes.leads);
 
@@ -197,5 +204,155 @@ void main() {
     await _scrollTo(tester, find.text('Send the fleet pricing'));
     await tapVisible(tester, find.text('Send the fleet pricing'));
     expect(app.location, Routes.lead('lead-1'));
+  });
+
+  testWidgets('an opportunity follow-up opens the opportunity', (tester) async {
+    final api = FakeApi()
+      ..on(
+        'GET',
+        '/dashboard/me',
+        (request) => dashboardJson(
+          followUps: [
+            {
+              'type': 'OPPORTUNITY',
+              'id': 'opp-1',
+              'name': 'Fleet renewal',
+              'at': '2026-10-02T09:00:00.000Z',
+              'note': 'Confirm the rollout date',
+            },
+          ],
+        ),
+      )
+      ..on('GET', '/opportunities/board', (request) => boardJson([]))
+      ..on('GET', '/opportunities/opp-1', (request) => opportunityJson())
+      ..on('GET', '/opportunities/opp-1/timeline', (request) => page([]))
+      ..on('GET', '/pipeline-stages', (request) => pipelineStagesJson());
+    final app = await pumpApp(tester, api: api, user: rep);
+
+    await _scrollTo(tester, find.text('Confirm the rollout date'));
+    await tapVisible(tester, find.text('Confirm the rollout date'));
+    expect(app.location, Routes.opportunity('opp-1'));
+  });
+}
+
+/// Home and the two lists a figure on it opens, for someone who sees the team.
+FakeApi _teamApi() {
+  return FakeApi()
+    ..on('GET', '/dashboard/me', (request) => dashboardJson())
+    ..on('GET', '/dashboard/team', (request) => teamDashboardJson())
+    ..on('GET', '/leads', (request) => page([leadJson()]))
+    ..on('GET', '/opportunities', (request) => page([opportunityJson()]))
+    ..on('GET', '/opportunities/board', (request) => boardJson([]))
+    ..on('GET', '/pipeline-stages', (request) => pipelineStagesJson());
+}
+
+void _homeNarrowsToOwn() {
+  group('a figure opens the list it counts', () {
+    testWidgets(
+      'an Admin gets only their own leads, and can show everyone again',
+      variant: phones,
+      (tester) async {
+        final api = _teamApi();
+        final app = await pumpApp(tester, api: api, user: admin);
+
+        await tapVisible(tester, find.bySemanticsLabel('Open leads: 7'));
+
+        expect(app.location, Routes.leads);
+        expect(api.sent('GET', '/leads').last.query['ownerId'], admin.id);
+        expect(find.text('Only my leads'), findsOneWidget);
+
+        await tapVisible(tester, find.byTooltip("Show everyone's leads"));
+
+        expect(
+          api.sent('GET', '/leads').last.query,
+          isNot(contains('ownerId')),
+        );
+        expect(find.text('Only my leads'), findsNothing);
+      },
+    );
+
+    testWidgets('a status row keeps the status and the owner', (tester) async {
+      final api = _teamApi();
+      await pumpApp(tester, api: api, user: manager);
+
+      await _scrollTo(tester, find.text('Open leads by status'));
+      await tapVisible(tester, find.text('Contacted'));
+
+      final query = api.sent('GET', '/leads').last.query;
+      expect(query['status'], 'CONTACTED');
+      expect(query['ownerId'], manager.id);
+    });
+
+    testWidgets('a Sales Rep\'s list is already their own', (tester) async {
+      final api = _teamApi();
+      await pumpApp(tester, api: api, user: rep);
+
+      await tapVisible(tester, find.bySemanticsLabel('Open leads: 7'));
+
+      expect(api.sent('GET', '/leads').last.query, isNot(contains('ownerId')));
+      expect(find.text('Only my leads'), findsNothing);
+    });
+
+    testWidgets(
+      "the pipeline tile opens an Admin's own pipeline, and can show everyone "
+      'again',
+      (tester) async {
+        final api = _teamApi();
+        final app = await pumpApp(tester, api: api, user: admin);
+
+        await tapVisible(tester, find.text('Pipeline value'));
+
+        expect(app.location, Routes.opportunities);
+        expect(
+          api.sent('GET', '/opportunities/board').last.query['ownerId'],
+          admin.id,
+        );
+        expect(find.text('Only my opportunities'), findsOneWidget);
+
+        await tapVisible(
+          tester,
+          find.byTooltip("Show everyone's opportunities"),
+        );
+
+        expect(
+          api.sent('GET', '/opportunities/board').last.query,
+          isNot(contains('ownerId')),
+        );
+      },
+    );
+
+    testWidgets(
+      'a stage row and the won tile open the opportunity list',
+      variant: phones,
+      (tester) async {
+        final api = _teamApi();
+        final app = await pumpApp(tester, api: api, user: admin);
+
+        await _scrollTo(tester, find.text('Proposal'));
+        await tapVisible(tester, find.text('Proposal'));
+
+        expect(app.location, Routes.opportunities);
+        var query = api.sent('GET', '/opportunities').last.query;
+        expect(query['stageId'], 'stage-2');
+        expect(query['ownerId'], admin.id);
+        expect(find.text('Only my opportunities'), findsOneWidget);
+
+        app.router.go(Routes.home);
+        await tester.pumpAndSettle();
+        await _scrollTo(
+          tester,
+          find.bySemanticsLabel(RegExp(r'^Won this month')),
+        );
+        await tapVisible(
+          tester,
+          find.bySemanticsLabel(RegExp(r'^Won this month')),
+        );
+
+        query = api.sent('GET', '/opportunities').last.query;
+        expect(query['status'], 'WON');
+        expect(query['ownerId'], admin.id);
+        expect(query, isNot(contains('stageId')));
+      },
+    );
   });
 }

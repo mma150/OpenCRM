@@ -130,7 +130,8 @@ frontend/
 ├── eslint.config.mjs  prettier.config.mjs  postcss.config.mjs
 ├── vitest.config.ts  vitest.setup.ts  components.json  .env.example  Dockerfile
 └── src/
-    ├── app/                        Thin route files only: layout.tsx, globals.css and three route groups
+    ├── app/                        Thin route files only: layout.tsx, not-found.tsx (any unknown address),
+    │                               globals.css and three route groups
     │   ├── (auth)/                 Signed-out pages: login, setup, forgot-password, reset-password, accept-invite
     │   ├── (app)/                  Signed-in pages inside the app frame: page.tsx (Home), profile, import,
     │   │                           leads (the list), leads/new, leads/[id], leads/[id]/edit,

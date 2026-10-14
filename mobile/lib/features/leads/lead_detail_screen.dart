@@ -397,9 +397,8 @@ class _LeadMenu extends ConsumerWidget {
   }
 }
 
-/// What a converted lead became. A record the reader may not see is not named by the API
-/// and is left out. The contact, company and opportunity pages are not in the app yet, so
-/// these are names, not links.
+/// What a converted lead became, each a link to its page. A record the reader may not see
+/// is not named by the API and is left out.
 class _ConvertedBanner extends StatelessWidget {
   const _ConvertedBanner(this.lead);
 
@@ -408,11 +407,17 @@ class _ConvertedBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors.tone(Tone.success);
-    final became = {
-      'Contact': lead.convertedContact,
-      'Company': lead.convertedCompany,
-      'Opportunity': lead.convertedOpportunity,
-    };
+    final contact = lead.convertedContact;
+    final company = lead.convertedCompany;
+    final opportunity = lead.convertedOpportunity;
+    final became = [
+      if (contact != null)
+        ('Contact', contact.name, Routes.contact(contact.id)),
+      if (company != null)
+        ('Company', company.name, Routes.company(company.id)),
+      if (opportunity != null)
+        ('Opportunity', opportunity.name, Routes.opportunity(opportunity.id)),
+    ];
     final convertedAt = lead.convertedAt;
     return ToneBanner(
       tone: Tone.success,
@@ -434,12 +439,39 @@ class _ConvertedBanner extends StatelessWidget {
             'This lead can no longer be edited. Its timeline is kept, and the work continues '
             'on the records it became.',
           ),
-          for (final MapEntry(key: label, value: link) in became.entries)
-            if (link != null)
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.xs),
-                child: Text('$label: ${link.name}'),
+          for (final (label, name, path) in became)
+            Semantics(
+              button: true,
+              label: '$label: $name',
+              excludeSemantics: true,
+              onTap: () => context.go(path),
+              child: InkWell(
+                borderRadius: AppSpacing.borderRadius,
+                onTap: () => context.go(path),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minHeight: AppSpacing.touchTarget,
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text.rich(
+                      TextSpan(
+                        text: '$label: ',
+                        children: [
+                          TextSpan(
+                            text: name,
+                            style: TextStyle(
+                              color: context.colors.primary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
+            ),
         ],
       ),
     );

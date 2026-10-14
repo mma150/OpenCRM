@@ -183,10 +183,17 @@ class _FiguresCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 MutedText(figure.label, small: true),
-                                Text(
-                                  figure.text(figures),
-                                  style: text.bodyLarge?.copyWith(
-                                    fontWeight: FontWeight.w600,
+                                // A large amount shrinks to its column rather than
+                                // breaking over two lines.
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    figure.text(figures),
+                                    maxLines: 1,
+                                    style: text.bodyLarge?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ],

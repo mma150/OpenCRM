@@ -23,7 +23,9 @@ export function BackLink({ href, label }: { href: string; label: string }) {
 }
 
 // The top of a record page: the record's name as the h1 with its status badge, one line of
-// facts under it, and the record's actions. The actions wrap under the name on phones.
+// facts under it, and the record's actions. The actions wrap under the name on phones, and
+// on any wider screen where they would leave the name less than 16rem (a tablet with five
+// actions), so a long name is never squeezed into a column one letter wide.
 export function RecordHeader({
   title,
   badge,
@@ -36,8 +38,8 @@ export function RecordHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="bg-card flex flex-col gap-4 rounded-lg border p-4 md:flex-row md:items-start md:justify-between md:p-6">
-      <div className="flex min-w-0 flex-col gap-2">
+    <header className="bg-card flex flex-col gap-4 rounded-lg border p-4 md:flex-row md:flex-wrap md:items-start md:justify-between md:p-6">
+      <div data-slot="record-title" className="flex min-w-0 flex-col gap-2 md:min-w-64 md:flex-1">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <h1 className="min-w-0 text-2xl font-semibold tracking-tight wrap-anywhere">{title}</h1>
           {badge}

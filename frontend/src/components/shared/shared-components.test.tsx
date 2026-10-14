@@ -4,10 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 
 import { RoleBadge, StatusBadge } from "./badges";
 import { CopyLinkField } from "./copy-link-field";
+import { NotFoundPage } from "./not-found-page";
 import { PageHeader } from "./page-header";
 import { PageLoading, PageState } from "./page-state";
 import { PasswordInput } from "./password-input";
-import { RecordLayout } from "./record-layout";
+import { RecordHeader, RecordLayout } from "./record-layout";
 import { SegmentedControl } from "./segmented-control";
 
 describe("PageHeader", () => {
@@ -45,6 +46,16 @@ describe("PageState", () => {
     render(<PageLoading label="Checking your invite..." />);
 
     expect(screen.getByText("Checking your invite...")).toBeInTheDocument();
+  });
+});
+
+describe("NotFoundPage", () => {
+  // An unknown address showed the framework's bare 404 with no way back into the app.
+  it("says the page was not found and links back to Home", () => {
+    render(<NotFoundPage />);
+
+    expect(screen.getByText("Page not found")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back to Home" })).toHaveAttribute("href", "/");
   });
 });
 
@@ -129,6 +140,27 @@ describe("SegmentedControl", () => {
 
     await user.click(screen.getByRole("button", { name: "Notes" }));
     expect(onChange).toHaveBeenCalledWith("NOTE");
+  });
+});
+
+describe("RecordHeader", () => {
+  // A long name beside five actions on a tablet was squeezed to one letter per line: the
+  // name keeps at least 16rem and the actions wrap under it instead.
+  it("keeps room for the name and lets the actions wrap below it", () => {
+    render(
+      <RecordHeader
+        title="Northwind Logistics - Driver App"
+        actions={<button type="button">Close as won</button>}
+      />,
+    );
+
+    const heading = screen.getByRole("heading", {
+      level: 1,
+      name: "Northwind Logistics - Driver App",
+    });
+    const titleColumn = heading.closest("[data-slot=record-title]");
+    expect(titleColumn).toHaveClass("md:min-w-64", "md:flex-1");
+    expect(titleColumn?.parentElement).toHaveClass("md:flex-wrap");
   });
 });
 

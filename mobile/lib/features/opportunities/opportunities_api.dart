@@ -33,6 +33,7 @@ class OpportunitiesQuery {
     this.search = '',
     this.stageId,
     this.status,
+    this.ownerId,
     this.sort = OpportunitySort.newest,
   });
 
@@ -43,10 +44,18 @@ class OpportunitiesQuery {
 
   /// Null shows open, won and lost.
   final StageKind? status;
+
+  /// One owner's opportunities only: Home sets it to the user's own id for an Admin or a
+  /// Sales Manager, whose figures there are their own. Null shows every one the user may
+  /// see.
+  final String? ownerId;
   final OpportunitySort sort;
 
   bool get isFiltered =>
-      search.trim().isNotEmpty || stageId != null || status != null;
+      search.trim().isNotEmpty ||
+      stageId != null ||
+      status != null ||
+      ownerId != null;
 
   ListQuery toListQuery(int page) {
     return ListQuery(
@@ -54,7 +63,11 @@ class OpportunitiesQuery {
       sort: sort.field,
       order: sort.order,
       page: page,
-      filters: {'stageId': stageId, 'status': status?.apiValue},
+      filters: {
+        'stageId': stageId,
+        'status': status?.apiValue,
+        'ownerId': ownerId,
+      },
     );
   }
 }
@@ -77,9 +90,13 @@ class OpportunitiesApi {
     return Page.fromResponse(response, Opportunity.fromJson);
   }
 
-  /// The pipeline as columns, in order, Won and Lost included. Not paged.
-  Future<List<BoardColumn>> board() async {
-    final response = await _client.get('/opportunities/board');
+  /// The pipeline as columns, in order, Won and Lost included. Not paged. [ownerId]
+  /// keeps one owner's opportunities only.
+  Future<List<BoardColumn>> board({String? ownerId}) async {
+    final response = await _client.get(
+      '/opportunities/board',
+      query: {'ownerId': ?ownerId},
+    );
     return readList(response.data, BoardColumn.fromJson);
   }
 

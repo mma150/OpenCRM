@@ -70,6 +70,14 @@ describe("DashboardPage", () => {
     expect(tile("Won this month")).toHaveAttribute("href", "/opportunities?view=list&status=WON");
   });
 
+  // At text-2xl a half-width tile on a 375px phone broke "$126,000.50" onto two lines.
+  it("sets the headline numbers smaller on a phone so a money value fits its tile", async () => {
+    await renderHome();
+
+    const value = tile("Pipeline value").querySelector("[data-slot=stat-value]");
+    expect(value).toHaveClass("text-lg", "sm:text-2xl");
+  });
+
   it("narrows the lists to the user's own records for someone who sees the team's too", async () => {
     await renderHome(adminUser);
 

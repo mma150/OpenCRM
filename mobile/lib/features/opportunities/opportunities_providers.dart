@@ -51,6 +51,7 @@ class OpportunitiesQueryController extends Notifier<OpportunitiesQuery> {
       search: text,
       stageId: state.stageId,
       status: state.status,
+      ownerId: state.ownerId,
       sort: state.sort,
     );
   }
@@ -60,6 +61,7 @@ class OpportunitiesQueryController extends Notifier<OpportunitiesQuery> {
       search: state.search,
       stageId: stageId,
       status: state.status,
+      ownerId: state.ownerId,
       sort: state.sort,
     );
   }
@@ -69,6 +71,7 @@ class OpportunitiesQueryController extends Notifier<OpportunitiesQuery> {
       search: state.search,
       stageId: state.stageId,
       status: status,
+      ownerId: state.ownerId,
       sort: state.sort,
     );
   }
@@ -78,14 +81,41 @@ class OpportunitiesQueryController extends Notifier<OpportunitiesQuery> {
       search: state.search,
       stageId: state.stageId,
       status: state.status,
+      ownerId: state.ownerId,
       sort: sort,
+    );
+  }
+
+  /// Null shows every opportunity the user may see again.
+  void filterByOwner(String? ownerId) {
+    state = OpportunitiesQuery(
+      search: state.search,
+      stageId: state.stageId,
+      status: state.status,
+      ownerId: ownerId,
+      sort: state.sort,
     );
   }
 
   /// One stage and nothing else: where the pipeline sends the user for the cards a stage
   /// does not show.
   void showStage(String stageId) {
-    state = OpportunitiesQuery(stageId: stageId, sort: state.sort);
+    state = OpportunitiesQuery(
+      stageId: stageId,
+      ownerId: state.ownerId,
+      sort: state.sort,
+    );
+  }
+
+  /// What a figure on Home counts: a stage or a status, and only the user's own
+  /// opportunities when [ownerId] is given. The search is cleared, the order kept.
+  void show({String? stageId, StageKind? status, String? ownerId}) {
+    state = OpportunitiesQuery(
+      stageId: stageId,
+      status: status,
+      ownerId: ownerId,
+      sort: state.sort,
+    );
   }
 }
 
@@ -128,16 +158,22 @@ final opportunitiesListProvider =
 class BoardController extends AsyncNotifier<List<BoardColumn>> {
   OpportunitiesApi get _api => ref.read(opportunitiesApiProvider);
 
+  /// The owner the board is narrowed to, as on the list ([OpportunitiesQuery.ownerId]).
+  String? _ownerId;
+
   @override
   Future<List<BoardColumn>> build() {
     ref.watch(sessionUserIdProvider);
-    return _api.board();
+    _ownerId = ref.watch(
+      opportunitiesQueryProvider.select((query) => query.ownerId),
+    );
+    return _api.board(ownerId: _ownerId);
   }
 
   /// Pull to refresh: the board stays on screen until the new one arrives.
   Future<void> refresh() async {
     try {
-      final columns = await _api.board();
+      final columns = await _api.board(ownerId: _ownerId);
       if (ref.mounted) {
         state = AsyncData(columns);
       }

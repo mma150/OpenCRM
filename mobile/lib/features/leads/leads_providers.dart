@@ -19,15 +19,46 @@ class LeadsQueryController extends Notifier<LeadsQuery> {
   }
 
   void search(String text) {
-    state = LeadsQuery(search: text, status: state.status, sort: state.sort);
+    state = LeadsQuery(
+      search: text,
+      status: state.status,
+      ownerId: state.ownerId,
+      sort: state.sort,
+    );
   }
 
   void filterByStatus(LeadStatus? status) {
-    state = LeadsQuery(search: state.search, status: status, sort: state.sort);
+    state = LeadsQuery(
+      search: state.search,
+      status: status,
+      ownerId: state.ownerId,
+      sort: state.sort,
+    );
+  }
+
+  /// Null shows every lead the user may see again.
+  void filterByOwner(String? ownerId) {
+    state = LeadsQuery(
+      search: state.search,
+      status: state.status,
+      ownerId: ownerId,
+      sort: state.sort,
+    );
   }
 
   void sortBy(LeadSort sort) {
-    state = LeadsQuery(search: state.search, status: state.status, sort: sort);
+    state = LeadsQuery(
+      search: state.search,
+      status: state.status,
+      ownerId: state.ownerId,
+      sort: sort,
+    );
+  }
+
+  /// What a figure on Home counts: that status (null for every one), and only the user's
+  /// own leads when [ownerId] is given. The search is cleared, the order kept.
+  void show({LeadStatus? status, String? ownerId}) {
+    state = LeadsQuery(status: status, ownerId: ownerId, sort: state.sort);
   }
 }
 

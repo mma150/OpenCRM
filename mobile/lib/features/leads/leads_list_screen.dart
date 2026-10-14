@@ -47,7 +47,10 @@ class LeadsListScreen extends ConsumerWidget {
     final query = ref.watch(leadsQueryProvider);
     final leads = ref.watch(leadsListProvider);
     final list = ref.read(leadsListProvider.notifier);
-    final filtered = query.search.trim().isNotEmpty || query.status != null;
+    final filtered =
+        query.search.trim().isNotEmpty ||
+        query.status != null ||
+        query.ownerId != null;
 
     return AppScaffold(
       title: 'Leads',
@@ -98,6 +101,21 @@ class LeadsListScreen extends ConsumerWidget {
               ],
             ),
           ),
+          if (query.ownerId != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: InputChip(
+                  avatar: const Icon(Icons.person_outline, size: 18),
+                  label: const Text('Only my leads'),
+                  materialTapTargetSize: MaterialTapTargetSize.padded,
+                  deleteButtonTooltipMessage: "Show everyone's leads",
+                  onDeleted: () =>
+                      ref.read(leadsQueryProvider.notifier).filterByOwner(null),
+                ),
+              ),
+            ),
           Expanded(
             child: PagedListView<Lead>(
               state: leads,

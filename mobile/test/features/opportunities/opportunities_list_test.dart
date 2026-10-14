@@ -59,6 +59,8 @@ Map<String, String> _lastQuery(FakeApi api) =>
     api.sent('GET', '/opportunities').last.query;
 
 void main() {
+  _chipsStartAtTheLeft();
+
   testWidgets(
     'shows each opportunity with its stage, company, value and owner',
     variant: phones,
@@ -455,5 +457,24 @@ void main() {
     await tapVisible(tester, find.text('Pipeline value'));
 
     expect(app.location, Routes.opportunities);
+  });
+}
+
+void _chipsStartAtTheLeft() {
+  testWidgets('on a tablet a row of chips that fits starts at the left, under '
+      'the search box', (tester) async {
+    final api = _paged(1);
+    await pumpApp(
+      tester,
+      api: api,
+      user: rep,
+      location: Routes.opportunities,
+      surface: tablet,
+    );
+    await tapVisible(tester, find.text('List'));
+
+    final search = tester.getTopLeft(find.byType(SearchField));
+    final firstChip = tester.getTopLeft(_chip('Any status'));
+    expect(firstChip.dx, closeTo(search.dx, 1));
   });
 }

@@ -354,6 +354,38 @@ void main() {
       },
     );
 
+    testWidgets(
+      'an edit that leaves the company alone does not send it, so a company '
+      'the reader may not see stays linked',
+      (tester) async {
+        // The API answers `company: null` for a company the reader may not see.
+        final api = _api()
+          ..on(
+            'GET',
+            '/contacts/contact-1',
+            (request) => contactJson(company: null),
+          )
+          ..on(
+            'PATCH',
+            '/contacts/contact-1',
+            (request) => contactJson(jobTitle: 'COO', company: null),
+          );
+        await pumpApp(
+          tester,
+          api: api,
+          user: rep,
+          location: Routes.editContact('contact-1'),
+        );
+
+        await enterField(tester, 'Job title', 'COO');
+        await _submit(tester, 'Save changes');
+
+        final sent = api.sent('PATCH', '/contacts/contact-1').single.json;
+        expect(sent, isNot(contains('companyId')));
+        expect(sent['jobTitle'], 'COO');
+      },
+    );
+
     testWidgets('shows server messages under the fields', (tester) async {
       final api = _api()
         ..on('PATCH', '/contacts/contact-1', (request) {

@@ -171,6 +171,7 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    final existing = widget.contact;
     final input = ContactInput(
       firstName: _firstName.text,
       lastName: _lastName.text,
@@ -178,11 +179,13 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
       email: _email.text,
       phone: _phone.text,
       companyId: _company?.id,
+      // An edit that did not touch the company leaves it out: one the reader may not see
+      // reads as no company, and sending that would unlink it.
+      sendCompany: existing == null || _company?.id != existing.company?.id,
       notes: _notes.text,
     );
     setState(() => _saving = true);
     try {
-      final existing = widget.contact;
       final String id;
       if (existing == null) {
         id = (await ref.read(contactCreatorProvider).create(input)).id;

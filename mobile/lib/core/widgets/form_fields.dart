@@ -392,6 +392,9 @@ class SubmitButton extends StatelessWidget {
       style: destructive
           ? FilledButton.styleFrom(
               backgroundColor: context.colors.tone(Tone.danger).foreground,
+              // The tone's pale background as the text: white on the dark theme's light
+              // red would be hard to read.
+              foregroundColor: context.colors.tone(Tone.danger).background,
             )
           : null,
       onPressed: saving ? null : onPressed,

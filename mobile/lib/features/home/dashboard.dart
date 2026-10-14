@@ -5,19 +5,23 @@ import 'package:opencrm/features/tasks/task.dart';
 /// One open stage of the pipeline with the caller's open opportunities in it.
 class PipelineStageFigures {
   const PipelineStageFigures({
+    required this.stageId,
     required this.name,
     required this.count,
     required this.totalValue,
   });
 
   factory PipelineStageFigures.fromJson(Json json) {
+    final stage = asMap(json['stage']);
     return PipelineStageFigures(
-      name: readString(asMap(json['stage']), 'name'),
+      stageId: readString(stage, 'id'),
+      name: readString(stage, 'name'),
       count: readInt(json, 'count'),
       totalValue: readDouble(json, 'totalValue'),
     );
   }
 
+  final String stageId;
   final String name;
   final int count;
   final double totalValue;

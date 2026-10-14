@@ -473,7 +473,7 @@ Both are for `role.seesTeam` (Admin, Sales Manager); the API answers `FORBIDDEN`
 
 - **Team** is a section at the bottom of Home ([`features/home/team_section.dart`](../../mobile/lib/features/home/team_section.dart)): range chips (This month, Last month, Last 7 days, Last 30 days; sent as the device's days with `tz`), a card per person with the eight figures of the web table, a Total card, and a sort choice (name, or a figure highest first, sorted on the phone).
 - **Activity** (`/more/activity`) is the team's timeline entries, newest first, page by page, with a Type filter (All types, Conversations, Notes, Emails, Changes). Each entry says who did what to which record (`activity_labels.dart`, the web's sentences; an entry's own words come from `timeline_labels.dart`), and opens the record's page when the app has it. The web's person and date filters and its totals strip are not here.
-- **Home links to the lists**: the task tiles open the matching group of the Tasks tab, the rows of "Tasks due" have the checkbox, and a row of "Open leads by status" opens the leads list with that status.
+- **Home links to the lists**: the task tiles open the matching group of the Tasks tab, the rows of "Tasks due" have the checkbox, a follow-up opens its lead or opportunity, a row of "Open leads by status" opens the leads list with that status, and "Pipeline value", "Won this month" and a row of "Pipeline by stage" open the opportunity list (open, won, or that stage). Home's figures are the user's own, so for an Admin and a Sales Manager the list is narrowed to their own records (`ownerId`, as on the web), with an "Only my leads" / "Only my opportunities" chip that takes the narrowing off.
 
 ## What is not here yet
 

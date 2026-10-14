@@ -71,6 +71,10 @@ class Contact {
 /// What the contact form sends, for a new contact and for an edit. An empty text is sent
 /// as null, which clears the field; a null [companyId] takes the contact out of its
 /// company.
+///
+/// An edit sends the company only when it was changed ([sendCompany]): a contact whose
+/// company the reader may not see comes with `company: null`, and sending that back
+/// would take the contact out of a company the reader never touched.
 class ContactInput {
   const ContactInput({
     required this.firstName,
@@ -79,6 +83,7 @@ class ContactInput {
     this.email = '',
     this.phone = '',
     this.companyId,
+    this.sendCompany = true,
     this.notes = '',
   });
 
@@ -88,6 +93,9 @@ class ContactInput {
   final String email;
   final String phone;
   final String? companyId;
+
+  /// False leaves `companyId` out, so the contact keeps the company it has.
+  final bool sendCompany;
   final String notes;
 
   static String? _orNull(String text) =>
@@ -100,7 +108,7 @@ class ContactInput {
       'jobTitle': _orNull(jobTitle),
       'email': _orNull(email),
       'phone': _orNull(phone),
-      'companyId': companyId,
+      if (sendCompany) 'companyId': companyId,
       'notes': _orNull(notes),
     };
   }
