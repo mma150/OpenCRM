@@ -1,6 +1,7 @@
-# Lint, format check, type-check, test and build for both apps (CI-01).
+# Lint, format check, type-check, test and build for both apps (CI-01), and format check,
+# analysis and tests for the mobile app.
 #
-# Both jobs run on every push and every pull request. There is deliberately no path
+# Every job runs on every push and every pull request. There is deliberately no path
 # filter: a required check from a workflow that was skipped by a path filter never
 # reports, and the pull request would wait for it forever (see docs/standards/github-settings.md).
 name: ci
@@ -91,3 +92,27 @@ jobs:
         run: |
           pnpm openapi:generate
           git diff --exit-code -- openapi/openapi.json
+
+  # The Flutter app. Flutter comes from its own repository at the exact tag the app is
+  # pinned to (`environment.flutter` in mobile/pubspec.yaml; `pnpm verify:foundation` fails
+  # if the two differ), so no third-party setup action is trusted with the build.
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      FLUTTER_VERSION: 3.47.6
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Flutter
+        working-directory: .
+        run: |
+          git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - run: flutter --version
+      - run: flutter pub get --enforce-lockfile
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: flutter analyze --fatal-infos
+      - run: flutter test

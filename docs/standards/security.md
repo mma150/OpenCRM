@@ -13,7 +13,7 @@ Related: [GitHub repository settings](github-settings.md), [commit standard](com
 | Secret scan, layer 3 | GitHub secret scanning with push protection (repository setting) | Blocks a push that contains a known credential format. |
 | Dependency audit | [`.github/workflows/audit.yml`](../../.github/workflows/audit.yml) (job `audit`) | `pnpm audit --audit-level=high` in both apps, on push, pull request and weekly. High and critical fail; moderate and low are only reported. |
 | Dependency review | the same workflow (job `dependency-review`) | Fails a pull request that introduces a dependency with a high or critical advisory. |
-| Dependency updates | [`.github/dependabot.yml`](../../.github/dependabot.yml) | One grouped weekly pull request per app for routine updates; security updates open immediately and alone. |
+| Dependency updates | [`.github/dependabot.yml`](../../.github/dependabot.yml) | One grouped weekly pull request per app (the mobile app's `pub` packages included) for routine updates; security updates open immediately and alone. |
 | Code scanning | [`.github/workflows/codeql.yml`](../../.github/workflows/codeql.yml) (job `analyze`) | CodeQL for JavaScript and TypeScript on pull requests, on pushes to `main` and weekly. |
 | Disclosure path | [`SECURITY.md`](../../SECURITY.md) | Tells a reporter how to report a vulnerability privately. |
 | Repository consistency | [`scripts/verify-foundation.mjs`](../../scripts/verify-foundation.mjs) (`pnpm verify:foundation`) | Fails when a workflow loses a security rule, for example `continue-on-error` or an inlined pull request title. |
@@ -31,6 +31,7 @@ Secrets are caught in three places, because each layer has a gap the next one co
 
 - **Exact pins.** Every version in the three `package.json` files is exact (no `^`, `~`, `*` or `latest`). Each app and the repository root have their own `pnpm-lock.yaml`, and installs use `--frozen-lockfile` (CI always does). `pnpm verify:foundation` checks the pins.
 - **Owner approval.** Adding, removing or changing a dependency, a version, a `pnpm-workspace.yaml` or a lockfile needs the owner's approval, and the package name must be checked on npmjs.com first. A failed install is a reason to stop and check the name, never to try a similar one.
+- **The mobile app follows the same rules with Flutter's tools.** Every version in `mobile/pubspec.yaml` is exact, `mobile/pubspec.lock` is committed, CI installs with `flutter pub get --enforce-lockfile`, and the Flutter version itself is pinned in `environment.flutter` and in the `mobile` job (`pnpm verify:foundation` checks the pins and that the two Flutter versions agree). Approved packages: `flutter_riverpod`, `dio`, `go_router`, `flutter_secure_storage`, `intl`, and `flutter_lints` for development ([decision 0005](../decisions/0005-mobile-app-stack.md)). There is no `pub` counterpart of `pnpm audit` in CI: advisories for pub packages reach the repository through Dependabot alerts.
 - **Install scripts (`allowBuilds`).** pnpm 11 blocks install scripts except for the packages listed in each app's `pnpm-workspace.yaml`:
 
   | App | Packages allowed to run install scripts |
@@ -81,8 +82,21 @@ Actions are pinned by major version tag; Dependabot's `github-actions` entry kee
 | CodeQL | `github/codeql-action/init@v4`, `github/codeql-action/analyze@v4` | Tag listed in the remote repository on 2026-10-08 |
 | Dependency review | `actions/dependency-review-action@v5` | Branch and tag `v5.0.0` listed in the remote repository on 2026-10-08 |
 | Secret scan | `ghcr.io/gitleaks/gitleaks:v8.30.1` (Docker image) | Pulled and run locally |
+| Flutter SDK | `https://github.com/flutter/flutter.git` at the tag `3.47.6` (cloned by the `mobile` job; no setup action) | Tag listed in the remote repository on 2026-10-13 |
 | CI database | `postgres:18-alpine` (service container) | Same image as `compose.yaml` |
 | Development mail inbox | `axllent/mailpit:v1.31.4` (Docker image, `compose.yaml` only) | Pulled and run locally on 2026-10-09 |
+
+## The mobile app's session
+
+The mobile app signs in with `POST /auth/token` and keeps a session token on the phone ([backend.md](backend.md#token-sign-in-for-clients-without-cookies), [mobile.md](mobile.md#signing-in-and-the-server-address)). The rules, each pinned by a test in `backend/src/modules/auth/auth.test.ts` or `backend/src/middleware/security.test.ts` unless it says otherwise:
+
+- **The token route sets no cookie**, so its answer can never sign a browser in, and it is refused from an origin that is not allowed, like every other state-changing route.
+- **It is no weaker than the cookie sign-in**: the same service function, the same rate limiters (one shared allowance per address and per email) and the same account lock.
+- **The origin check still protects every cookie request.** A request without a session cookie and without an `Origin` passes (a native client); a request with a session cookie needs an allowed `Origin` even when it also carries a Bearer header.
+- **Only a hash of the token is stored on the server.** On the phone the token is in the platform's secure storage (Keychain, Android Keystore) and nowhere else, and Android backups are off (`allowBackup="false"`). Enforced by code review: `mobile/lib/core/storage/key_value_store.dart` is the only file that stores anything.
+- **The token is never logged**: the `authorization` header is redacted and request bodies are not logged.
+- **Signing out on the phone works offline** (the token is forgotten first), and deactivating the user, resetting the password or 30 days without use end the session on the server.
+- **Plain HTTP is for debug builds only.** A release build of the app accepts only an `https://` server address, Android refuses cleartext traffic outside the debug manifest, and iOS keeps App Transport Security on ([mobile.md](mobile.md#running-against-a-local-server)).
 
 ## CSV export and import
 

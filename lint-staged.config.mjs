@@ -2,6 +2,10 @@
 // two apps with that app's own ESLint and Prettier. Files outside backend/ and frontend/
 // are not formatted: the root package has no formatter.
 //
+// mobile/ is left out on purpose: formatting Dart needs the Flutter SDK, and a commit must
+// not fail on a machine without it. Run `dart format .` in mobile/ before committing; the
+// `mobile` job in CI fails on an unformatted file (docs/standards/mobile.md).
+//
 // Each tool runs from inside its app folder, so it reads that app's config. The tools are
 // started with node straight from the app's node_modules, so this works with any pnpm
 // version on the contributor's machine.

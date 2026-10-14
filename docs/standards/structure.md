@@ -2,7 +2,7 @@
 
 Where things live, how they are named, and which files to create when you add a feature. The working example for everything here is the **health** feature: [`backend/src/modules/health/`](../../backend/src/modules/health/) on the API side and [`frontend/src/features/health/`](../../frontend/src/features/health/) on the web side. When this document and the code disagree, fix the document or open a discussion; do not quietly diverge.
 
-Related: [backend standard](backend.md), [frontend standard](frontend.md), [testing standard](testing.md).
+Related: [backend standard](backend.md), [frontend standard](frontend.md), [mobile standard](mobile.md), [testing standard](testing.md).
 
 ## Top-level layout
 
@@ -10,7 +10,7 @@ Related: [backend standard](backend.md), [frontend standard](frontend.md), [test
 opencrm/
 ├── frontend/      Next.js web app (App Router, Redux Toolkit, Tailwind, shadcn/ui)
 ├── backend/       Node/Express API with Prisma and PostgreSQL
-├── mobile/        Reserved for the Flutter app (README only, no code yet)
+├── mobile/        Flutter app for Android and iOS (Riverpod, dio, go_router)
 ├── docs/          standards/ (these documents) and decisions/ (one-page records)
 ├── scripts/       Repository-level helper scripts
 ├── .github/       GitHub Actions workflows, Dependabot config, issue and PR templates
@@ -20,9 +20,11 @@ opencrm/
 └── README.md  CONTRIBUTING.md  CODE_OF_CONDUCT.md  SECURITY.md  LICENSE
 ```
 
-### Two independent apps (D-02)
+### Independent apps (D-02)
 
 `frontend/` and `backend/` are independent. Each has its own `package.json`, `pnpm-workspace.yaml` (pnpm settings, not a workspace of packages) and `pnpm-lock.yaml`. There is **no shared workspace package** and the frontend never imports backend code. The only thing the two share is the API contract: the backend generates `backend/openapi/openapi.json` from its Zod schemas, and the frontend generates `frontend/src/lib/api/schema.d.ts` from that file (see [backend.md](backend.md#openapi) and [frontend.md](frontend.md#generating-api-types)).
+
+`mobile/` is independent in the same way: a Flutter project with its own `pubspec.yaml` and `pubspec.lock`, no Node tooling, and no generated code. It shares only the contract too, by hand: its models read the JSON that `openapi.json` describes ([mobile.md](mobile.md), [decision 0005](../decisions/0005-mobile-app-stack.md)).
 
 The root `package.json` exists only to hold the commit tooling (husky, lint-staged, commitlint). It has its own lockfile and is not a workspace containing the apps ([decision 0002](../decisions/0002-root-tooling-package.md)).
 
@@ -259,13 +261,33 @@ frontend/
     └── env.ts                      The only reader of process.env (validated with Zod)
 ```
 
+## Mobile tree (`mobile/`)
+
+```text
+mobile/
+├── pubspec.yaml  pubspec.lock  analysis_options.yaml
+├── android/  ios/                  The platform folders
+├── lib/
+│   ├── main.dart
+│   ├── app/                        app.dart, routes.dart (every path), navigation.dart (the tabs, their
+│   │                               routes and the More list), router.dart (the sign-in redirect), app_shell.dart
+│   ├── core/                       What every feature shares: api/ (the one client, ApiError, the words for
+│   │                               each error code, paging), auth/ (the session, the current user, the roles),
+│   │                               storage/, state/ (the paged list), theme/, format/, widgets/
+│   └── features/                   auth, home, leads, timeline, custom_fields, users, tasks, more
+└── test/                           support/ (the fake API, fixtures, pumpApp) and the tests, in the folders
+                                    of the code they test
+```
+
+The files of a feature, what is in `core/`, and how to add a feature, a page or a record type are in the [mobile standard](mobile.md).
+
 ## The mirror rule
 
-A backend **module** and the frontend **feature** for the same part of the product carry the **same name**: `backend/src/modules/leads/` pairs with `frontend/src/features/leads/`. A new contributor can find both halves of a feature from the folder name alone. Cross-feature code goes in the shared folders (`src/lib`, `src/store`, `src/components` on the frontend; `src/lib`, `src/middleware` on the backend), never inside another feature's folder.
+A backend **module** and the frontend **feature** for the same part of the product carry the **same name**: `backend/src/modules/leads/` pairs with `frontend/src/features/leads/`, and with `mobile/lib/features/leads/` in the mobile app (where a hyphen becomes an underscore: `custom_fields`). A new contributor can find both halves of a feature from the folder name alone. Cross-feature code goes in the shared folders (`src/lib`, `src/store`, `src/components` on the frontend; `src/lib`, `src/middleware` on the backend), never inside another feature's folder.
 
 ## Naming (D-20)
 
-- **Every file name is kebab-case**: `lead-list.tsx`, `leads.service.ts`, `error-handler.ts`. Enforced in both apps by the ESLint rule `unicorn/filename-case` (`kebabCase`); `pnpm --dir backend check` and `pnpm --dir frontend check` fail on a file such as `LeadList.tsx`.
+- **Every file name is kebab-case** in the web app and the API (the mobile app follows Dart and uses `snake_case`: `lead_detail_screen.dart`): `lead-list.tsx`, `leads.service.ts`, `error-handler.ts`. Enforced in both apps by the ESLint rule `unicorn/filename-case` (`kebabCase`); `pnpm --dir backend check` and `pnpm --dir frontend check` fail on a file such as `LeadList.tsx`.
 - **React components are PascalCase only as identifiers**, never as file names: the component `HealthStatus` lives in `health-status.tsx`.
 - Backend module files are `<module>.<role>.ts` with the roles `routes`, `controller`, `service`, `schema` and `test`. Frontend feature files are `<feature>.<role>.ts` with the roles `types`, `api`, `slice` (plus `test`); a component file is named after the component, such as `health-status.tsx`.
 - Tests sit beside the code they test and end in `.test.ts` or `.test.tsx`.
@@ -297,6 +319,8 @@ Then mount the router in `backend/src/routes.ts` (`router.use("/leads", leadsRou
 Then add the reducer to `makeStore` in `frontend/src/store/index.ts`, add a route file under `frontend/src/app/` that only renders the feature component, and add one line to `nav-items.ts` if the feature has a page of its own in the navigation.
 
 A feature of **owned records** (leads, contacts, companies, opportunities) builds its list, record page and dialogs from the shared record components instead of copying another feature's: see [What owned records share](frontend.md#what-owned-records-share). Its form, record page and list show the record type's custom fields through the shared custom field components ([Custom fields](frontend.md#custom-fields)), and its list offers the export through `ListActions` ([Export and import](frontend.md#export-and-import)). If the record has a timeline, it adds one line to `RECORD_TYPES` in `frontend/src/features/timeline/record-types.ts` (see [The timeline](frontend.md#the-timeline)). If other records link to it, it gets a picker built on the shared `RecordPicker` (see [The record pickers](frontend.md#the-record-pickers)) and, on the pages of the records it belongs to, a short card passed as `extra` to `RecordLayout` (`record-opportunities.tsx` is the example).
+
+**Mobile**, in `mobile/lib/features/leads/`: the model (`lead.dart`), the routes (`leads_api.dart`), the state (`leads_providers.dart`), the screens, and the tests under `mobile/test/features/leads/`; then its paths in `routes.dart` and its routes in `navigation.dart`. The steps, with code, are in [mobile.md](mobile.md#building-a-feature-step-by-step).
 
 A feature can span two backend modules' worth of screens only when each keeps its own folder: the pipeline's stages live in `features/pipeline-stages/` (the API module `pipeline-stages`), the opportunities that sit in them in `features/opportunities/`.
 

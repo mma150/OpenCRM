@@ -7,6 +7,8 @@ Both apps use **Vitest** (D-13). The backend tests the real API with **supertest
 
 Related: [backend](backend.md), [frontend](frontend.md), [structure](structure.md).
 
+The mobile app tests with Flutter's own test framework, against a fake API; its commands, helpers and the list of what every feature tests are in the [mobile standard](mobile.md#testing).
+
 ## Commands
 
 Run from the repository root.
@@ -17,6 +19,8 @@ Run from the repository root.
 | Frontend tests | `pnpm --dir frontend test` |
 | Backend lint, format and types (includes test files) | `pnpm --dir backend check` |
 | Frontend lint, format and types (includes test files) | `pnpm --dir frontend check` |
+| Mobile tests (inside `mobile/`, with the Flutter SDK) | `flutter test` |
+| Mobile format and lint (inside `mobile/`) | `dart format --output=none --set-exit-if-changed .` and `flutter analyze --fatal-infos` |
 
 Test files sit beside the code they test and are named `*.test.ts` (backend, under `src/`) or `*.test.ts` / `*.test.tsx` (frontend, under `src/`). Files with any other name are not picked up.
 

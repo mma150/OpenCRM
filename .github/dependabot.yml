@@ -110,3 +110,19 @@ updates:
       day: "monday"
     commit-message:
       prefix: "chore"
+
+  # The Flutter app (mobile/pubspec.yaml and pubspec.lock).
+  - package-ecosystem: "pub"
+    directory: "/mobile"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore"
+    cooldown:
+      default-days: 2
+    groups:
+      routine:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["minor", "patch"]

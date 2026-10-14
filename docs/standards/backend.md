@@ -2,7 +2,7 @@
 
 How the API in `backend/` is built: module layout, layering, validation, the response envelope, error codes, OpenAPI, logging, environment and Prisma. The working example is the health module, [`backend/src/modules/health/`](../../backend/src/modules/health/). Each rule below says what enforces it: an ESLint rule, a test, or (where nothing automatic exists) code review.
 
-Related: [structure](structure.md), [testing](testing.md), [frontend](frontend.md).
+Related: [structure](structure.md), [testing](testing.md), [frontend](frontend.md), [mobile](mobile.md).
 
 ## Request path
 
@@ -149,13 +149,13 @@ The optional `cause` keeps the original error for the log; it is never sent to t
 
 Several HTTP statuses carry more than one code (401, 403 and 409), which is why clients switch on `code` and never on the status: a wrong password must not look like an expired session.
 
-**Adding a code.** Adding is safe; renaming or removing is a breaking change for every client, including the future mobile app, so avoid it.
+**Adding a code.** Adding is safe; renaming or removing is a breaking change for every client, the mobile app included, so avoid it.
 
 1. Add the code to `ERROR_CODES` in `backend/src/lib/app-error.ts`.
 2. Throw it with `AppError` where it applies.
 3. Add a row to the table above.
 4. Update the tests that pin the list: the "lists exactly the documented codes" test in `error-handler.test.ts` and the ErrorCode test in `backend/src/lib/openapi.test.ts`.
-5. Run `pnpm --dir backend openapi:generate` and `pnpm --dir frontend api:types`, commit both generated files, and handle the new code in the user interface where it matters (see [frontend](frontend.md#error-handling-in-components)).
+5. Run `pnpm --dir backend openapi:generate` and `pnpm --dir frontend api:types`, commit both generated files, and handle the new code in the user interface where it matters (see [frontend](frontend.md#error-handling-in-components)), in the mobile app too (`describeApiError` in `mobile/lib/core/api/error_messages.dart`).
 
 ## OpenAPI
 
@@ -211,7 +211,7 @@ Tests use their own `opencrm_test` database, created and migrated automatically;
 
 ## Authentication and access
 
-Sign-in is a server-side session (D-01): a random 256-bit token whose SHA-256 hash is a row in `Session`. The browser carries the token in an httpOnly, `SameSite=Lax` cookie named `opencrm_session` (`__Host-opencrm_session` when `SESSION_COOKIE_SECURE` is true); any other client may send the same token as `Authorization: Bearer <token>`. The session is looked up on every request, so signing out, deactivating a user and resetting a password take effect at once. It lasts 30 days from its last use; the expiry is pushed forward at most once an hour. The pieces:
+Sign-in is a server-side session (D-01): a random 256-bit token whose SHA-256 hash is a row in `Session`. The browser carries the token in an httpOnly, `SameSite=Lax` cookie named `opencrm_session` (`__Host-opencrm_session` when `SESSION_COOKIE_SECURE` is true); any other client may send the same token as `Authorization: Bearer <token>` (see [Token sign-in](#token-sign-in-for-clients-without-cookies)). The session is looked up on every request, so signing out, deactivating a user and resetting a password take effect at once. It lasts 30 days from its last use; the expiry is pushed forward at most once an hour. The pieces:
 
 | Piece | File | Use |
 | --- | --- | --- |
@@ -220,7 +220,7 @@ Sign-in is a server-side session (D-01): a random 256-bit token whose SHA-256 ha
 | `requireRole(...roles)` | [`middleware/require-role.ts`](../../backend/src/middleware/require-role.ts) | After `authenticate`; anyone else gets `FORBIDDEN`. Hiding a screen in the web app is cosmetic, this is the enforcement. |
 | Origin check | [`middleware/origin-check.ts`](../../backend/src/middleware/origin-check.ts) | The CSRF defence, applied to the whole app: a request that is not GET, HEAD or OPTIONS must carry an `Origin` from `CORS_ORIGINS`, or carry no session cookie at all (a Bearer client). |
 | Rate limiters | [`middleware/rate-limit.ts`](../../backend/src/middleware/rate-limit.ts) | Per address and per email, on the public auth routes; and `sendEmail`, per signed-in user, on the routes that send an email for a user (put it after `authenticate`). Counters are in memory. `createApp({ rateLimit })` lets tests change the limits. |
-| Sessions | [`lib/sessions.ts`](../../backend/src/lib/sessions.ts), [`lib/session-cookie.ts`](../../backend/src/lib/session-cookie.ts) | Create and resolve sessions; set, clear and read the cookie. |
+| Sessions | [`lib/sessions.ts`](../../backend/src/lib/sessions.ts), [`lib/session-cookie.ts`](../../backend/src/lib/session-cookie.ts) | Create and resolve sessions (`startSession` answers the token and its expiry, `createSession` the token alone); set, clear and read the cookie. |
 | Passwords | [`lib/password.ts`](../../backend/src/lib/password.ts) | Argon2id hashing, and the one password rule: 10 to 128 characters and not on the common-password list (`lib/common-passwords.txt`). |
 | Links | [`lib/account-links.ts`](../../backend/src/lib/account-links.ts) | Single-use invite (7 days) and password-reset (1 hour) links, built from `APP_URL` and stored hashed. |
 
@@ -238,6 +238,19 @@ usersRouter.use(requireRole("ADMIN")); // everything below
 Default limits on the public auth routes, per 5 minutes: 30 requests per address (successful sign-ins are not counted), 8 per email address on sign-in and forgot-password, and 300 per address on the first-run check. Ten wrong passwords in a row lock an account for 15 minutes; the lock is stored on the user, clears on its own and is cleared by a password reset. A signed-in user may send 30 emails per 5 minutes (`POST /emails`, `POST /quotes/:id/send` and `POST /settings/email/test` share the count).
 
 Rules that keep sign-in from leaking information, each pinned by a test in `auth.test.ts`: a wrong email and a wrong password get the same answer; forgot-password always answers 200; a deactivated account is named only after the correct password; tokens and links are never logged and never appear in an API URL (they travel in the POST body).
+
+### Token sign-in for clients without cookies
+
+A native app has no cookie jar, so the mobile app signs in with **`POST /auth/token`** `{ email, password }`, which answers `{ user, token, expiresAt }` and sets **no cookie**. It is the one response that carries a session token in its body.
+
+- **It is `POST /auth/login` with another answer.** The controller calls the same `login` service function, so the checks, the order they run in, the lockout and the error codes (`INVALID_CREDENTIALS`, `ACCOUNT_DEACTIVATED`, `ACCOUNT_LOCKED`, `RATE_LIMITED`, `VALIDATION_FAILED`) are the same, and a wrong password on either route counts toward the one lock. Both routes sit behind the same two rate limiters, so they share one allowance per address and per email.
+- **The token is the same kind of session** as a cookie's: a row in `Session`, stored hashed, looked up on every request. The client sends it as `Authorization: Bearer <token>`.
+- **`expiresAt`** is when the session ends if it is never used again. Every use more than an hour after the last pushes it 30 days forward, as for a cookie; nothing is sent back to say so, and a client needs no refresh: it treats `UNAUTHENTICATED` as "signed out".
+- **`POST /auth/logout`** with the Bearer header ends that session and no other.
+- **The origin check lets a Bearer client through** because it sends no session cookie and no `Origin`. A request that carries a session cookie is still held to the check, with or without a Bearer header, and a request from an origin that is not allowed is refused whatever else it carries, so the token route cannot be called from another site's page.
+- When a request carries both a cookie and a Bearer token, the cookie is the session.
+
+Each of these is pinned in `auth.test.ts` ("token sign-in for a client without cookies") and `security.test.ts`.
 
 Production note: the cookie is `SameSite=Lax`, so the web app and the API must be on the same site (the same host, or two hosts under one registrable domain such as `app.example.com` and `api.example.com`). Behind a reverse proxy set `TRUST_PROXY` to the number of proxies, or every visitor shares one rate-limit bucket.
 
@@ -448,7 +461,7 @@ There is one sales pipeline. Its stages are rows of `PipelineStage` ([`modules/p
 
 ## Time zones
 
-Times are stored and answered in UTC (`"2026-11-15T09:30:00.000Z"`), and a request sends an exact moment with its offset (`momentSchema`). "Today" and "this month" are different moments for different people, so the routes that count by day (`GET /tasks`, `GET /tasks/summary`, `GET /dashboard/me`, `GET /dashboard/team`) take the viewer's time zone as the query parameter **`tz`**: an IANA name such as `Asia/Kolkata`, checked by `timeZoneSchema`, `UTC` when it is left out, and `VALIDATION_FAILED` on `tz` when it is not a time zone. The web app sends the browser's zone. Nothing about a user's zone is stored.
+Times are stored and answered in UTC (`"2026-11-15T09:30:00.000Z"`), and a request sends an exact moment with its offset (`momentSchema`). "Today" and "this month" are different moments for different people, so the routes that count by day (`GET /tasks`, `GET /tasks/summary`, `GET /dashboard/me`, `GET /dashboard/team`) take the viewer's time zone as the query parameter **`tz`**: an IANA name such as `Asia/Kolkata`, checked by `timeZoneSchema`, `UTC` when it is left out, and `VALIDATION_FAILED` on `tz` when it is not a time zone. The web app sends the browser's zone. An offset from UTC such as `+05:30` is accepted too, which is what the mobile app sends (it cannot read the device's zone name); it is right for "today", and an hour off only for a day on the other side of a clock change. Nothing about a user's zone is stored.
 
 [`backend/src/lib/time-zone.ts`](../../backend/src/lib/time-zone.ts) turns a zone into moments with the time zone data built into Node, without a library: `todayIn(tz, now)` gives `{ day, start, end }` (the viewer's calendar day, its first moment and the first moment of the next day), `startOfDay(tz, day, addDays)` the moment a day starts, clock changes included. `time-zone.test.ts` pins them with fixed dates. A test of a route cannot fake the clock ([testing](testing.md#backend-tests)); `zoneOnAnotherDay()` in `backend/test/helpers.ts` picks a zone where it is another calendar day than in UTC right now.
 

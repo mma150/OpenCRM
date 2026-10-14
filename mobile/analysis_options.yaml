@@ -1,0 +1,33 @@
+# The rules `flutter analyze` holds the app to. CI fails on any issue, info-level included
+# (see .github/workflows/ci.yml), so this file is the mobile app's lint contract.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    # No implicit `dynamic`: JSON is read through the helpers in lib/core/api/json.dart.
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    # A forgotten `await` hides errors, so it is an error, not a hint.
+    unawaited_futures: error
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - windows/**
+
+linter:
+  rules:
+    always_declare_return_types: true
+    always_use_package_imports: true
+    avoid_dynamic_calls: true
+    avoid_print: true
+    avoid_void_async: true
+    cancel_subscriptions: true
+    directives_ordering: true
+    prefer_final_locals: true
+    prefer_single_quotes: true
+    unawaited_futures: true
+    unnecessary_lambdas: true
+    use_super_parameters: true

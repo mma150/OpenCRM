@@ -1,0 +1,27 @@
+name: opencrm
+description: "OpenCRM mobile app: the self-hosted CRM for small sales teams, on a phone."
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.5
+  flutter: 3.47.6
+
+# Every version is exact (no ^), like the package.json files of the web app and the API.
+# Adding or changing a dependency needs the owner's approval: docs/standards/security.md.
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: 5.11.1
+  flutter_riverpod: 3.4.3
+  flutter_secure_storage: 11.2.0
+  go_router: 18.0.2
+  intl: 0.20.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: 6.0.0
+
+flutter:
+  uses-material-design: true

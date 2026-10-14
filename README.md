@@ -34,7 +34,7 @@ Good to know:
 
 - `frontend/` - the Next.js web app (App Router, Redux Toolkit).
 - `backend/` - the Node/Express API with Prisma and PostgreSQL.
-- `mobile/` - reserved for the Flutter mobile app, which follows the web app (a README only, no code yet).
+- `mobile/` - the Flutter app for Android and iOS: sign-in, Home and leads so far. How to run it is in [`mobile/README.md`](mobile/README.md).
 - `docs/` - the written standards (`docs/standards/`) and one-page decision records (`docs/decisions/`).
 
 ## Documentation
@@ -46,12 +46,13 @@ Standards every change follows (each points at the working health feature as its
 - [Folder structure and naming](docs/standards/structure.md)
 - [Frontend: feature folders, slices and API calls](docs/standards/frontend.md)
 - [Backend: modules, layering, envelopes and error codes](docs/standards/backend.md)
+- [Mobile: features, the API client, state and shared widgets](docs/standards/mobile.md)
 - [Commit messages](docs/standards/commits.md)
 - [Testing](docs/standards/testing.md)
 - [GitHub repository settings](docs/standards/github-settings.md)
 - [Security practices](docs/standards/security.md)
 
-Why the big choices were made: [decision records](docs/decisions/) ([Node version](docs/decisions/0001-node-lts-pin.md), [root tooling package](docs/decisions/0002-root-tooling-package.md), [async thunks with axios](docs/decisions/0003-async-thunks-with-axios.md), [development in Docker](docs/decisions/0004-all-in-docker-development.md)).
+Why the big choices were made: [decision records](docs/decisions/) ([Node version](docs/decisions/0001-node-lts-pin.md), [root tooling package](docs/decisions/0002-root-tooling-package.md), [async thunks with axios](docs/decisions/0003-async-thunks-with-axios.md), [development in Docker](docs/decisions/0004-all-in-docker-development.md), [the mobile app's stack](docs/decisions/0005-mobile-app-stack.md)).
 
 Project policies: [Code of conduct](CODE_OF_CONDUCT.md), [Security policy](SECURITY.md) and the [Apache-2.0 licence](LICENSE).
 
@@ -70,6 +71,7 @@ Notes:
 - Backend tests need PostgreSQL and use their own `opencrm_test` database: start the database with `docker compose up -d --wait db` first.
 - The frontend build needs `NEXT_PUBLIC_API_URL` set (for example `http://localhost:4000/api/v1`) and network access, because the page font is fetched at build time.
 - After changing a backend route or schema, run `pnpm --dir backend openapi:generate` and then `pnpm --dir frontend api:types`, and commit both generated files.
+- The mobile app has its own commands, run inside `mobile/` with the Flutter SDK: `flutter pub get`, `dart format .`, `flutter analyze` and `flutter test`. To run it on an emulator or a phone against this stack, see [`mobile/README.md`](mobile/README.md).
 
 To commit, set up Node.js 24 (see `.nvmrc`), pnpm through corepack, and run `pnpm install` at the repository root and in each app. The steps, including a fallback for hosts without the `corepack` command, are in [CONTRIBUTING.md](CONTRIBUTING.md#setting-up-to-commit). Commit messages follow the [commit standard](docs/standards/commits.md).
 

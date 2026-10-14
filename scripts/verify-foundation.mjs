@@ -90,6 +90,22 @@ function triggersOf(text) {
     .filter(Boolean);
 }
 
+/**
+ * The hosted packages of a pubspec.yaml with their versions: `name: 1.2.3` lines directly
+ * under dependencies and dev_dependencies. An SDK package (`flutter:` with `sdk: flutter`
+ * on the next line) has no version on its own line and is left out.
+ */
+function pubspecVersions(text) {
+  const versions = [];
+  for (const group of ["dependencies", "dev_dependencies"]) {
+    for (const line of topLevelBlock(stripComments(text), group).split(/\r?\n/)) {
+      const match = /^ {2}([a-z0-9_]+):\s*["']?([^"'\s]+)["']?\s*$/.exec(line);
+      if (match) versions.push([match[1], match[2]]);
+    }
+  }
+  return versions;
+}
+
 /** Bodies of every `run:` step, as the text of the script. */
 function runBodies(text) {
   const lines = text.split("\n");
@@ -262,15 +278,21 @@ check("Required files exist", () => {
     "frontend/src/lib/api/schema.d.ts",
     // mobile
     "mobile/README.md",
+    "mobile/pubspec.yaml",
+    "mobile/pubspec.lock",
+    "mobile/analysis_options.yaml",
+    "mobile/lib/main.dart",
     // documents
     "docs/decisions/0001-node-lts-pin.md",
     "docs/decisions/0002-root-tooling-package.md",
     "docs/decisions/0003-async-thunks-with-axios.md",
     "docs/decisions/0004-all-in-docker-development.md",
+    "docs/decisions/0005-mobile-app-stack.md",
     "docs/standards/backend.md",
     "docs/standards/commits.md",
     "docs/standards/frontend.md",
     "docs/standards/github-settings.md",
+    "docs/standards/mobile.md",
     "docs/standards/security.md",
     "docs/standards/structure.md",
     "docs/standards/testing.md",
@@ -433,6 +455,10 @@ check("Dependency versions are exact and packageManager is identical", () => {
       }
     }
   }
+  // The mobile app: every hosted package in pubspec.yaml is an exact version too.
+  for (const [name, version] of pubspecVersions(read("mobile/pubspec.yaml"))) {
+    if (!exact.test(version)) problems.push(`mobile/pubspec.yaml: ${name} is "${version}", not an exact version`);
+  }
   const distinct = new Set(managers.values());
   if (distinct.size !== 1 || ![...distinct][0]?.startsWith("pnpm@")) {
     problems.push(
@@ -540,6 +566,31 @@ check("ci.yml runs both apps on every push and pull request (CI-01)", () => {
   if (!jobs.get("backend")?.includes("postgres:18-alpine")) {
     problems.push("ci.yml backend: needs the postgres:18-alpine service container");
   }
+
+  // The mobile app: the same Flutter as mobile/pubspec.yaml, then format, analyze and test.
+  const mobile = jobs.get("mobile");
+  if (mobile === undefined) {
+    problems.push('ci.yml has no job "mobile"');
+  } else {
+    const pinned = /^\s*flutter:\s*"?(\d+\.\d+\.\d+)"?\s*$/m.exec(
+      topLevelBlock(stripComments(read("mobile/pubspec.yaml")), "environment"),
+    )?.[1];
+    const used = /FLUTTER_VERSION:\s*"?(\d+\.\d+\.\d+)"?/.exec(mobile)?.[1];
+    if (pinned === undefined) problems.push("mobile/pubspec.yaml: environment.flutter must be an exact version");
+    if (used === undefined || used !== pinned) {
+      problems.push(`ci.yml mobile: FLUTTER_VERSION (${used}) must equal environment.flutter in mobile/pubspec.yaml (${pinned})`);
+    }
+    if (!/working-directory:\s*mobile\s*$/m.test(mobile)) problems.push("ci.yml mobile: steps must run in the mobile folder");
+    const mobileSteps = [
+      "flutter pub get --enforce-lockfile",
+      "dart format --output=none --set-exit-if-changed .",
+      "flutter analyze --fatal-infos",
+      "flutter test",
+    ];
+    if (!inOrder(firstLines(mobile), mobileSteps)) {
+      problems.push(`ci.yml mobile: run steps must include, in order: ${mobileSteps.join(", ")}`);
+    }
+  }
   return problems;
 });
 
@@ -645,6 +696,7 @@ check("dependabot.yml covers every ecosystem with the routine group and chore pr
     ["docker", "/frontend"],
     ["docker", "/backend"],
     ["docker-compose", "/"],
+    ["pub", "/mobile"],
   ];
   for (const [ecosystem, directory] of wanted) {
     if (!entries.some((entry) => entry.ecosystem === ecosystem && entry.directory === directory)) {
@@ -700,7 +752,7 @@ check("Every relative link in README, CONTRIBUTING, SECURITY and docs resolves",
 });
 
 // 14. Repository hygiene
-check("mobile/ holds only its README, no .env is tracked, no email in public policy files", () => {
+check("mobile/ tracks no build output or signing key, no .env is tracked, no email in public policy files", () => {
   const problems = [];
   let tracked;
   try {
@@ -711,9 +763,11 @@ check("mobile/ holds only its README, no .env is tracked, no email in public pol
     return [`could not run git ls-files: ${error.message}`];
   }
 
-  const mobile = tracked.filter((file) => file.startsWith("mobile/"));
-  if (mobile.length !== 1 || mobile[0] !== "mobile/README.md") {
-    problems.push(`mobile/ must track only README.md, tracks: ${mobile.join(", ") || "nothing"}`);
+  // The Flutter app: source and the two platform folders, never what a build writes and
+  // never a signing key.
+  const notTracked = /^mobile\/(?:build\/|\.dart_tool\/|android\/\.gradle\/|android\/local\.properties$|android\/key\.properties$|ios\/Pods\/)|\.(?:jks|keystore)$/;
+  for (const file of tracked) {
+    if (notTracked.test(file)) problems.push(`build output or a signing key is tracked: ${file}`);
   }
   for (const file of tracked) {
     if (/(?:^|\/)\.env(?:\.|$)/.test(file) && !file.endsWith(".env.example")) {
