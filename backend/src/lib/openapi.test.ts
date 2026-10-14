@@ -176,6 +176,7 @@ describe("OpenAPI document content", () => {
       "post /auth/logout",
       "post /auth/reset-password",
       "post /auth/setup",
+      "post /auth/token",
       "post /companies",
       "post /companies/{id}/assign",
       "post /companies/{id}/conversations",
@@ -307,6 +308,7 @@ describe("OpenAPI document content", () => {
     expect(paths["/invoices/{id}/mark-paid"]?.post?.security).toEqual(session);
     expect(paths["/invoices/{id}/document"]?.get.security).toEqual(session);
     expect(paths["/auth/login"]?.post?.security).toBeUndefined();
+    expect(paths["/auth/token"]?.post?.security).toBeUndefined();
     expect(paths["/health"]?.get.security).toBeUndefined();
   });
 

@@ -10,6 +10,17 @@ describe("timeZoneSchema", () => {
     },
   );
 
+  // The mobile app cannot read the device's zone name, so it sends its distance from UTC.
+  it("accepts an offset from UTC and counts the day by it", () => {
+    for (const offset of ["+05:30", "-08:00", "+00:00"]) {
+      expect(timeZoneSchema.parse(offset)).toBe(offset);
+    }
+    const lateEvening = new Date("2026-11-15T20:00:00Z");
+    expect(dayIn("+05:30", lateEvening)).toBe("2026-11-16");
+    expect(dayIn("-08:00", lateEvening)).toBe("2026-11-15");
+    expect(startOfDay("+05:30", "2026-11-16").toISOString()).toBe("2026-11-15T18:30:00.000Z");
+  });
+
   it("is UTC when nothing is sent", () => {
     expect(timeZoneSchema.parse(undefined)).toBe("UTC");
   });

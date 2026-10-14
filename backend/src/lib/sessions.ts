@@ -14,17 +14,27 @@ export interface ResolvedSession {
   renewed: boolean;
 }
 
+export interface NewSession {
+  // The token the client keeps. Only its hash is stored.
+  token: string;
+  // When the session ends if it is never used again; every use pushes it forward.
+  expiresAt: Date;
+}
+
 // Always a new random token: a session is never reused across sign-ins.
-// Returns the token; only its hash is stored.
-export async function createSession(userId: string): Promise<string> {
+export async function startSession(userId: string): Promise<NewSession> {
   const { token, tokenHash } = newToken();
   const now = new Date();
+  const expiresAt = new Date(now.getTime() + SESSION_TTL_MS);
   // Housekeeping: this user's expired sessions go when they sign in again.
   await prisma.session.deleteMany({ where: { userId, expiresAt: { lt: now } } });
-  await prisma.session.create({
-    data: { userId, tokenHash, expiresAt: new Date(now.getTime() + SESSION_TTL_MS) },
-  });
-  return token;
+  await prisma.session.create({ data: { userId, tokenHash, expiresAt } });
+  return { token, expiresAt };
+}
+
+// The same, for callers that only need the token.
+export async function createSession(userId: string): Promise<string> {
+  return (await startSession(userId)).token;
 }
 
 // Looked up in the database on every request, so signing out and deactivating

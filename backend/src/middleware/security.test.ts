@@ -163,6 +163,51 @@ describe("origin check", () => {
     expect(response.status).toBe(200);
   });
 
+  it("lets the mobile app sign in and sign out without an Origin", async () => {
+    const user = await createUser();
+
+    const signIn = await request(app)
+      .post("/api/v1/auth/token")
+      .send({ email: user.email, password: PASSWORD });
+    const { token } = (signIn.body as { data: { token: string } }).data;
+    const signOut = await request(app)
+      .post("/api/v1/auth/logout")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(signIn.status).toBe(200);
+    expect(signOut.status).toBe(200);
+    expect(await prisma.session.count()).toBe(0);
+  });
+
+  it("refuses the token route from another site", async () => {
+    const user = await createUser();
+
+    const response = await request(app)
+      .post("/api/v1/auth/token")
+      .set("Origin", EVIL_ORIGIN)
+      .send({ email: user.email, password: PASSWORD });
+
+    expect(response.status).toBe(403);
+    expect(errorOf(response).code).toBe("FORBIDDEN");
+    expect(await prisma.session.count()).toBe(0);
+  });
+
+  it("still protects a cookie request that also carries a Bearer token", async () => {
+    const { user, cookie } = await signedIn();
+    const token = await createSession(user.id);
+
+    const response = await request(app)
+      .patch("/api/v1/auth/me")
+      .set("Cookie", cookie)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ name: "Changed By Attacker" });
+
+    expect(response.status).toBe(403);
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: user.id } })).name).toBe(
+      "Ravi Shah",
+    );
+  });
+
   it("does not apply to reads", async () => {
     const { cookie } = await signedIn();
 
@@ -206,6 +251,22 @@ describe("rate limiting on the public auth routes", () => {
     expect(third.status).toBe(429);
     expect(errorOf(third).code).toBe("RATE_LIMITED");
     expect(other.status).toBe(401);
+  });
+
+  it("counts attempts on /auth/token and /auth/login against one allowance", async () => {
+    const limited = createApp({ rateLimit: { ipLimit: 100, emailLimit: 2, windowMs: 60_000 } });
+    const wrongToken = (email: string) =>
+      request(limited).post("/api/v1/auth/token").send({ email, password: "not-the-password" });
+
+    const first = await wrongToken("ravi@example.com");
+    const second = await wrongLogin(limited, "ravi@example.com");
+    const third = await wrongToken("ravi@example.com");
+
+    expect(first.status).toBe(401);
+    expect(second.status).toBe(401);
+    expect(third.status).toBe(429);
+    expect(errorOf(third).code).toBe("RATE_LIMITED");
+    expect(Number(third.headers["retry-after"])).toBeGreaterThan(0);
   });
 
   it("does not count successful sign-ins", async () => {

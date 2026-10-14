@@ -55,6 +55,15 @@ export const meSchema = z
 
 export type Me = z.infer<typeof meSchema>;
 
+// What a client without cookies (the mobile app) gets from POST /auth/token. It sends the
+// token back as "Authorization: Bearer <token>". `expiresAt` is when the session ends if it
+// is never used again; using it pushes the end forward, as for a cookie session.
+export const tokenSessionSchema = z
+  .object({ user: meSchema, token: z.string(), expiresAt: z.string() })
+  .openapi("TokenSession");
+
+export type TokenSession = z.infer<typeof tokenSessionSchema>;
+
 export const setupStatusSchema = z.object({ setupRequired: z.boolean() }).openapi("SetupStatus");
 
 export type SetupStatus = z.infer<typeof setupStatusSchema>;
@@ -66,6 +75,7 @@ export const inviteInfoSchema = z
 export type InviteInfo = z.infer<typeof inviteInfoSchema>;
 
 export const meResponseSchema = envelope(meSchema);
+export const tokenSessionResponseSchema = envelope(tokenSessionSchema);
 export const setupStatusResponseSchema = envelope(setupStatusSchema);
 export const inviteInfoResponseSchema = envelope(inviteInfoSchema);
 // Routes that only do something answer with `data: null`.

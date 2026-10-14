@@ -354,6 +354,99 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign in from a client without cookies (the mobile app) and get a session token
+         * @description The same checks, rate limits, lockout and error codes as POST /auth/login. No cookie is set: the token is in the answer, and the client sends it as "Authorization: Bearer <token>". POST /auth/logout with that header ends the session.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LoginBody"];
+                };
+            };
+            responses: {
+                /** @description Signed in; the session token is in the body */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["TokenSession"];
+                            meta: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Wrong email or password (INVALID_CREDENTIALS) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Right password, but the account is deactivated (ACCOUNT_DEACTIVATED) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Too many wrong passwords (ACCOUNT_LOCKED, details.retryAfterSeconds) */
+                423: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Too many attempts (RATE_LIMITED, details.retryAfterSeconds) */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/forgot-password": {
         parameters: {
             query?: never;
@@ -775,7 +868,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Sign out of this session and clear the cookie */
+        /** Sign out of this session (cookie or Bearer token) and clear the cookie */
         post: {
             parameters: {
                 query?: never;
@@ -10826,6 +10919,11 @@ export interface components {
         LoginBody: {
             email: string;
             password: string;
+        };
+        TokenSession: {
+            user: components["schemas"]["Me"];
+            token: string;
+            expiresAt: string;
         };
         ForgotPasswordBody: {
             email: string;

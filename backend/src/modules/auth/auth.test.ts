@@ -427,6 +427,164 @@ describe("session", () => {
   });
 });
 
+describe("token sign-in for a client without cookies", () => {
+  interface TokenEnvelope {
+    data: { user: MeEnvelope["data"]; token: string; expiresAt: string };
+    meta: Record<string, unknown>;
+  }
+
+  function signInForToken(email: string, password = PASSWORD) {
+    return request(app).post("/api/v1/auth/token").send({ email, password });
+  }
+
+  async function tokenFor(email: string): Promise<string> {
+    return ((await signInForToken(email)).body as TokenEnvelope).data.token;
+  }
+
+  function meWithToken(token: string) {
+    return request(app).get("/api/v1/auth/me").set("Authorization", `Bearer ${token}`);
+  }
+
+  it("answers the user, a working token and its expiry, and sets no cookie at all", async () => {
+    const user = await createUser({ name: "Ravi Shah", email: "ravi@example.com" });
+
+    const response = await signInForToken(" Ravi@Example.com ");
+    const body = response.body as TokenEnvelope;
+    const remaining = new Date(body.data.expiresAt).getTime() - Date.now();
+
+    expect(response.status).toBe(200);
+    expect(Object.keys(body)).toEqual(["data", "meta"]);
+    expect(Object.keys(body.data).sort()).toEqual(["expiresAt", "token", "user"]);
+    expect(body.data.user).toEqual({
+      id: user.id,
+      name: "Ravi Shah",
+      email: "ravi@example.com",
+      role: "SALES_REP",
+    });
+    expect(remaining).toBeGreaterThan(THIRTY_DAYS_MS - 60 * 1000);
+    expect(remaining).toBeLessThanOrEqual(THIRTY_DAYS_MS);
+    // Never as a cookie: this response must not be able to sign a browser in.
+    expect(response.headers["set-cookie"]).toBeUndefined();
+    expect((await meWithToken(body.data.token)).status).toBe(200);
+  });
+
+  it("stores only a hash of the token", async () => {
+    const user = await createUser();
+
+    const token = await tokenFor(user.email);
+    const sessions = await prisma.session.findMany({ where: { userId: user.id } });
+
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0]?.tokenHash).toBe(hashToken(token));
+  });
+
+  it("answers a wrong email and a wrong password exactly like login", async () => {
+    const user = await createUser();
+
+    const wrongEmail = await signInForToken("nobody@example.com");
+    const wrongPassword = await signInForToken(user.email, "not-the-password");
+    const viaLogin = await login(user.email, "not-the-password");
+
+    expect(wrongEmail.status).toBe(401);
+    expect(wrongEmail.body).toEqual(wrongPassword.body);
+    expect(wrongPassword.body).toEqual(viaLogin.body);
+    expect(errorOf(wrongPassword).code).toBe("INVALID_CREDENTIALS");
+    expect(wrongPassword.text).not.toContain("token");
+  });
+
+  it("tells a deactivated user so only after the correct password, without a token", async () => {
+    await createUser({ email: "gone@example.com", isActive: false });
+
+    const wrong = await signInForToken("gone@example.com", "not-the-password");
+    const right = await signInForToken("gone@example.com");
+
+    expect(errorOf(wrong).code).toBe("INVALID_CREDENTIALS");
+    expect(right.status).toBe(403);
+    expect(errorOf(right).code).toBe("ACCOUNT_DEACTIVATED");
+    expect(Object.keys(right.body as object)).toEqual(["error"]);
+    expect(await prisma.session.count()).toBe(0);
+  });
+
+  it("shares the lock with login: wrong passwords on either route count together", async () => {
+    const user = await createUser();
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      expect((await signInForToken(user.email, "not-the-password")).status).toBe(401);
+      expect((await login(user.email, "not-the-password")).status).toBe(401);
+    }
+    const locked = await signInForToken(user.email);
+    const details = errorOf(locked).details as { retryAfterSeconds: number };
+
+    expect(locked.status).toBe(423);
+    expect(errorOf(locked).code).toBe("ACCOUNT_LOCKED");
+    expect(details.retryAfterSeconds).toBeGreaterThan(14 * 60);
+    expect((await login(user.email)).status).toBe(423);
+    expect(await prisma.session.count()).toBe(0);
+  });
+
+  it("requires both fields and refuses unknown keys", async () => {
+    const missing = await request(app).post("/api/v1/auth/token").send({ email: "not-an-email" });
+    const extra = await request(app)
+      .post("/api/v1/auth/token")
+      .send({ email: "ravi@example.com", password: PASSWORD, role: "ADMIN" });
+
+    expect(missing.status).toBe(400);
+    expect(detailPaths(missing).sort()).toEqual(["email", "password"]);
+    expect(extra.status).toBe(400);
+    expect(errorOf(extra).code).toBe("VALIDATION_FAILED");
+  });
+
+  it("ends on logout with the Bearer token, and only that session", async () => {
+    const user = await createUser();
+    const token = await tokenFor(user.email);
+    const other = await tokenFor(user.email);
+
+    const response = await request(app)
+      .post("/api/v1/auth/logout")
+      .set("Authorization", `Bearer ${token}`);
+    const after = await meWithToken(token);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ data: null, meta: {} });
+    expect(after.status).toBe(401);
+    expect(errorOf(after).code).toBe("UNAUTHENTICATED");
+    expect((await meWithToken(other)).status).toBe(200);
+  });
+
+  it("slides the expiry forward for a Bearer session, without sending a cookie", async () => {
+    const user = await createUser();
+    const token = await tokenFor(user.email);
+    await prisma.session.updateMany({
+      where: { userId: user.id },
+      data: {
+        lastUsedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      },
+    });
+
+    const response = await meWithToken(token);
+    const session = await prisma.session.findFirstOrThrow({ where: { userId: user.id } });
+
+    expect(response.status).toBe(200);
+    expect(response.headers["set-cookie"]).toBeUndefined();
+    expect(session.expiresAt.getTime() - Date.now()).toBeGreaterThan(THIRTY_DAYS_MS - 60 * 1000);
+  });
+
+  it("refuses an expired Bearer session and one of a deactivated user", async () => {
+    const user = await createUser();
+    const token = await tokenFor(user.email);
+
+    await prisma.session.updateMany({ data: { expiresAt: new Date(Date.now() - 1000) } });
+    const expired = await meWithToken(token);
+    await prisma.session.updateMany({ data: { expiresAt: new Date(Date.now() + 60_000) } });
+    await prisma.user.update({ where: { id: user.id }, data: { isActive: false } });
+    const deactivated = await meWithToken(token);
+
+    expect(errorOf(expired).code).toBe("UNAUTHENTICATED");
+    expect(errorOf(deactivated).code).toBe("UNAUTHENTICATED");
+  });
+});
+
 describe("password reset", () => {
   function forgot(email: string) {
     return request(app).post("/api/v1/auth/forgot-password").send({ email });

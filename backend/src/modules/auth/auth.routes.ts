@@ -20,6 +20,7 @@ import {
   logoutHandler,
   resetPasswordHandler,
   setupHandler,
+  tokenHandler,
   updateMeHandler,
 } from "./auth.controller";
 import {
@@ -34,6 +35,7 @@ import {
   resetPasswordBodySchema,
   setupBodySchema,
   setupStatusResponseSchema,
+  tokenSessionResponseSchema,
   updateProfileBodySchema,
 } from "./auth.schema";
 
@@ -46,6 +48,8 @@ export function createAuthRouter(limiters: AuthLimiters) {
   router.get("/setup-status", limiters.status, getSetupStatusHandler);
   router.post("/setup", limiters.publicIp, setupHandler);
   router.post("/login", limiters.loginIp, limiters.loginEmail, loginHandler);
+  // The same limiters as /login, so the two routes share one allowance.
+  router.post("/token", limiters.loginIp, limiters.loginEmail, tokenHandler);
   router.post("/forgot-password", limiters.publicIp, limiters.forgotEmail, forgotPasswordHandler);
   router.post("/reset-password", limiters.publicIp, resetPasswordHandler);
   router.post("/invite-info", limiters.publicIp, inviteInfoHandler);
@@ -102,6 +106,26 @@ registry.registerPath({
   request: { body: jsonBody(loginBodySchema) },
   responses: {
     200: jsonResponse("Signed in; the session cookie is set", meResponseSchema),
+    400: validationFailed,
+    401: errorResponse("Wrong email or password (INVALID_CREDENTIALS)"),
+    403: errorResponse("Right password, but the account is deactivated (ACCOUNT_DEACTIVATED)"),
+    423: errorResponse("Too many wrong passwords (ACCOUNT_LOCKED, details.retryAfterSeconds)"),
+    429: rateLimited,
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/auth/token",
+  tags,
+  summary: "Sign in from a client without cookies (the mobile app) and get a session token",
+  description:
+    "The same checks, rate limits, lockout and error codes as POST /auth/login. No cookie " +
+    "is set: the token is in the answer, and the client sends it as " +
+    '"Authorization: Bearer <token>". POST /auth/logout with that header ends the session.',
+  request: { body: jsonBody(loginBodySchema) },
+  responses: {
+    200: jsonResponse("Signed in; the session token is in the body", tokenSessionResponseSchema),
     400: validationFailed,
     401: errorResponse("Wrong email or password (INVALID_CREDENTIALS)"),
     403: errorResponse("Right password, but the account is deactivated (ACCOUNT_DEACTIVATED)"),
@@ -208,7 +232,7 @@ registry.registerPath({
   method: "post",
   path: "/auth/logout",
   tags,
-  summary: "Sign out of this session and clear the cookie",
+  summary: "Sign out of this session (cookie or Bearer token) and clear the cookie",
   security: sessionSecurity,
   responses: {
     200: jsonResponse("Signed out", emptyResponseSchema),

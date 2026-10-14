@@ -14,8 +14,8 @@ import {
   verifyPassword,
 } from "../../lib/password";
 import { lockUserAdministration, prisma } from "../../lib/prisma";
-import { createSession } from "../../lib/sessions";
-import type { InviteInfo, Me, SetupStatus } from "./auth.schema";
+import { startSession } from "../../lib/sessions";
+import type { InviteInfo, Me, SetupStatus, TokenSession } from "./auth.schema";
 
 // Ten wrong passwords in a row lock the account for 15 minutes (D-04).
 // The lock clears on its own, and a password reset clears it too.
@@ -24,8 +24,10 @@ export const LOCK_DURATION_MS = 15 * 60 * 1000;
 
 interface SignedIn {
   user: Me;
-  // The session token. The controller puts it in the cookie; it is never stored.
+  // The session token. The controller puts it in the cookie (the web app) or in the body
+  // (POST /auth/token, the mobile app); it is never stored.
   token: string;
+  expiresAt: Date;
 }
 
 export function toMe(user: User): Me {
@@ -33,7 +35,17 @@ export function toMe(user: User): Me {
 }
 
 async function signIn(user: User): Promise<SignedIn> {
-  return { user: toMe(user), token: await createSession(user.id) };
+  const { token, expiresAt } = await startSession(user.id);
+  return { user: toMe(user), token, expiresAt };
+}
+
+// What POST /auth/token answers with: the one place a session token is in a response body.
+export function toTokenSession(signedIn: SignedIn): TokenSession {
+  return {
+    user: signedIn.user,
+    token: signedIn.token,
+    expiresAt: signedIn.expiresAt.toISOString(),
+  };
 }
 
 function invalidCredentials(): AppError {

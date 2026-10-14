@@ -13,6 +13,7 @@ import {
   resetPasswordBodySchema,
   setupBodySchema,
   type SetupStatus,
+  type TokenSession,
   updateProfileBodySchema,
 } from "./auth.schema";
 import {
@@ -26,6 +27,7 @@ import {
   resetPassword,
   setupAdmin,
   toMe,
+  toTokenSession,
   updateProfile,
 } from "./auth.service";
 
@@ -47,6 +49,15 @@ export async function loginHandler(req: Request, res: Response) {
   // The token travels only in the httpOnly cookie, never in the body.
   setSessionCookie(res, token);
   res.json({ data: user, meta: {} });
+}
+
+// Sign-in for a client that cannot keep a cookie (the mobile app): the same checks as
+// loginHandler, but the token is answered in the body and no cookie is set, so the
+// response can never sign a browser in.
+export async function tokenHandler(req: Request, res: Response) {
+  const input = loginBodySchema.parse(req.body);
+  const data: TokenSession = toTokenSession(await login(input.email, input.password));
+  res.json({ data, meta: {} });
 }
 
 export async function forgotPasswordHandler(req: Request, res: Response) {
@@ -95,6 +106,7 @@ export async function changePasswordHandler(req: Request, res: Response) {
 
 export async function logoutHandler(req: Request, res: Response) {
   await logout(getAuth(req).sessionId);
+  // Harmless for a Bearer client, which has no cookie to clear.
   clearSessionCookie(res);
   res.json({ data: null, meta: {} });
 }

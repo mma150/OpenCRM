@@ -404,6 +404,25 @@
         ],
         "additionalProperties": false
       },
+      "TokenSession": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/Me"
+          },
+          "token": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "user",
+          "token",
+          "expiresAt"
+        ]
+      },
       "ForgotPasswordBody": {
         "type": "object",
         "properties": {
@@ -5622,6 +5641,100 @@
         }
       }
     },
+    "/auth/token": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Sign in from a client without cookies (the mobile app) and get a session token",
+        "description": "The same checks, rate limits, lockout and error codes as POST /auth/login. No cookie is set: the token is in the answer, and the client sends it as \"Authorization: Bearer <token>\". POST /auth/logout with that header ends the session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed in; the session token is in the body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TokenSession"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is not acceptable (VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Wrong email or password (INVALID_CREDENTIALS)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Right password, but the account is deactivated (ACCOUNT_DEACTIVATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "Too many wrong passwords (ACCOUNT_LOCKED, details.retryAfterSeconds)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many attempts (RATE_LIMITED, details.retryAfterSeconds)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/forgot-password": {
       "post": {
         "tags": [
@@ -6070,7 +6183,7 @@
         "tags": [
           "Auth"
         ],
-        "summary": "Sign out of this session and clear the cookie",
+        "summary": "Sign out of this session (cookie or Bearer token) and clear the cookie",
         "security": [
           {
             "sessionCookie": []
