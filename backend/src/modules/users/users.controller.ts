@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 
+import { sendCsv } from "../../lib/csv-export";
 import { isMailConfigured } from "../../lib/mailer";
 import { getAuth } from "../../middleware/authenticate";
 import {
@@ -8,11 +9,13 @@ import {
   createUserBodySchema,
   type LinkResult,
   updateUserBodySchema,
+  userExportQuerySchema,
   userIdParamsSchema,
 } from "./users.schema";
 import {
   createPasswordResetLink,
   deactivateUser,
+  exportUsers,
   inviteUser,
   listAssignableUsers,
   listUsers,
@@ -24,6 +27,11 @@ import {
 export async function listUsersHandler(_req: Request, res: Response) {
   const data: ApiUser[] = await listUsers();
   res.json({ data, meta: { mailEnabled: await isMailConfigured() } });
+}
+
+export async function exportUsersHandler(req: Request, res: Response) {
+  const query = userExportQuerySchema.parse(req.query);
+  sendCsv(res, "users", query.tz, await exportUsers(query));
 }
 
 export async function listAssignableUsersHandler(req: Request, res: Response) {

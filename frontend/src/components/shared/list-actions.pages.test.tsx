@@ -9,6 +9,7 @@ import { exportContacts, listContacts } from "@/features/contacts/contacts.api";
 import { contactList } from "@/features/contacts/contacts.fixtures";
 import { ContactsPage } from "@/features/contacts/contacts-page";
 import { listCustomFields } from "@/features/custom-fields/custom-fields.api";
+import { getEmailStatus } from "@/features/email-settings/email-settings.api";
 import { assignableUsers, managerUser, readOnlyUser } from "@/features/leads/leads.fixtures";
 import {
   exportOpportunities,
@@ -17,13 +18,21 @@ import {
 } from "@/features/opportunities/opportunities.api";
 import { board, opportunityList } from "@/features/opportunities/opportunities.fixtures";
 import { OpportunitiesPage } from "@/features/opportunities/opportunities-page";
+import { getOrganization } from "@/features/organization/organization.api";
+import { organization } from "@/features/organization/organization.fixtures";
 import { listPipelineStages } from "@/features/pipeline-stages/pipeline-stages.api";
 import { pipeline } from "@/features/pipeline-stages/pipeline-stages.fixtures";
+import { exportProducts, listProducts } from "@/features/products/products.api";
+import { allProducts, productList } from "@/features/products/products.fixtures";
+import { ProductsPage } from "@/features/products/products-page";
 import { exportTasks, listTasks } from "@/features/tasks/tasks.api";
 import { answerWith, groups } from "@/features/tasks/tasks.fixtures";
 import { TasksPage } from "@/features/tasks/tasks-page";
-import { listAssignableUsers } from "@/features/users/users.api";
+import { exportUsers, listAssignableUsers, listUsers } from "@/features/users/users.api";
+import { allUsers } from "@/features/users/users.fixtures";
+import { UsersPage } from "@/features/users/users-page";
 import type { DownloadedFile } from "@/lib/api/download";
+import { saveFile } from "@/lib/save-file";
 import { followNavigation, setMockLocation } from "@/test/navigation-mock";
 import { adminUser, renderWithStore, repUser } from "@/test/render-with-store";
 
@@ -34,6 +43,9 @@ vi.mock("@/features/pipeline-stages/pipeline-stages.api");
 vi.mock("@/features/tasks/tasks.api");
 vi.mock("@/features/users/users.api");
 vi.mock("@/features/leads/leads.api");
+vi.mock("@/features/products/products.api");
+vi.mock("@/features/organization/organization.api");
+vi.mock("@/features/email-settings/email-settings.api");
 vi.mock("@/lib/save-file");
 vi.mock("sonner");
 
@@ -60,7 +72,18 @@ describe("export and import on the list pages", () => {
     vi.mocked(getBoard).mockResolvedValue(board());
     vi.mocked(listPipelineStages).mockResolvedValue(pipeline);
     vi.mocked(listTasks).mockImplementation(answerWith(groups));
-    for (const exportList of [exportContacts, exportCompanies, exportOpportunities, exportTasks]) {
+    vi.mocked(listProducts).mockResolvedValue(productList(allProducts));
+    vi.mocked(getOrganization).mockResolvedValue(organization);
+    vi.mocked(listUsers).mockResolvedValue({ users: allUsers, mailEnabled: true });
+    vi.mocked(getEmailStatus).mockResolvedValue({ enabled: true });
+    for (const exportList of [
+      exportContacts,
+      exportCompanies,
+      exportOpportunities,
+      exportTasks,
+      exportProducts,
+      exportUsers,
+    ]) {
       vi.mocked(exportList).mockResolvedValue(file);
     }
     followNavigation();
@@ -203,5 +226,59 @@ describe("export and import on the list pages", () => {
       order: "desc",
     });
     expect(vi.mocked(exportTasks).mock.calls[0]?.[0]).not.toHaveProperty("assigneeId");
+  });
+
+  it("offers Export on the products to every role, with the list's own query", async () => {
+    for (const me of everyRole) {
+      setMockLocation("/settings/products", "status=archived&search=support&sort=unitPrice");
+      const { user, unmount } = renderWithStore(<ProductsPage />, { me });
+
+      await clickExport(user);
+
+      await waitFor(() => {
+        expect(exportProducts).toHaveBeenCalledTimes(1);
+      });
+      expect(vi.mocked(exportProducts).mock.calls[0]?.[0]).toEqual(
+        vi.mocked(listProducts).mock.lastCall?.[0],
+      );
+      expect(vi.mocked(exportProducts).mock.calls[0]?.[0]).toMatchObject({
+        active: "false",
+        search: "support",
+        sort: "unitPrice",
+      });
+      // Only an Admin changes the catalog; everyone may export it.
+      expect(screen.queryByRole("button", { name: "New product" }) !== null).toBe(
+        me.role === "ADMIN",
+      );
+      unmount();
+      vi.mocked(exportProducts).mockClear();
+    }
+  });
+
+  it("exports the users for an Admin and saves the file the API named", async () => {
+    vi.mocked(exportUsers).mockResolvedValue({
+      blob: new Blob(["x"]),
+      filename: "users-2026-10-14.csv",
+      truncated: false,
+    });
+    setMockLocation("/settings/users");
+    const { user } = renderWithStore(<UsersPage />, { me: adminUser });
+
+    await clickExport(user);
+
+    await waitFor(() => {
+      expect(exportUsers).toHaveBeenCalledTimes(1);
+    });
+    expect(saveFile).toHaveBeenCalledWith(expect.any(Blob), "users-2026-10-14.csv");
+    expect(screen.getByRole("button", { name: "Invite user" })).toBeInTheDocument();
+  });
+
+  it("offers no users export to anyone but an Admin", () => {
+    for (const me of [managerUser, repUser, readOnlyUser]) {
+      const { unmount } = renderWithStore(<UsersPage />, { me });
+      expect(screen.queryByRole("button", { name: "Export CSV" })).not.toBeInTheDocument();
+      unmount();
+    }
+    expect(exportUsers).not.toHaveBeenCalled();
   });
 });

@@ -78,7 +78,11 @@ for (const { type, path, systemEntries, lastContact } of RECORDS) {
     path: `${path}/{id}/timeline`,
     tags,
     summary: `Everything that happened to ${aRecord}, newest first`,
-    description: `Conversations, notes and the entries the system writes when the ${type} ${systemEntries}. kind narrows it to one kind, or to SYSTEM for all system entries.`,
+    description:
+      `Conversations, notes and the entries the system writes when the ${type} ${systemEntries}. kind narrows it to one kind, or to SYSTEM for all system entries.` +
+      (type === "lead"
+        ? " fromLead is always null here."
+        : ` The entries of every lead that was converted into this ${type} are merged in, in date order, and the kind filter and paging work over both; each such entry has fromLead { id, name } naming the lead (null on the ${type}'s own entries). They stay the lead's entries: nothing is copied, and the lead's own timeline is unchanged. Seeing the ${type} is enough to see them, whoever owns the lead.`),
     security,
     request: { params, query: timelineQuerySchema },
     responses: {

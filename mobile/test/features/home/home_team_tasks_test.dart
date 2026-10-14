@@ -95,11 +95,23 @@ void main() {
       await scrollTo(tester, find.text('No one on your team yet'));
     });
 
-    for (final user in [rep, readOnly]) {
+    testWidgets('a Read-only user sees the team too', variant: phones, (
+      tester,
+    ) async {
+      final api = FakeApi()
+        ..on('GET', '/dashboard/team', (request) => teamDashboardJson());
+      await pumpApp(tester, api: api, user: readOnly);
+
+      await scrollTo(tester, find.bySemanticsLabel('Team figures of Total'));
+      expect(find.text('Team'), findsOneWidget);
+      expect(api.sent('GET', '/dashboard/team'), hasLength(1));
+    });
+
+    for (final user in [rep]) {
       testWidgets('${user.role.label}: never asks for the team', (
         tester,
       ) async {
-        // pumpApp gives these roles no answer for /dashboard/team: a request would fail.
+        // pumpApp gives this role no answer for /dashboard/team: a request would fail.
         final api = FakeApi();
         await pumpApp(tester, api: api, user: user);
 

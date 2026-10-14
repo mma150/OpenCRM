@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencrm/app/routes.dart';
-import 'package:opencrm/features/opportunities/opportunity_form_screen.dart';
+import 'package:opencrm/core/format/formatters.dart';
 
 import '../../support/fake_api.dart';
 import '../../support/fixtures.dart';
@@ -455,5 +455,88 @@ void main() {
         findsWidgets,
       );
     });
+  });
+
+  group('custom fields', () {
+    testWidgets(
+      'a new opportunity sends them, the required one filled in',
+      variant: phones,
+      (tester) async {
+        final api = _api()
+          ..on(
+            'GET',
+            '/custom-fields',
+            (request) => customFieldsJson(
+              recordType: 'OPPORTUNITY',
+              required: {'cf-region'},
+            ),
+          )
+          ..on('POST', '/opportunities', (request) => opportunityJson());
+        await pumpApp(
+          tester,
+          api: api,
+          user: rep,
+          location: Routes.newOpportunity,
+        );
+
+        await enterField(tester, 'Name', 'Fleet renewal');
+        await enterField(tester, 'Team size', '12');
+        await _submit(tester, 'Create opportunity');
+        // Region is required: nothing is sent until it is chosen.
+        expect(api.sent('POST', '/opportunities'), isEmpty);
+        await scrollTo(tester, find.text('Choose an option.'));
+
+        await chooseOption(tester, 'Region', 'North');
+        await _submit(tester, 'Create opportunity');
+
+        expect(api.sent('GET', '/custom-fields').first.query, {
+          'recordType': 'OPPORTUNITY',
+        });
+        expect(api.sent('POST', '/opportunities').single.json['customFields'], {
+          'cf-region': 'North',
+          'cf-size': 12,
+        });
+      },
+    );
+
+    testWidgets(
+      'an edit sends only the ones changed, and shows refusals under them',
+      variant: phones,
+      (tester) async {
+        final api = _api()
+          ..on(
+            'GET',
+            '/custom-fields',
+            (request) => customFieldsJson(recordType: 'OPPORTUNITY'),
+          )
+          ..on(
+            'GET',
+            '/opportunities/opp-1',
+            (request) => opportunityJson(
+              customFields: {
+                'cf-text': 'NW-104',
+                'cf-region': 'South',
+                'cf-size': 12,
+                'cf-renewal': null,
+              },
+            ),
+          )
+          ..on('PATCH', '/opportunities/opp-1', (request) {
+            throw validationError({'customFields.cf-text': 'Too long'});
+          });
+        await pumpApp(tester, api: api, user: rep, location: _editPath);
+
+        await enterField(tester, 'Account code', '');
+        await chooseOption(tester, 'Region', 'None');
+        await _submit(tester, 'Save changes');
+
+        expect(
+          api.sent('PATCH', '/opportunities/opp-1').single.json['customFields'],
+          {'cf-text': null, 'cf-region': null},
+        );
+        await scrollTo(tester, find.text('Too long'));
+        expect(find.text('Too long'), findsOneWidget);
+      },
+    );
   });
 }

@@ -147,10 +147,11 @@ function FiguresCard({
   );
 }
 
-// The Team section of Home, for an Admin and a Sales Manager: what each person on the team
-// did in a range of days, with the totals. It is a table from `lg` and cards below, and is
-// sorted in the browser, by a column heading or (for the cards) the "Sort by" select. It is
-// only ever rendered for those two roles, so nobody else asks the API for it.
+// The Team section of Home, for an Admin, a Sales Manager and a Read-only user: what each
+// person on the team did in a range of days, with the totals. It is a table from `lg` and
+// cards below, and is sorted in the browser, by a column heading or (for the cards) the
+// "Sort by" select. It is only ever rendered for those roles (`seesTeamDashboard`), so a
+// Sales Rep never asks the API for it.
 export function TeamSection() {
   const dispatch = useAppDispatch();
   const { data, status, error } = useAppSelector(selectTeamDashboard);

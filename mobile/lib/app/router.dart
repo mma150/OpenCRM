@@ -5,6 +5,7 @@ import 'package:opencrm/app/app_shell.dart';
 import 'package:opencrm/app/navigation.dart';
 import 'package:opencrm/app/routes.dart';
 import 'package:opencrm/core/auth/auth_controller.dart';
+import 'package:opencrm/features/auth/forgot_password_screen.dart';
 import 'package:opencrm/features/auth/server_address_screen.dart';
 import 'package:opencrm/features/auth/sign_in_screen.dart';
 import 'package:opencrm/features/auth/starting_screen.dart';
@@ -19,17 +20,21 @@ String? redirectFor(AuthStatus status, String location) {
     case AuthStatus.needsServer:
       return location == Routes.server ? null : Routes.server;
     case AuthStatus.signedOut:
-      // Signed out, the server address may still be changed.
-      return location == Routes.signIn || location == Routes.server
-          ? null
-          : Routes.signIn;
+      // Signed out, the server address may still be changed, and a reset link asked for.
+      const guestPages = [Routes.signIn, Routes.server, Routes.forgotPassword];
+      return guestPages.contains(location) ? null : Routes.signIn;
     case AuthStatus.signedIn:
-      const signedOutPages = [Routes.starting, Routes.server, Routes.signIn];
+      const signedOutPages = [
+        Routes.starting,
+        Routes.server,
+        Routes.signIn,
+        Routes.forgotPassword,
+      ];
       return signedOutPages.contains(location) ? Routes.home : null;
   }
 }
 
-/// The app's router: the three pages before sign-in, then the tabs of `navigation.dart`
+/// The app's router: the pages before sign-in, then the tabs of `navigation.dart`
 /// inside the shell. It runs [redirectFor] on every navigation and again whenever the
 /// sign-in state changes, so signing out (or a session that ended) leads to the sign-in
 /// screen from anywhere.
@@ -64,6 +69,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.signIn,
         builder: (context, state) => const SignInScreen(),
+      ),
+      GoRoute(
+        path: Routes.forgotPassword,
+        // The sign-in screen hands over the email typed there, if any.
+        builder: (context, state) => ForgotPasswordScreen(
+          email: switch (state.extra) {
+            final String email => email,
+            _ => '',
+          },
+        ),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(shell: shell),

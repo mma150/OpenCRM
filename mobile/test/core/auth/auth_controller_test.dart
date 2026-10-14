@@ -321,6 +321,12 @@ void main() {
       expect(Role.salesManager.seesTeam, true);
       expect(Role.salesRep.seesTeam, false);
       expect(Role.readOnly.seesTeam, false);
+
+      // The team dashboard and the activity feed: everyone but a Sales Rep.
+      expect(Role.admin.seesTeamOverview, true);
+      expect(Role.salesManager.seesTeamOverview, true);
+      expect(Role.salesRep.seesTeamOverview, false);
+      expect(Role.readOnly.seesTeamOverview, true);
     });
 
     test('a role this version does not know gets the least access', () {
@@ -344,6 +350,15 @@ void main() {
       );
       expect(redirectFor(AuthStatus.signedOut, Routes.signIn), isNull);
       expect(redirectFor(AuthStatus.signedOut, Routes.server), isNull);
+      expect(redirectFor(AuthStatus.signedOut, Routes.forgotPassword), isNull);
+      expect(
+        redirectFor(AuthStatus.needsServer, Routes.forgotPassword),
+        Routes.server,
+      );
+      expect(
+        redirectFor(AuthStatus.signedIn, Routes.forgotPassword),
+        Routes.home,
+      );
       expect(redirectFor(AuthStatus.signedIn, Routes.signIn), Routes.home);
       expect(redirectFor(AuthStatus.signedIn, Routes.starting), Routes.home);
       expect(redirectFor(AuthStatus.signedIn, Routes.lead('x')), isNull);
@@ -362,7 +377,7 @@ void main() {
           label: 'Activity',
           icon: Icons.history,
           path: '/more/activity',
-          visibleTo: (role) => role.seesTeam,
+          visibleTo: (role) => role.seesTeamOverview,
         ),
       ];
 
@@ -373,7 +388,7 @@ void main() {
       expect(labels(Role.admin), ['Contacts', 'Activity']);
       expect(labels(Role.salesManager), ['Contacts', 'Activity']);
       expect(labels(Role.salesRep), ['Contacts']);
-      expect(labels(Role.readOnly), ['Contacts']);
+      expect(labels(Role.readOnly), ['Contacts', 'Activity']);
     });
   });
 }

@@ -4,6 +4,7 @@ import { Archive, ArchiveRestore, Ellipsis, Pencil, Plus, Trash2 } from "lucide-
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { ListActions } from "@/components/shared/list-actions";
 import { ListToolbar } from "@/components/shared/list-toolbar";
 import {
   type ListUrlConfig,
@@ -31,6 +32,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 import { type ProductDialog, ProductDialogs } from "./product-dialogs";
 import { canManageProducts, taxRateLabel } from "./product-labels";
+import { exportProducts } from "./products.api";
 import { archiveProduct, fetchProducts, restoreProduct, selectProductList } from "./products.slice";
 import type { Product, ProductListQuery, ProductSort } from "./products.types";
 
@@ -279,7 +281,12 @@ export function ProductsPage() {
             ? "The catalog a quote's lines are made from. Archive a product to stop offering it."
             : "The catalog a quote's lines are made from. Only an Admin can change it."
         }
-        action={canManage ? newProductButton : undefined}
+        action={
+          <>
+            <ListActions onExport={() => exportProducts(query)} />
+            {canManage ? newProductButton : null}
+          </>
+        }
       />
 
       <ListToolbar

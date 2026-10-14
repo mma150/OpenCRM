@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { RoleBadge, StatusBadge } from "@/components/shared/badges";
+import { ListActions } from "@/components/shared/list-actions";
 import { PageHeader } from "@/components/shared/page-header";
 import { PageState } from "@/components/shared/page-state";
 import { type ListColumn, ResponsiveList } from "@/components/shared/responsive-list";
@@ -34,6 +35,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { EditUserDialog } from "./edit-user-dialog";
 import { InviteUserDialog } from "./invite-user-dialog";
 import { type UserAction, UserActionDialog } from "./user-action-dialog";
+import { exportUsers } from "./users.api";
 import { fetchUsers, selectUsers } from "./users.slice";
 import type { User } from "./users.types";
 
@@ -175,16 +177,19 @@ function UsersAdmin({ myId }: { myId: string }) {
         title="Users"
         description="Invite people and manage their roles."
         action={
-          <Button
-            type="button"
-            className="h-10 px-4"
-            onClick={() => {
-              setDialog({ kind: "invite" });
-            }}
-          >
-            <Plus aria-hidden />
-            Invite user
-          </Button>
+          <>
+            <ListActions onExport={exportUsers} />
+            <Button
+              type="button"
+              className="h-10 px-4"
+              onClick={() => {
+                setDialog({ kind: "invite" });
+              }}
+            >
+              <Plus aria-hidden />
+              Invite user
+            </Button>
+          </>
         }
       />
 

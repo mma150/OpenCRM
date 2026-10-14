@@ -336,4 +336,97 @@ void main() {
       expect(find.text('Use 5000 characters or fewer'), findsOneWidget);
     });
   });
+
+  group('the entries of the lead a record was converted from', () {
+    const lara = {'id': 'lead-9', 'name': 'Lara QALifecycle'};
+
+    FakeApi contactApi() {
+      return FakeApi()
+        ..on('GET', '/contacts', (request) => page([contactJson()]))
+        ..on('GET', '/contacts/contact-1', (request) => contactJson())
+        ..on('GET', '/contacts/contact-1/timeline', (request) {
+          return page([
+            entryJson(body: 'Asked for a demo.', fromLead: lara),
+            entryJson(
+              id: 'entry-2',
+              kind: 'CREATED',
+              body: null,
+              details: {'fromLead': lara},
+            ),
+            entryJson(
+              id: 'entry-3',
+              kind: 'STATUS_CHANGE',
+              body: null,
+              details: {'from': 'QUALIFIED', 'to': 'CONVERTED'},
+              fromLead: lara,
+            ),
+            entryJson(
+              id: 'entry-4',
+              kind: 'CREATED',
+              body: null,
+              fromLead: lara,
+            ),
+          ]);
+        });
+    }
+
+    testWidgets(
+      "are titled as the lead's and say which lead, in the order given",
+      variant: phones,
+      (tester) async {
+        await pumpApp(
+          tester,
+          api: contactApi(),
+          user: rep,
+          location: Routes.contact('contact-1'),
+        );
+
+        await _scrollTo(tester, find.text('Asked for a demo.'));
+        // The contact's own entry is titled as the contact's, without the line.
+        await _scrollTo(
+          tester,
+          find.text('Contact created from lead Lara QALifecycle'),
+        );
+        await _scrollTo(tester, find.text('Converted'));
+        await _scrollTo(tester, find.text('Lead created'));
+        expect(find.text('Contact created'), findsNothing);
+        expect(
+          find.textContaining('From lead Lara QALifecycle', findRichText: true),
+          findsNWidgets(3),
+        );
+      },
+    );
+
+    testWidgets('"From lead" opens the lead', (tester) async {
+      final api = contactApi()
+        ..on('GET', '/leads', (request) => page([leadJson(id: 'lead-9')]))
+        ..on('GET', '/leads/lead-9', (request) => leadJson(id: 'lead-9'))
+        ..on('GET', '/leads/lead-9/timeline', (request) => page([]));
+      final app = await pumpApp(
+        tester,
+        api: api,
+        user: rep,
+        location: Routes.contact('contact-1'),
+      );
+
+      final link = find
+          .textContaining('From lead Lara QALifecycle', findRichText: true)
+          .first;
+      await _scrollTo(tester, link);
+      await tapVisible(tester, link);
+
+      expect(app.location, Routes.lead('lead-9'));
+    });
+
+    testWidgets("a lead's own timeline has no such line", (tester) async {
+      final api = _api((request) => page([entryJson()]));
+      await pumpApp(tester, api: api, user: rep, location: _path);
+
+      await _scrollTo(tester, find.text('Call'));
+      expect(
+        find.textContaining('From lead', findRichText: true),
+        findsNothing,
+      );
+    });
+  });
 }

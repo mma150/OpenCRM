@@ -58,7 +58,7 @@ export const navItems: NavItem[] = [
     href: "/activity",
     label: "Activity",
     icon: History,
-    roles: ["ADMIN", "SALES_MANAGER"],
+    roles: ["ADMIN", "SALES_MANAGER", "READ_ONLY"],
     bottomTab: false,
   },
   { href: "/profile", label: "Profile", icon: User, bottomTab: false },

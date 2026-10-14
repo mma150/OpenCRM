@@ -1,10 +1,18 @@
 import type { Prisma, Product } from "../../generated/prisma/client";
 import { AppError, fieldError } from "../../lib/app-error";
+import {
+  buildCsvExport,
+  type CsvExport,
+  type ExportColumn,
+  exportWindow,
+  momentFormatter,
+} from "../../lib/csv-export";
 import { escapeWildcards, type Page, pageWindow, searchWords } from "../../lib/list-query";
 import { prisma } from "../../lib/prisma";
 import type {
   ApiProduct,
   CreateProductBody,
+  ProductExportQuery,
   ProductListQuery,
   UpdateProductBody,
 } from "./products.schema";
@@ -48,7 +56,11 @@ async function assertSkuFree(sku: string | null | undefined, exceptId?: string):
   }
 }
 
-export async function listProducts(query: ProductListQuery): Promise<Page<ApiProduct>> {
+// What the list and the export share: the products that match, in order, within `window`.
+async function findProducts(
+  query: ProductListQuery,
+  window: { skip: number; take: number },
+): Promise<Page<ApiProduct>> {
   // Every word typed must appear in the name or the SKU.
   const search = searchWords(query.search).map((word) => {
     const contains = { contains: word, mode: "insensitive" } as const;
@@ -66,11 +78,32 @@ export async function listProducts(query: ProductListQuery): Promise<Page<ApiPro
         sort === "sku" ? { sku: { sort: order, nulls: "last" } } : { [sort]: order },
         { id: order },
       ],
-      ...pageWindow(query),
+      ...window,
     }),
     prisma.product.count({ where }),
   ]);
   return { items: products.map((product) => toApiProduct(product)), total };
+}
+
+export function listProducts(query: ProductListQuery): Promise<Page<ApiProduct>> {
+  return findProducts(query, pageWindow(query));
+}
+
+// DATA-03: the catalog as a CSV file, for every signed-in user (everyone reads it), with the
+// list's search, filter and sort. An empty tax rate means the organisation's default applies.
+export async function exportProducts(query: ProductExportQuery): Promise<CsvExport> {
+  const moment = momentFormatter(query.tz);
+  const columns: ExportColumn<ApiProduct>[] = [
+    { header: "Name", value: (product) => product.name },
+    { header: "SKU", value: (product) => product.sku },
+    { header: "Description", value: (product) => product.description },
+    { header: "Unit price", value: (product) => product.unitPrice },
+    { header: "Tax rate", value: (product) => product.taxRate },
+    { header: "Status", value: (product) => (product.active ? "Active" : "Archived") },
+    { header: "Created", value: (product) => moment(product.createdAt) },
+    { header: "Updated", value: (product) => moment(product.updatedAt) },
+  ];
+  return buildCsvExport(columns, await findProducts(query, exportWindow));
 }
 
 export async function getProduct(id: string): Promise<ApiProduct> {

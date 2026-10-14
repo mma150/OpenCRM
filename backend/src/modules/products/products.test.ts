@@ -1,4 +1,4 @@
-import type request from "supertest";
+import request from "supertest";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import {
@@ -12,7 +12,9 @@ import {
   type ValidationDetail,
 } from "../../../test/helpers";
 import type { User } from "../../generated/prisma/client";
+import { parseCsv } from "../../lib/csv";
 import { prisma } from "../../lib/prisma";
+import { dayIn } from "../../lib/time-zone";
 
 interface Product {
   id: string;
@@ -319,6 +321,118 @@ describe("GET /products", () => {
 
     expect(response.status).toBe(400);
     expect(detailPaths(response)).toEqual([path]);
+  });
+});
+
+describe("GET /products/export", () => {
+  const EXPORT = `${PRODUCTS}/export`;
+  const HEADERS = [
+    "Name",
+    "SKU",
+    "Description",
+    "Unit price",
+    "Tax rate",
+    "Status",
+    "Created",
+    "Updated",
+  ];
+
+  function recordsOf(response: request.Response): Record<string, string>[] {
+    expect(response.status).toBe(200);
+    const [header = [], ...rows] = parseCsv(response.text);
+    expect(header).toEqual(HEADERS);
+    return rows.map((row) =>
+      Object.fromEntries(header.map((name, index) => [name, row[index] ?? ""])),
+    );
+  }
+
+  function exportedNames(response: request.Response): string[] {
+    return recordsOf(response).map((record) => record.Name ?? "");
+  }
+
+  beforeEach(async () => {
+    await make({ name: "GPS tracker hardware", sku: "HW-GPS-200", unitPrice: 149 });
+    await make({ name: "Fleet tracking licence", sku: "LIC-FLT-001", unitPrice: 29.5 });
+    await make({ name: "Onboarding package", sku: null, unitPrice: 1200, taxRate: null });
+    const old = await make({ name: "Annual support plan", sku: "SUP-ANN-1", unitPrice: 990 });
+    await asAdmin.post(`${PRODUCTS}/${old.id}/archive`);
+  });
+
+  it("sends the catalog as a CSV download named products-<today>.csv, to every role", async () => {
+    for (const agent of [asAdmin, asManager, asRep, asViewer]) {
+      const response = await agent.get(EXPORT);
+
+      expect(response.headers["content-type"]).toBe("text/csv; charset=utf-8");
+      expect(response.headers["content-disposition"]).toBe(
+        `attachment; filename="products-${dayIn("UTC", new Date())}.csv"`,
+      );
+      expect(response.headers["x-export-truncated"]).toBe("false");
+      expect(response.text.startsWith("\uFEFF")).toBe(true);
+      expect(exportedNames(response)).toEqual([
+        "Annual support plan",
+        "Fleet tracking licence",
+        "GPS tracker hardware",
+        "Onboarding package",
+      ]);
+    }
+  });
+
+  it("writes each product's price, tax rate and status", async () => {
+    const records = recordsOf(await asRep.get(EXPORT).query({ tz: "Asia/Kolkata" }));
+
+    expect(records[0]).toMatchObject({ Name: "Annual support plan", Status: "Archived" });
+    expect(records[1]).toMatchObject({
+      Name: "Fleet tracking licence",
+      SKU: "LIC-FLT-001",
+      Description: "Monthly subscription per registered vehicle",
+      "Unit price": "29.5",
+      "Tax rate": "8.25",
+      Status: "Active",
+    });
+    // No tax rate of its own: the organisation's default applies.
+    expect(records[3]).toMatchObject({ SKU: "", "Tax rate": "" });
+    expect(records[1]?.Created).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
+  });
+
+  it("applies the list's search, filter and sort, and ignores paging", async () => {
+    const active = await asRep
+      .get(EXPORT)
+      .query({ active: "true", sort: "unitPrice", order: "desc", page: "2", pageSize: "1" });
+    const searched = await asRep.get(EXPORT).query({ search: "hw-gps" });
+    const bad = await asRep.get(EXPORT).query({ sort: "taxRate" });
+    const badZone = await asRep.get(EXPORT).query({ tz: "Mars/Olympus" });
+
+    expect(exportedNames(active)).toEqual([
+      "Onboarding package",
+      "GPS tracker hardware",
+      "Fleet tracking licence",
+    ]);
+    expect(exportedNames(searched)).toEqual(["GPS tracker hardware"]);
+    expect(bad.status).toBe(400);
+    expect(detailPaths(bad)).toEqual(["sort"]);
+    expect(badZone.status).toBe(400);
+    expect(detailPaths(badZone)).toEqual(["tz"]);
+  });
+
+  it("puts an apostrophe before a cell a spreadsheet would run as a formula", async () => {
+    await make({ name: "=1+1", sku: "+SKU", description: "@SUM(A1)\nsecond line, with a comma" });
+
+    const response = await asRep.get(EXPORT).query({ search: "sku" });
+    const [row] = recordsOf(response);
+
+    expect(row).toMatchObject({
+      Name: "'=1+1",
+      SKU: "'+SKU",
+      Description: "'@SUM(A1)\nsecond line, with a comma",
+    });
+    const cells = parseCsv(response.text).flat();
+    expect(cells.filter((cell) => /^[=+\-@\t\r]/.test(cell))).toEqual([]);
+  });
+
+  it("needs a session", async () => {
+    const response = await request(app).get(EXPORT);
+
+    expect(response.status).toBe(401);
   });
 });
 

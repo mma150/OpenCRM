@@ -106,3 +106,44 @@ describe.each<[string, RecordRef, string]>([
     });
   });
 });
+
+// LEAD-04: a contact, a company or an opportunity made from a lead shows the lead's history
+// too. The API marks those entries with `fromLead`; the timeline labels them and links to
+// the lead, and titles them as the lead's.
+describe("entries of the lead a record was converted from", () => {
+  const lara = { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa9", name: "Lara QALifecycle" };
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.mocked(listTimeline).mockResolvedValue(
+      timelinePage([
+        { ...call, fromLead: lara },
+        created,
+        { ...created, id: "eeeeeeee-eeee-4eee-8eee-000000000077", fromLead: lara },
+      ]),
+    );
+  });
+
+  it("labels them 'From lead <name>' with a link to the lead, in the order the API gives", async () => {
+    renderWithStore(<Timeline record={contactRecord} canWrite={false} />, { me: repUser });
+
+    const items = within(
+      await screen.findByRole("list", { name: "Timeline entries" }),
+    ).getAllByRole("listitem");
+    expect(items.map((item) => item.querySelector("p")?.textContent)).toEqual([
+      "Call",
+      "Contact created",
+      "Lead created",
+    ]);
+    for (const index of [0, 2]) {
+      const item = items[index] as HTMLElement;
+      expect(item).toHaveTextContent("From lead Lara QALifecycle");
+      expect(within(item).getByRole("link", { name: "Lara QALifecycle" })).toHaveAttribute(
+        "href",
+        `/leads/${lara.id}`,
+      );
+    }
+    // The contact's own entry has no label.
+    expect(items[1]).not.toHaveTextContent("From lead");
+  });
+});

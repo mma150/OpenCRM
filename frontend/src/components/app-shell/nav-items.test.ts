@@ -11,7 +11,7 @@ import {
 } from "./nav-items";
 
 describe("nav items", () => {
-  it("shows Users and Pipeline to an Admin only, and Activity to an Admin and a Sales Manager", () => {
+  it("shows Users and Pipeline to an Admin only, and Activity to every role but a Sales Rep", () => {
     expect(navItemsFor("ADMIN").map((item) => item.label)).toEqual([
       "Home",
       "Leads",
@@ -61,9 +61,12 @@ describe("nav items", () => {
       "Email templates",
       "Products",
     ]);
-    // A Read-only user cannot send email, so templates are not offered; the catalog is.
+    // A Read-only user cannot send email, so templates are not offered; the catalog is. They
+    // see every record, so they see the team's Activity as an Admin does.
     expect(navItemsFor("READ_ONLY").map((item) => item.label)).toEqual([
-      ...forEveryone,
+      ...forEveryone.slice(0, -1),
+      "Activity",
+      "Profile",
       "Products",
     ]);
   });

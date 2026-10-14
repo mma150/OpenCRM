@@ -251,12 +251,10 @@ describe("DashboardPage", () => {
   });
 
   describe("the Team section", () => {
-    it("is never shown to a Sales Rep or a Read-only user, and never asked for", async () => {
-      for (const me of [repUser, readOnlyUser]) {
-        const { unmount } = await renderHome(me);
-        expect(screen.queryByRole("region", { name: "Team" })).not.toBeInTheDocument();
-        unmount();
-      }
+    it("is never shown to a Sales Rep, and never asked for", async () => {
+      await renderHome(repUser);
+
+      expect(screen.queryByRole("region", { name: "Team" })).not.toBeInTheDocument();
       expect(getTeamDashboard).not.toHaveBeenCalled();
     });
 
@@ -267,8 +265,8 @@ describe("DashboardPage", () => {
       expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
     });
 
-    it("shows an Admin and a Sales Manager each person's figures for this month, with totals", async () => {
-      for (const me of [adminUser, managerUser]) {
+    it("shows an Admin, a Sales Manager and a Read-only user each person's figures for this month, with totals", async () => {
+      for (const me of [adminUser, managerUser, readOnlyUser]) {
         const { unmount } = await renderHome(me);
         const table = await teamTable();
         expect(firstColumn(table)).toEqual([

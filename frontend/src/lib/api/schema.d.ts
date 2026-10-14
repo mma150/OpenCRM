@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * The team activity feed: what each person did, newest first
-         * @description An Admin sees everyone's entries, a Sales Manager their own and their team's. from and to are inclusive and take a day (the whole day, UTC) or an exact moment. meta.summary counts everything the filters match, not only this page. Entries of deleted records are left out.
+         * @description For an Admin, a Sales Manager and a Read-only user; a Sales Rep is refused. An Admin and a Read-only user see everyone's entries, a Sales Manager their own and their team's. from and to are inclusive and take a day (the whole day, UTC) or an exact moment. meta.summary counts everything the filters match, not only this page. Entries of deleted records are left out.
          */
         get: {
             parameters: {
@@ -61,7 +61,85 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Not an Admin or a Sales Manager (FORBIDDEN) */
+                /** @description A Sales Rep (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/activity/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the activity feed the caller may see as a CSV file
+         * @description The feed with the same scope and filters (userId, from, to, kind), newest first; each entry names its record. The list itself as a file: the same search, filters (custom field filters included), sort and visibility, without paging (page and pageSize are ignored). Every role that can see the list can export it. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named after the viewer's today. At most 10,000 rows: a longer list is cut off there, in the sort order asked for, and X-Export-Truncated is true. A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula. For an Admin, a Sales Manager and a Read-only user; the file is named activity-YYYY-MM-DD.csv.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    userId?: string;
+                    from?: string;
+                    to?: string;
+                    kind?: components["schemas"]["TimelineKindFilter"];
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The CSV file */
+                200: {
+                    headers: {
+                        /** @description attachment; filename="<list>-<YYYY-MM-DD>.csv" */
+                        "Content-Disposition"?: string;
+                        /** @description true when the list has more rows than the 10,000 an export holds */
+                        "X-Export-Truncated"?: "true" | "false";
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/csv": string;
+                    };
+                };
+                /** @description VALIDATION_FAILED: bad input, or a userId outside the Sales Manager's team */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description A Sales Rep (FORBIDDEN) */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -89,7 +167,7 @@ export interface paths {
         };
         /**
          * The people the caller may filter the activity feed by
-         * @description For an Admin, every user who is not Read-only, deactivated ones included. For a Sales Manager, themselves and their team.
+         * @description For an Admin and a Read-only user, every user who is not Read-only, deactivated ones included. For a Sales Manager, themselves and their team.
          */
         get: {
             parameters: {
@@ -123,7 +201,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Not an Admin or a Sales Manager (FORBIDDEN) */
+                /** @description A Sales Rep (FORBIDDEN) */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2524,8 +2602,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Figures per person for a range of days (Admin and Sales Manager only)
-         * @description An Admin sees every user who is not Read-only, a Sales Manager themselves and their team. from and to are days in the time zone tz and both are included; left out, they are the first day of the current month and today. The range is at most 366 days. openPipelineValue and overdueTasks are as of now, not of the range. A deactivated person is listed only while one of their figures is not zero.
+         * Figures per person for a range of days (Admin, Sales Manager and Read-only)
+         * @description An Admin and a Read-only user see every user who is not Read-only, a Sales Manager themselves and their team. from and to are days in the time zone tz and both are included; left out, they are the first day of the current month and today. The range is at most 366 days. openPipelineValue and overdueTasks are as of now, not of the range. A deactivated person is listed only while one of their figures is not zero.
          */
         get: {
             parameters: {
@@ -2572,7 +2650,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Not an Admin or a Sales Manager (FORBIDDEN) */
+                /** @description A Sales Rep (FORBIDDEN) */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -7247,6 +7325,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/products/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the products as a CSV file
+         * @description For every signed-in user. The list itself as a file: the same search, filters (custom field filters included), sort and visibility, without paging (page and pageSize are ignored). Every role that can see the list can export it. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named after the viewer's today. At most 10,000 rows: a longer list is cut off there, in the sort order asked for, and X-Export-Truncated is true. A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula. An empty Tax rate cell means the organisation's default tax rate applies.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    search?: string;
+                    sort?: "name" | "sku" | "unitPrice" | "createdAt";
+                    order?: "asc" | "desc";
+                    active?: "true" | "false";
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The CSV file */
+                200: {
+                    headers: {
+                        /** @description attachment; filename="<list>-<YYYY-MM-DD>.csv" */
+                        "Content-Disposition"?: string;
+                        /** @description true when the list has more rows than the 10,000 an export holds */
+                        "X-Export-Truncated"?: "true" | "false";
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/csv": string;
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/products/{id}": {
         parameters: {
             query?: never;
@@ -9259,7 +9406,7 @@ export interface paths {
         };
         /**
          * Everything that happened to a lead, newest first
-         * @description Conversations, notes and the entries the system writes when the lead is created, changes status or changes owner. kind narrows it to one kind, or to SYSTEM for all system entries.
+         * @description Conversations, notes and the entries the system writes when the lead is created, changes status or changes owner. kind narrows it to one kind, or to SYSTEM for all system entries. fromLead is always null here.
          */
         get: {
             parameters: {
@@ -9506,7 +9653,7 @@ export interface paths {
         };
         /**
          * Everything that happened to a contact, newest first
-         * @description Conversations, notes and the entries the system writes when the contact is created or changes owner. kind narrows it to one kind, or to SYSTEM for all system entries.
+         * @description Conversations, notes and the entries the system writes when the contact is created or changes owner. kind narrows it to one kind, or to SYSTEM for all system entries. The entries of every lead that was converted into this contact are merged in, in date order, and the kind filter and paging work over both; each such entry has fromLead { id, name } naming the lead (null on the contact's own entries). They stay the lead's entries: nothing is copied, and the lead's own timeline is unchanged. Seeing the contact is enough to see them, whoever owns the lead.
          */
         get: {
             parameters: {
@@ -9753,7 +9900,7 @@ export interface paths {
         };
         /**
          * Everything that happened to a company, newest first
-         * @description Conversations, notes and the entries the system writes when the company is created or changes owner. kind narrows it to one kind, or to SYSTEM for all system entries.
+         * @description Conversations, notes and the entries the system writes when the company is created or changes owner. kind narrows it to one kind, or to SYSTEM for all system entries. The entries of every lead that was converted into this company are merged in, in date order, and the kind filter and paging work over both; each such entry has fromLead { id, name } naming the lead (null on the company's own entries). They stay the lead's entries: nothing is copied, and the lead's own timeline is unchanged. Seeing the company is enough to see them, whoever owns the lead.
          */
         get: {
             parameters: {
@@ -10000,7 +10147,7 @@ export interface paths {
         };
         /**
          * Everything that happened to an opportunity, newest first
-         * @description Conversations, notes and the entries the system writes when the opportunity is created, changes stage, is closed or reopened, or changes owner. kind narrows it to one kind, or to SYSTEM for all system entries.
+         * @description Conversations, notes and the entries the system writes when the opportunity is created, changes stage, is closed or reopened, or changes owner. kind narrows it to one kind, or to SYSTEM for all system entries. The entries of every lead that was converted into this opportunity are merged in, in date order, and the kind filter and paging work over both; each such entry has fromLead { id, name } naming the lead (null on the opportunity's own entries). They stay the lead's entries: nothing is copied, and the lead's own timeline is unchanged. Seeing the opportunity is enough to see them, whoever owns the lead.
          */
         get: {
             parameters: {
@@ -10359,6 +10506,78 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download every user as a CSV file (Admin only)
+         * @description The users list as a file, in its order (by name), deactivated users included: Name, Email, Role, Status, Manager, Created. Never a password hash, a token, a session or sign-in lock data. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named users-YYYY-MM-DD.csv after the viewer's today. At most 10,000 rows (X-Export-Truncated says when the list was longer). A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The CSV file */
+                200: {
+                    headers: {
+                        /** @description attachment; filename="<list>-<YYYY-MM-DD>.csv" */
+                        "Content-Disposition"?: string;
+                        /** @description true when the list has more rows than the 10,000 an export holds */
+                        "X-Export-Truncated"?: "true" | "false";
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/csv": string;
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not an Admin (FORBIDDEN) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -10879,6 +11098,10 @@ export interface components {
                 name: string;
             };
             createdAt: string;
+            fromLead: {
+                id: string;
+                name: string;
+            } | null;
         };
         ActivityMeta: components["schemas"]["ListMeta"] & {
             summary: components["schemas"]["ActivitySummary"];

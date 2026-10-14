@@ -198,6 +198,31 @@ void main() {
     String title(TimelineEntry entry) => entryTitle(entry, RecordType.lead);
 
     test(
+      'an entry of the lead a record was converted from names that lead',
+      () {
+        final fromLead = TimelineEntry.fromJson(
+          asMap(
+            entryJson(fromLead: {'id': 'lead-9', 'name': 'Lara QALifecycle'}),
+          ),
+        );
+        expect(fromLead.fromLead?.id, 'lead-9');
+        expect(fromLead.fromLead?.name, 'Lara QALifecycle');
+
+        expect(TimelineEntry.fromJson(asMap(entryJson())).fromLead, isNull);
+        // An older server leaves the field out: the entry is the record's own.
+        final older = asMap(entryJson())..remove('fromLead');
+        expect(TimelineEntry.fromJson(older).fromLead, isNull);
+        expect(
+          () => TimelineEntry.fromJson({
+            ...asMap(entryJson()),
+            'fromLead': {'id': 'lead-9'},
+          }),
+          throwsFormatException,
+        );
+      },
+    );
+
+    test(
       'a conversation is titled by how it happened, with what was discussed',
       () {
         final entry = _entry(

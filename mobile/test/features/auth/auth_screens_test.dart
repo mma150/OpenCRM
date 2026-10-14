@@ -245,28 +245,172 @@ void main() {
       expect(api.sent('POST', '/auth/token'), hasLength(1));
     });
 
+    testWidgets('hides the password until asked', (tester) async {
+      await pumpApp(tester, api: FakeApi());
+
+      expect(tester.widget<EditableText>(field('Password')).obscureText, true);
+      await tapVisible(tester, find.byTooltip('Show password'));
+      expect(tester.widget<EditableText>(field('Password')).obscureText, false);
+    });
+  });
+
+  group('forgot password', () {
+    Future<void> openFromSignIn(
+      WidgetTester tester, {
+      String email = '',
+    }) async {
+      if (email.isNotEmpty) {
+        await enterField(tester, 'Email', email);
+      }
+      await tapVisible(tester, find.text('Forgot password?'));
+    }
+
+    Future<void> send(WidgetTester tester) {
+      return tapVisible(
+        tester,
+        find.widgetWithText(FilledButton, 'Send reset link'),
+      );
+    }
+
     testWidgets(
-      'hides the password until asked, and explains a forgotten one',
+      'asks for a link with the email typed at sign-in, and says to check the email',
+      variant: phones,
       (tester) async {
-        await pumpApp(tester, api: FakeApi());
+        final api = FakeApi()
+          ..on('POST', '/auth/forgot-password', (request) => null);
+        final app = await pumpApp(tester, api: api);
 
+        await openFromSignIn(tester, email: ' riley@example.com');
+        // Pushed over the sign-in screen, so Back returns to it.
+        expect(find.text('Reset your password'), findsOneWidget);
         expect(
-          tester.widget<EditableText>(field('Password')).obscureText,
-          true,
-        );
-        await tapVisible(tester, find.byTooltip('Show password'));
-        expect(
-          tester.widget<EditableText>(field('Password')).obscureText,
-          false,
+          tester.widget<EditableText>(field('Email')).controller.text,
+          'riley@example.com',
         );
 
-        await tapVisible(tester, find.text('Forgot password?'));
+        await send(tester);
+
+        final sent = api.sent('POST', '/auth/forgot-password').single;
+        expect(sent.json, {'email': 'riley@example.com'});
+        // Nobody is signed in: no token goes with it.
+        expect(sent.token, isNull);
+        expect(find.text('Check your email'), findsOneWidget);
         expect(
-          find.textContaining('Passwords are reset in the web app'),
+          find.text(
+            'If that email exists, we sent a link. It is valid for 1 hour.',
+          ),
           findsOneWidget,
         );
+        await scrollTo(tester, find.textContaining('on any device'));
+        expect(app.store.values.containsKey('session_token'), false);
+
+        await tapVisible(tester, find.text('Back to sign in'));
+        expect(app.location, Routes.signIn);
+        expect(find.widgetWithText(FilledButton, 'Sign in'), findsOneWidget);
       },
     );
+
+    testWidgets('checks the email before sending anything', variant: phones, (
+      tester,
+    ) async {
+      final app = await pumpApp(tester, api: FakeApi());
+      await openFromSignIn(tester);
+
+      await send(tester);
+      expect(find.text('Enter your email.'), findsOneWidget);
+
+      await enterField(tester, 'Email', 'riley@example');
+      await send(tester);
+      expect(find.text('Enter a valid email address.'), findsOneWidget);
+      expect(app.api.requests, isEmpty);
+    });
+
+    final refusals = {
+      apiError(
+        'RATE_LIMITED',
+        status: 429,
+        details: {'retryAfterSeconds': 120},
+      ): 'Too many attempts. Try again in 2 minutes.',
+      apiError(ApiError.network):
+          'The server cannot be reached. Check your connection and try again.',
+      apiError(ApiError.timeout):
+          'The server took too long to answer. Try again.',
+    };
+    for (final MapEntry(key: error, value: message) in refusals.entries) {
+      testWidgets(
+        'says "${error.code}" in words and can send again',
+        variant: phones,
+        (tester) async {
+          final api = FakeApi()
+            ..on('POST', '/auth/forgot-password', (request) => throw error);
+          await pumpApp(tester, api: api);
+          await openFromSignIn(tester, email: 'riley@example.com');
+
+          await send(tester);
+
+          expect(find.text(message), findsOneWidget);
+          expect(find.text('Check your email'), findsNothing);
+          expect(find.text('Reset your password'), findsOneWidget);
+
+          api.on('POST', '/auth/forgot-password', (request) => null);
+          await send(tester);
+          expect(find.text('Check your email'), findsOneWidget);
+          expect(api.sent('POST', '/auth/forgot-password'), hasLength(2));
+        },
+      );
+    }
+
+    testWidgets('shows a validation message under the field', (tester) async {
+      final api = FakeApi()
+        ..on(
+          'POST',
+          '/auth/forgot-password',
+          (request) =>
+              throw validationError({'email': 'Invalid email address'}),
+        );
+      await pumpApp(tester, api: api);
+      await openFromSignIn(tester, email: 'riley@example.com');
+
+      await send(tester);
+
+      expect(find.text('Invalid email address'), findsOneWidget);
+      await enterField(tester, 'Email', 'riley@example.org');
+      expect(find.text('Invalid email address'), findsNothing);
+    });
+
+    testWidgets('cannot be sent twice while it is on its way', (tester) async {
+      final answer = Completer<Object?>();
+      final api = FakeApi()
+        ..on('POST', '/auth/forgot-password', (request) => answer.future);
+      await pumpApp(tester, api: api);
+      await openFromSignIn(tester, email: 'riley@example.com');
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Send reset link'));
+      await tester.pump();
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNull,
+      );
+      answer.complete(null);
+      await tester.pumpAndSettle();
+      expect(api.sent('POST', '/auth/forgot-password'), hasLength(1));
+    });
+
+    testWidgets("the phone's Back returns to the sign-in screen", (
+      tester,
+    ) async {
+      final app = await pumpApp(tester, api: FakeApi());
+      await openFromSignIn(tester);
+
+      expect(find.text('Reset your password'), findsOneWidget);
+      // The phone's own Back.
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(app.location, Routes.signIn);
+      expect(find.text('Reset your password'), findsNothing);
+      expect(find.widgetWithText(FilledButton, 'Sign in'), findsOneWidget);
+    });
   });
 
   group('on launch', () {

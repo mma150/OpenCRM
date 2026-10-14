@@ -11,6 +11,9 @@ import 'package:opencrm/core/widgets/snackbars.dart';
 import 'package:opencrm/core/widgets/state_views.dart';
 import 'package:opencrm/features/companies/companies_providers.dart';
 import 'package:opencrm/features/companies/company.dart';
+import 'package:opencrm/features/custom_fields/custom_fields.dart';
+import 'package:opencrm/features/custom_fields/custom_fields_form.dart';
+import 'package:opencrm/features/timeline/record_ref.dart';
 
 /// The fields this form shows: a validation message for one of these paths goes under its
 /// field, and for any other path above the form.
@@ -22,8 +25,8 @@ const _suggestionsShown = 6;
 /// "New company" (no [id]) and "Edit company". The form checks what it can before
 /// sending; what only the server knows comes back as a message under the field.
 ///
-/// Custom fields are not edited here yet. An edit leaves them as they are; a new company
-/// in an installation with a *required* custom field is refused, and the form says which.
+/// The custom fields of companies follow the company's own ([CustomFieldsSection]): a new
+/// company sends the ones filled in, an edit only the ones changed.
 class CompanyFormScreen extends ConsumerWidget {
   const CompanyFormScreen({super.key, this.id});
 
@@ -78,6 +81,7 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
   late final _phone = TextEditingController(text: widget.company?.phone);
   late final _address = TextEditingController(text: widget.company?.address);
   late final _notes = TextEditingController(text: widget.company?.notes);
+  late final _custom = CustomFieldValues(stored: widget.company?.customFields);
   ServerErrors _errors = ServerErrors.none;
   bool _saving = false;
 
@@ -93,6 +97,7 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
     ]) {
       controller.dispose();
     }
+    _custom.dispose();
     super.dispose();
   }
 
@@ -127,6 +132,9 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    final existing = widget.company;
+    final fields =
+        ref.read(customFieldsProvider(RecordType.company)).value ?? const [];
     final input = CompanyInput(
       name: _name.text,
       industry: _industry.text,
@@ -134,10 +142,12 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
       phone: _phone.text,
       address: _address.text,
       notes: _notes.text,
+      customFields: existing == null
+          ? _custom.forCreate(fields)
+          : _custom.changes(fields),
     );
     setState(() => _saving = true);
     try {
-      final existing = widget.company;
       final String id;
       if (existing == null) {
         id = (await ref.read(companyCreatorProvider).create(input)).id;
@@ -157,10 +167,20 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
     } on ApiError catch (error) {
       if (mounted) {
         setState(() {
-          _errors = ServerErrors.from(error, fields: _fields);
+          _errors = ServerErrors.from(
+            error,
+            fields: {..._fields, ...customFieldPaths(fields)},
+          );
           _saving = false;
         });
       }
+    }
+  }
+
+  /// Takes the server's message off a field the user changed.
+  void _clearError(String field) {
+    if (_errors[field] != null) {
+      setState(() => _errors = _errors.without(field));
     }
   }
 
@@ -280,6 +300,12 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
               maxLength: 10000,
               maxLines: 6,
               capitalization: TextCapitalization.sentences,
+            ),
+            CustomFieldsSection(
+              recordType: RecordType.company,
+              values: _custom,
+              errors: _errors,
+              onEdited: _clearError,
             ),
             SubmitButton(
               label: widget.company == null ? 'Create company' : 'Save changes',

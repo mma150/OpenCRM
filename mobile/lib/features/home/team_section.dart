@@ -11,12 +11,12 @@ import 'package:opencrm/core/widgets/state_views.dart';
 import 'package:opencrm/features/home/dashboard_providers.dart';
 import 'package:opencrm/features/home/team_dashboard.dart';
 
-/// The Team section of Home, for an Admin and a Sales Manager: what each person on the
+/// The Team section of Home, for an Admin, a Sales Manager and a Read-only user: what each person on the
 /// team did in a range of days, as a card per person, with the totals. The cards are
 /// sorted on the phone; the API sends the people by name.
 ///
-/// **Mount it only for `role.seesTeam`.** Nobody else is ever asked for (the API would
-/// answer `FORBIDDEN`), and `teamDashboardProvider` refuses to ask for them as well.
+/// **Mount it only for `role.seesTeamOverview`.** A Sales Rep is never asked for (the API
+/// would answer `FORBIDDEN`), and `teamDashboardProvider` refuses to ask for them as well.
 class TeamSection extends ConsumerStatefulWidget {
   const TeamSection({super.key});
 

@@ -5,6 +5,7 @@ abstract final class Routes {
   static const starting = '/starting';
   static const server = '/server';
   static const signIn = '/sign-in';
+  static const forgotPassword = '/forgot-password';
 
   // The tabs.
   static const home = '/home';

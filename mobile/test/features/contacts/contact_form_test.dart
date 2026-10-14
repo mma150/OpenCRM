@@ -532,4 +532,88 @@ void main() {
       expect(find.text('Northwind Logistics'), findsOneWidget);
     });
   });
+
+  group('custom fields', () {
+    testWidgets(
+      'a new contact sends them, the required one filled in',
+      variant: phones,
+      (tester) async {
+        final api = _api()
+          ..on(
+            'GET',
+            '/custom-fields',
+            (request) => customFieldsJson(
+              recordType: 'CONTACT',
+              required: {'cf-region'},
+            ),
+          )
+          ..on('POST', '/contacts', (request) => contactJson());
+        await pumpApp(tester, api: api, user: rep, location: Routes.newContact);
+
+        await enterField(tester, 'First name', 'Marcus');
+        await enterField(tester, 'Last name', 'Chen');
+        await enterField(tester, 'Team size', '12');
+        await _submit(tester, 'Create contact');
+        // Region is required: nothing is sent until it is chosen.
+        expect(api.sent('POST', '/contacts'), isEmpty);
+        await scrollTo(tester, find.text('Choose an option.'));
+
+        await chooseOption(tester, 'Region', 'North');
+        await _submit(tester, 'Create contact');
+
+        expect(api.sent('GET', '/custom-fields').first.query, {
+          'recordType': 'CONTACT',
+        });
+        expect(api.sent('POST', '/contacts').single.json['customFields'], {
+          'cf-region': 'North',
+          'cf-size': 12,
+        });
+      },
+    );
+
+    testWidgets(
+      'an edit sends only the ones changed, and shows refusals under them',
+      variant: phones,
+      (tester) async {
+        final api = _api()
+          ..on(
+            'GET',
+            '/custom-fields',
+            (request) => customFieldsJson(recordType: 'CONTACT'),
+          )
+          ..on(
+            'GET',
+            '/contacts/contact-1',
+            (request) => contactJson(
+              customFields: {
+                'cf-text': 'NW-104',
+                'cf-region': 'South',
+                'cf-size': 12,
+                'cf-renewal': null,
+              },
+            ),
+          )
+          ..on('PATCH', '/contacts/contact-1', (request) {
+            throw validationError({'customFields.cf-text': 'Too long'});
+          });
+        await pumpApp(
+          tester,
+          api: api,
+          user: rep,
+          location: Routes.editContact('contact-1'),
+        );
+
+        await enterField(tester, 'Account code', '');
+        await chooseOption(tester, 'Region', 'None');
+        await _submit(tester, 'Save changes');
+
+        expect(
+          api.sent('PATCH', '/contacts/contact-1').single.json['customFields'],
+          {'cf-text': null, 'cf-region': null},
+        );
+        await scrollTo(tester, find.text('Too long'));
+        expect(find.text('Too long'), findsOneWidget);
+      },
+    );
+  });
 }

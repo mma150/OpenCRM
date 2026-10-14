@@ -9,12 +9,15 @@ import 'package:opencrm/core/widgets/state_views.dart';
 import 'package:opencrm/features/timeline/record_ref.dart';
 
 /// A field an Admin added to a kind of record. The values live on the records, keyed by
-/// [id]; the app shows them and does not edit them yet.
+/// [id]: the record pages show them ([CustomFieldsCard]) and the record forms edit them
+/// (`CustomFieldsSection` in `custom_fields_form.dart`).
 class CustomField {
   const CustomField({
     required this.id,
     required this.label,
     required this.type,
+    this.options = const [],
+    this.required = false,
   });
 
   factory CustomField.fromJson(Json json) {
@@ -22,6 +25,14 @@ class CustomField {
       id: readString(json, 'id'),
       label: readString(json, 'label'),
       type: readString(json, 'type'),
+      options: [
+        for (final option in asList(json['options'] ?? const <Object?>[]))
+          if (option is String)
+            option
+          else
+            throw const FormatException('Expected "options" to be text'),
+      ],
+      required: json['required'] == null ? false : readBool(json, 'required'),
     );
   }
 
@@ -30,6 +41,12 @@ class CustomField {
 
   /// `TEXT`, `NUMBER`, `DATE` or `DROPDOWN`.
   final String type;
+
+  /// The choices of a `DROPDOWN`, in the Admin's order; empty for the other types.
+  final List<String> options;
+
+  /// A new record must have a value, and a record that has one cannot be emptied.
+  final bool required;
 
   /// A stored value as text: a number as people write it, a day as a date.
   String? format(Object? value) {

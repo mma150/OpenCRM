@@ -4,10 +4,11 @@ import type { Role } from "@/lib/user-labels";
 
 import type { TeamDashboardQuery, TeamFigures } from "./dashboard.types";
 
-// Who gets the Team section. The API refuses everyone else (FORBIDDEN), so the app never
-// asks on their behalf.
+// Who gets the Team section: the people who run a team, and a Read-only user, who sees
+// every record and so sees what an Admin sees. The API refuses a Sales Rep (FORBIDDEN), so
+// the app never asks on their behalf.
 export function seesTeamDashboard(role: Role): boolean {
-  return role === "ADMIN" || role === "SALES_MANAGER";
+  return role === "ADMIN" || role === "SALES_MANAGER" || role === "READ_ONLY";
 }
 
 // The Team section's date ranges. "This month" is the default.

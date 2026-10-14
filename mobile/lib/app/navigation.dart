@@ -256,7 +256,7 @@ final List<MoreItem> moreItems = [
     path: Routes.activity,
     section: 'Updates',
     // The API answers FORBIDDEN to a Sales Rep and a Read-only user.
-    visibleTo: (role) => role.seesTeam,
+    visibleTo: (role) => role.seesTeamOverview,
   ),
 ];
 

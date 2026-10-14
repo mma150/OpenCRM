@@ -1,5 +1,6 @@
 import { listMetaSchema, pageQuerySchema } from "../../lib/list-query";
 import { envelope, z } from "../../lib/openapi";
+import { timeZoneSchema } from "../../lib/time-zone";
 import { timelineEntrySchema, timelineKindFilterSchema } from "../../lib/timeline";
 
 // A timeline entry plus the record it belongs to, so the feed can name and link it.
@@ -30,6 +31,12 @@ export const activityQuerySchema = pageQuerySchema.extend({
 });
 
 export type ActivityQuery = z.infer<typeof activityQuerySchema>;
+
+// The export takes what the feed takes (paging is ignored), and the viewer's time zone for
+// the times in the file and its name.
+export const activityExportQuerySchema = activityQuerySchema.extend({ tz: timeZoneSchema });
+
+export type ActivityExportQuery = z.infer<typeof activityExportQuerySchema>;
 
 // Counts over everything the filters match, not only the page that was asked for.
 export const activitySummarySchema = z

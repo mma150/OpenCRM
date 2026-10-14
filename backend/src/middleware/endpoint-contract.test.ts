@@ -21,6 +21,7 @@ const ROUTES_WITHOUT_INPUT = [
   "delete /settings/email",
   "get /activity",
   "get /activity/authors",
+  "get /activity/export",
   "get /auth/me",
   "get /auth/setup-status",
   "get /companies",
@@ -48,6 +49,7 @@ const ROUTES_WITHOUT_INPUT = [
   "get /opportunities/export",
   "get /pipeline-stages",
   "get /products",
+  "get /products/export",
   "get /quotes",
   "get /quotes/export",
   "get /settings/email",
@@ -58,6 +60,7 @@ const ROUTES_WITHOUT_INPUT = [
   "get /tasks/summary",
   "get /users",
   "get /users/assignable",
+  "get /users/export",
   "post /auth/logout",
   "post /notifications/read-all",
 ];

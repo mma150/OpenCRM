@@ -130,19 +130,19 @@ export async function getMyDashboard(actor: Actor, timeZone: string): Promise<My
 }
 
 // The Prisma `where` fragment on User for "people whose figures this user may see": for an
-// Admin everyone who can own a record (so not Read-only users), for a Sales Manager
-// themselves and their team. The route already turns the other two roles away; this keeps
-// the rule in the service too.
+// Admin and a Read-only user (the viewer role that sees every record) everyone who can own a
+// record, so not Read-only users; for a Sales Manager themselves and their team. The route
+// already turns a Sales Rep away; this keeps the rule in the service too.
 function teamMembers(actor: Actor): Prisma.UserWhereInput {
   switch (actor.role) {
-    case "ADMIN": {
+    case "ADMIN":
+    case "READ_ONLY": {
       return { role: { not: "READ_ONLY" } };
     }
     case "SALES_MANAGER": {
       return { OR: [{ id: actor.id }, { managerId: actor.id }] };
     }
-    case "SALES_REP":
-    case "READ_ONLY": {
+    case "SALES_REP": {
       throw new AppError("FORBIDDEN", 403, "You do not have access to this");
     }
   }

@@ -91,29 +91,48 @@ class FormErrorBanner extends StatelessWidget {
 
 /// A label above a form control, with the space under it. Every field of every form is
 /// laid out through this, so labels look the same everywhere.
+///
+/// [required] puts a red `*` after the label (screen readers hear "required"), as the web
+/// app marks a required custom field.
 class LabeledField extends StatelessWidget {
-  const LabeledField({super.key, required this.label, required this.child});
+  const LabeledField({
+    super.key,
+    required this.label,
+    required this.child,
+    this.required = false,
+  });
 
   final String label;
   final Widget child;
+  final bool required;
 
   @override
   Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.labelLarge
+        ?.copyWith(fontWeight: FontWeight.w600);
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ExcludeSemantics(
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge
-                  ?.copyWith(fontWeight: FontWeight.w600),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(child: Text(label, style: style)),
+                if (required)
+                  Text(
+                    ' *',
+                    style: style?.copyWith(
+                      color: context.colors.tone(Tone.danger).foreground,
+                    ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(height: 6),
           // The visible label is outside the control; this names it for screen readers.
-          Semantics(label: label, child: child),
+          Semantics(label: required ? '$label, required' : label, child: child),
         ],
       ),
     );
@@ -143,6 +162,7 @@ class AppTextField extends StatelessWidget {
     this.suffixIcon,
     this.onSubmitted,
     this.enabled = true,
+    this.required = false,
   });
 
   final String label;
@@ -166,10 +186,14 @@ class AppTextField extends StatelessWidget {
   final ValueChanged<String>? onSubmitted;
   final bool enabled;
 
+  /// Marks the label; the check itself is the [validator]'s.
+  final bool required;
+
   @override
   Widget build(BuildContext context) {
     return LabeledField(
       label: label,
+      required: required,
       child: TextFormField(
         controller: controller,
         validator: validator,
@@ -265,6 +289,7 @@ class AppDropdownField<T> extends StatelessWidget {
     this.hint,
     this.validator,
     this.serverError,
+    this.required = false,
   });
 
   final String label;
@@ -275,10 +300,14 @@ class AppDropdownField<T> extends StatelessWidget {
   final FormFieldValidator<T>? validator;
   final String? serverError;
 
+  /// Marks the label; the check itself is the [validator]'s.
+  final bool required;
+
   @override
   Widget build(BuildContext context) {
     return LabeledField(
       label: label,
+      required: required,
       child: DropdownButtonFormField<T>(
         initialValue: value,
         isExpanded: true,
@@ -360,6 +389,87 @@ class DateTimeField extends StatelessWidget {
             child: Text(
               moment == null ? placeholder : formatDateTime(moment),
               style: moment == null
+                  ? TextStyle(color: context.colors.textMuted)
+                  : null,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Picks a calendar day (no time) with the platform's picker, with its label above it.
+/// [day] is `2026-11-15` or null; the cross clears it. The day is sent as it is, never
+/// moved into a time zone (`toApiDay`, `formatDay`).
+class DayField extends StatelessWidget {
+  const DayField({
+    super.key,
+    required this.label,
+    required this.day,
+    required this.onChanged,
+    required this.firstDate,
+    required this.lastDate,
+    this.errorText,
+    this.required = false,
+    this.placeholder = 'No date',
+  });
+
+  final String label;
+
+  /// `2026-11-15`, or null.
+  final String? day;
+
+  /// Called with the day picked, or null when the cross clears it.
+  final ValueChanged<String?> onChanged;
+  final DateTime firstDate;
+  final DateTime lastDate;
+  final String? errorText;
+  final bool required;
+  final String placeholder;
+
+  Future<void> _pick(BuildContext context) async {
+    final now = DateTime.now();
+    final current = DateTime.tryParse(day ?? '') ?? now;
+    final initial = current.isBefore(firstDate)
+        ? firstDate
+        : (current.isAfter(lastDate) ? lastDate : current);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: firstDate,
+      lastDate: lastDate,
+    );
+    if (picked != null) {
+      onChanged(toApiDay(picked));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final value = day;
+    return LabeledField(
+      label: label,
+      required: required,
+      child: Semantics(
+        button: true,
+        child: InkWell(
+          borderRadius: AppSpacing.borderRadius,
+          onTap: () => _pick(context),
+          child: InputDecorator(
+            decoration: InputDecoration(
+              errorText: errorText,
+              suffixIcon: value == null
+                  ? const Icon(Icons.calendar_today_outlined)
+                  : IconButton(
+                      tooltip: 'Clear ${label.toLowerCase()}',
+                      icon: const Icon(Icons.close),
+                      onPressed: () => onChanged(null),
+                    ),
+            ),
+            child: Text(
+              value == null ? placeholder : formatDay(value),
+              style: value == null
                   ? TextStyle(color: context.colors.textMuted)
                   : null,
             ),

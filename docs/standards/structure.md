@@ -90,8 +90,8 @@ backend/
     │   ├── timeline/               A record's timeline, for leads, contacts, companies and
     │   │                           opportunities: read it, log a conversation, add a note
     │   │                           (/<records>/:id/timeline, /conversations, /notes)
-    │   ├── activity/               The team activity feed for Admins and Sales Managers, and the
-    │   │                           people it can be filtered by
+    │   ├── activity/               The team activity feed for Admins, Sales Managers and Read-only
+    │   │                           users, the people it can be filtered by, and its CSV export
     │   ├── tasks/                  Tasks: create, edit, list, complete, reopen, delete, the
     │   │                           counts by due date, and who may see and be given one
     │   ├── notifications/          A user's own in-app notifications: list, unread count,
@@ -199,7 +199,7 @@ frontend/
     │   │                           notification-item.tsx (one notification, and what opening it does)
     │   ├── dashboard/              Home: dashboard.{types,api,slice}.ts, dashboard-page.tsx, my-dashboard.tsx
     │   │                           (the tiles, lists and bars of the signed-in user), team-section.tsx (the team
-    │   │                           table, Admin and Sales Manager), dashboard-labels.ts
+    │   │                           table, Admin, Sales Manager, Read-only), dashboard-labels.ts
     │   ├── email-settings/         email-settings.{types,api,slice}.ts, email-settings-page.tsx (/settings/email),
     │   │                           email-settings-form.tsx (the mail server form), test-email-card.tsx,
     │   │                           use-email-status.ts (is outgoing email on)

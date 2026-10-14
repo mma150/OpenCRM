@@ -468,14 +468,31 @@ describe("GET /dashboard/me", () => {
 });
 
 describe("GET /dashboard/team", () => {
-  it.each([
-    ["a Sales Rep", () => asRavi],
-    ["a Read-only user", () => asViewer],
-  ])("answers FORBIDDEN for %s", async (_name, agent) => {
-    const response = await agent().get(TEAM);
+  it("answers FORBIDDEN for a Sales Rep", async () => {
+    const response = await asRavi.get(TEAM);
 
     expect(response.status).toBe(403);
     expect(errorOf(response).code).toBe("FORBIDDEN");
+  });
+
+  it("shows a Read-only user exactly what an Admin sees", async () => {
+    await makeOpportunity(ravi, "New", 100);
+    await makeOpportunity(tara, "New", 5000);
+
+    const forViewer = await asViewer.get(TEAM).query(MARCH);
+    const forAdmin = await asAdmin.get(TEAM).query(MARCH);
+
+    expect(forViewer.status).toBe(200);
+    expect(team(forViewer)).toEqual(team(forAdmin));
+    expect(team(forViewer).reps.map((rep) => rep.user.name)).toEqual([
+      "Asha Admin",
+      "Meera Manager",
+      "Omar Manager",
+      "Ravi Rep",
+      "Tara Rep",
+      "Uma Rep",
+    ]);
+    expect(team(forViewer).totals.openPipelineValue).toBe(5100);
   });
 
   it("shows an Admin everyone who is not Read-only, by name, with zeros where nothing happened", async () => {

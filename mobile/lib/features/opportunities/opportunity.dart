@@ -213,6 +213,7 @@ class OpportunityInput {
     this.companyId,
     this.contactId,
     this.notes = '',
+    this.customFields,
   });
 
   final String name;
@@ -229,6 +230,10 @@ class OpportunityInput {
   final String? contactId;
   final String notes;
 
+  /// The custom fields to send, by field id (`CustomFieldValues.forCreate` or `.changes`);
+  /// null leaves `customFields` out, so the record keeps the values it has.
+  final Json? customFields;
+
   String? get _notes => notes.trim().isEmpty ? null : notes.trim();
 
   /// Empty optional fields are left out, so the server's defaults apply (value 0, the
@@ -242,6 +247,7 @@ class OpportunityInput {
       'companyId': ?companyId,
       'contactId': ?contactId,
       'notes': ?_notes,
+      'customFields': ?customFields,
     };
   }
 
@@ -257,6 +263,7 @@ class OpportunityInput {
       if (companyId != opportunity.company?.id) 'companyId': companyId,
       if (contactId != opportunity.contact?.id) 'contactId': contactId,
       if (_notes != opportunity.notes) 'notes': _notes,
+      'customFields': ?customFields,
     };
   }
 }

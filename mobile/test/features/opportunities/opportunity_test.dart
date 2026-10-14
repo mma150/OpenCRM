@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencrm/core/api/json.dart';
+import 'package:opencrm/core/format/formatters.dart';
 import 'package:opencrm/features/opportunities/opportunities_api.dart';
 import 'package:opencrm/features/opportunities/opportunity.dart';
-import 'package:opencrm/features/opportunities/opportunity_form_screen.dart';
 import 'package:opencrm/features/pipeline_stages/pipeline_stages.dart';
 
 import '../../support/fixtures.dart';

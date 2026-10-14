@@ -42,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
         // Keeps the figures on screen until the new ones arrive.
         onRefresh: () {
           // The Team section has its own request; it loads again with the figures.
-          if (user.role.seesTeam) {
+          if (user.role.seesTeamOverview) {
             ref.invalidate(teamDashboardProvider);
           }
           return ref
@@ -64,8 +64,8 @@ class HomeScreen extends ConsumerWidget {
             MutedText('${user.role.label} · ${formatLongDay(DateTime.now())}'),
             const SizedBox(height: AppSpacing.lg),
             const _MyWork(),
-            // Only an Admin and a Sales Manager: nobody else is ever asked for the team.
-            if (user.role.seesTeam) ...[
+            // Not a Sales Rep: they are never asked for the team.
+            if (user.role.seesTeamOverview) ...[
               const SizedBox(height: AppSpacing.xl),
               const TeamSection(),
             ],

@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+  csvResponse,
   errorResponse,
   jsonBody,
   jsonResponse,
@@ -8,12 +9,14 @@ import {
   sessionSecurity,
 } from "../../lib/openapi";
 import { deletedResponseSchema, recordIdParamsSchema } from "../../lib/record-fields";
+import { CSV_EXPORT } from "../../lib/route-docs";
 import { authenticate } from "../../middleware/authenticate";
 import { requireRole } from "../../middleware/require-role";
 import {
   archiveProductHandler,
   createProductHandler,
   deleteProductHandler,
+  exportProductsHandler,
   getProductHandler,
   listProductsHandler,
   restoreProductHandler,
@@ -21,6 +24,7 @@ import {
 } from "./products.controller";
 import {
   createProductBodySchema,
+  productExportQuerySchema,
   productListQuerySchema,
   productListResponseSchema,
   productResponseSchema,
@@ -32,6 +36,8 @@ export const productsRouter = Router();
 productsRouter.use(authenticate);
 // Every signed-in user reads the catalog: a quote line is picked from it.
 productsRouter.get("/", listProductsHandler);
+// Above /:id, or "export" would be read as an id.
+productsRouter.get("/export", exportProductsHandler);
 productsRouter.get("/:id", getProductHandler);
 
 // Changing it is for Admins (QUOT-01).
@@ -64,6 +70,21 @@ registry.registerPath({
       "One page of products; meta.total counts every match",
       productListResponseSchema,
     ),
+    400: errorResponse("The request is not acceptable (VALIDATION_FAILED)"),
+    401: unauthenticated,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/products/export",
+  tags,
+  summary: "Download the products as a CSV file",
+  description: `For every signed-in user. ${CSV_EXPORT} An empty Tax rate cell means the organisation's default tax rate applies.`,
+  security,
+  request: { query: productExportQuerySchema },
+  responses: {
+    200: csvResponse("The CSV file"),
     400: errorResponse("The request is not acceptable (VALIDATION_FAILED)"),
     401: unauthenticated,
   },

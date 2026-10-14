@@ -23,7 +23,7 @@ class DashboardApi {
   }
 
   /// Figures per person for the days [from] to [to] (`2026-10-05`, both included, on the
-  /// device's calendar). Admins and Sales Managers only.
+  /// device's calendar). Admins, Sales Managers and Read-only users only.
   Future<TeamDashboard> team({required String from, required String to}) async {
     final response = await _client.get(
       '/dashboard/team',
@@ -48,17 +48,17 @@ final dashboardProvider = FutureProvider<MyDashboard>((ref) {
 /// Home scrolls the section out of view; pull to refresh and a change to a task load it
 /// again.
 ///
-/// **Only an Admin and a Sales Manager are ever asked for**: the API answers `FORBIDDEN`
-/// to everyone else, so for them this fails here, before any request is made.
+/// **Never asked for a Sales Rep** (`Role.seesTeamOverview`): the API answers `FORBIDDEN`
+/// to them, so for them this fails here, before any request is made.
 final teamDashboardProvider = FutureProvider.family<TeamDashboard, TeamRange>((
   ref,
   range,
 ) {
   final user = ref.watch(currentUserProvider);
-  if (!user.role.seesTeam) {
+  if (!user.role.seesTeamOverview) {
     throw const ApiError(
       code: 'FORBIDDEN',
-      message: 'The team dashboard is for Admins and Sales Managers.',
+      message: 'The team dashboard is for Admins, Sales Managers and Read-only users.',
     );
   }
   final days = range.days();

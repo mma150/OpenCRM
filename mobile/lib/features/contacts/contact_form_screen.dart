@@ -14,6 +14,9 @@ import 'package:opencrm/features/companies/companies_providers.dart';
 import 'package:opencrm/features/companies/company_picker.dart';
 import 'package:opencrm/features/contacts/contact.dart';
 import 'package:opencrm/features/contacts/contacts_providers.dart';
+import 'package:opencrm/features/custom_fields/custom_fields.dart';
+import 'package:opencrm/features/custom_fields/custom_fields_form.dart';
+import 'package:opencrm/features/timeline/record_ref.dart';
 
 /// The fields this form shows: a validation message for one of these paths goes under its
 /// field, and for any other path above the form.
@@ -35,8 +38,8 @@ const _loading = Padding(
 /// "New contact" (no [id]) and "Edit contact". [companyId] starts a new contact in that
 /// company: the "Add contact" button on a company's page (`/more/contacts/new?companyId=`).
 ///
-/// Custom fields are not edited here yet. An edit leaves them as they are; a new contact
-/// in an installation with a *required* custom field is refused, and the form says which.
+/// The custom fields of contacts follow the contact's own ([CustomFieldsSection]): a new
+/// contact sends the ones filled in, an edit only the ones changed.
 class ContactFormScreen extends ConsumerWidget {
   const ContactFormScreen({super.key, this.id, this.companyId});
 
@@ -119,6 +122,7 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
   late final _phone = TextEditingController(text: widget.contact?.phone);
   late final _notes = TextEditingController(text: widget.contact?.notes);
   late PickedRecord? _company = _startingCompany();
+  late final _custom = CustomFieldValues(stored: widget.contact?.customFields);
   ServerErrors _errors = ServerErrors.none;
   bool _saving = false;
 
@@ -141,6 +145,7 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
     ]) {
       controller.dispose();
     }
+    _custom.dispose();
     super.dispose();
   }
 
@@ -172,6 +177,8 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
       return;
     }
     final existing = widget.contact;
+    final fields =
+        ref.read(customFieldsProvider(RecordType.contact)).value ?? const [];
     final input = ContactInput(
       firstName: _firstName.text,
       lastName: _lastName.text,
@@ -183,6 +190,9 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
       // reads as no company, and sending that would unlink it.
       sendCompany: existing == null || _company?.id != existing.company?.id,
       notes: _notes.text,
+      customFields: existing == null
+          ? _custom.forCreate(fields)
+          : _custom.changes(fields),
     );
     setState(() => _saving = true);
     try {
@@ -205,10 +215,20 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
     } on ApiError catch (error) {
       if (mounted) {
         setState(() {
-          _errors = ServerErrors.from(error, fields: _fields);
+          _errors = ServerErrors.from(
+            error,
+            fields: {..._fields, ...customFieldPaths(fields)},
+          );
           _saving = false;
         });
       }
+    }
+  }
+
+  /// Takes the server's message off a field the user changed.
+  void _clearError(String field) {
+    if (_errors[field] != null) {
+      setState(() => _errors = _errors.without(field));
     }
   }
 
@@ -233,11 +253,7 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
       textCapitalization: capitalization,
       autocorrect: keyboardType == null,
       serverError: _errors[field],
-      onChanged: (_) {
-        if (_errors[field] != null) {
-          setState(() => _errors = _errors.without(field));
-        }
-      },
+      onChanged: (_) => _clearError(field),
     );
   }
 
@@ -310,6 +326,12 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
               maxLength: 10000,
               maxLines: 6,
               capitalization: TextCapitalization.sentences,
+            ),
+            CustomFieldsSection(
+              recordType: RecordType.contact,
+              values: _custom,
+              errors: _errors,
+              onEdited: _clearError,
             ),
             SubmitButton(
               label: widget.contact == null ? 'Create contact' : 'Save changes',

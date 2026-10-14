@@ -32,24 +32,68 @@ const findRecord: Record<RecordType, (actor: Actor, id: string) => Promise<unkno
   opportunity: findOpportunity,
 };
 
+// LEAD-04: a lead converted into a contact, a company or an opportunity lives on as that
+// record, so the record's timeline also shows the lead's entries (as Salesforce does). The
+// entries are not copied or moved: they stay the lead's, and the lead keeps its own
+// timeline. The Prisma `where` fragment for "the entries of the leads converted into this
+// record"; a lead's own timeline has none. Seeing the record is enough to see this history,
+// whoever owns the lead now.
+function convertedLeadEntries(record: RecordRef): Prisma.TimelineEntryWhereInput[] {
+  const live = { deletedAt: null };
+  switch (record.type) {
+    case "lead": {
+      return [];
+    }
+    case "contact": {
+      return [{ lead: { convertedContactId: record.id, ...live } }];
+    }
+    case "company": {
+      return [{ lead: { convertedCompanyId: record.id, ...live } }];
+    }
+    case "opportunity": {
+      return [{ lead: { convertedOpportunityId: record.id, ...live } }];
+    }
+  }
+}
+
+const withLead = {
+  ...withAuthor,
+  lead: { select: { id: true, firstName: true, lastName: true } },
+} as const;
+
+// The record's own entries and those of the leads converted into it, merged into one list,
+// newest first, so the kind filter and the paging work over both.
 export async function listTimeline(
   actor: Actor,
   record: RecordRef,
   query: TimelineQuery,
 ): Promise<Page<ApiTimelineEntry>> {
   await findRecord[record.type](actor, record.id);
-  const where = { ...recordColumn(record), ...kindFilter(query.kind) };
+  const where: Prisma.TimelineEntryWhereInput = {
+    AND: [{ OR: [recordColumn(record), ...convertedLeadEntries(record)] }, kindFilter(query.kind)],
+  };
 
   const [entries, total] = await Promise.all([
     prisma.timelineEntry.findMany({
       where,
-      include: withAuthor,
+      include: withLead,
       orderBy: newestFirst,
       ...pageWindow(query),
     }),
     prisma.timelineEntry.count({ where }),
   ]);
-  return { items: entries.map((entry) => toApiTimelineEntry(entry)), total };
+  return {
+    items: entries.map(({ lead, ...entry }) =>
+      toApiTimelineEntry(
+        entry,
+        // On a lead's own timeline its entries are its own.
+        lead && record.type !== "lead"
+          ? { id: lead.id, name: `${lead.firstName} ${lead.lastName}` }
+          : null,
+      ),
+    ),
+    total,
+  };
 }
 
 // Exported for the emails service: an email that was sent counts like a conversation.

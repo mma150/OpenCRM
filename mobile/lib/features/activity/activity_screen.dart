@@ -27,14 +27,14 @@ class ActivityScreen extends ConsumerWidget {
     final role = ref.watch(currentUserProvider).role;
     return AppScaffold(
       title: 'Activity',
-      body: role.seesTeam
+      body: role.seesTeamOverview
           ? const _Feed()
           : const Center(
               child: SingleChildScrollView(
                 child: EmptyState(
                   icon: Icons.lock_outline,
                   title: 'You do not have access to Activity',
-                  message: 'Only an Admin or a Sales Manager can see what the team did.',
+                  message: 'Only an Admin, a Sales Manager or a Read-only user can see what the team did.',
                 ),
               ),
             ),

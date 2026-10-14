@@ -1,16 +1,19 @@
 import type { Request, Response } from "express";
 
+import { sendCsv } from "../../lib/csv-export";
 import type { ListMeta } from "../../lib/list-query";
 import { recordIdParamsSchema } from "../../lib/record-fields";
 import {
   type ApiProduct,
   createProductBodySchema,
+  productExportQuerySchema,
   productListQuerySchema,
   updateProductBodySchema,
 } from "./products.schema";
 import {
   createProduct,
   deleteProduct,
+  exportProducts,
   getProduct,
   listProducts,
   setProductActive,
@@ -22,6 +25,11 @@ export async function listProductsHandler(req: Request, res: Response) {
   const { items, total } = await listProducts(query);
   const meta: ListMeta = { page: query.page, pageSize: query.pageSize, total };
   res.json({ data: items, meta });
+}
+
+export async function exportProductsHandler(req: Request, res: Response) {
+  const query = productExportQuerySchema.parse(req.query);
+  sendCsv(res, "products", query.tz, await exportProducts(query));
 }
 
 export async function getProductHandler(req: Request, res: Response) {

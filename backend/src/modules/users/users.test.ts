@@ -15,9 +15,11 @@ import {
   type ValidationDetail,
 } from "../../../test/helpers";
 import type { User } from "../../generated/prisma/client";
+import { parseCsv } from "../../lib/csv";
 import * as mailer from "../../lib/mailer";
 import { prisma } from "../../lib/prisma";
 import { createSession } from "../../lib/sessions";
+import { dayIn } from "../../lib/time-zone";
 
 interface ApiUser {
   id: string;
@@ -89,6 +91,7 @@ afterAll(async () => {
 describe("access", () => {
   const routes = [
     ["get", "/api/v1/users"],
+    ["get", "/api/v1/users/export"],
     ["post", "/api/v1/users"],
     ["patch", `/api/v1/users/${UNKNOWN_ID}`],
     ["post", `/api/v1/users/${UNKNOWN_ID}/deactivate`],
@@ -253,6 +256,111 @@ describe("list", () => {
 
     expect((off.body as Envelope<ApiUser[]>).meta).toEqual({ mailEnabled: false });
     expect((on.body as Envelope<ApiUser[]>).meta).toEqual({ mailEnabled: true });
+  });
+});
+
+describe("export", () => {
+  const EXPORT = "/api/v1/users/export";
+
+  function recordsOf(response: request.Response): Record<string, string>[] {
+    expect(response.status).toBe(200);
+    const [header = [], ...rows] = parseCsv(response.text);
+    expect(header).toEqual(["Name", "Email", "Role", "Status", "Manager", "Created"]);
+    return rows.map((row) =>
+      Object.fromEntries(header.map((name, index) => [name, row[index] ?? ""])),
+    );
+  }
+
+  it("sends every user as a CSV download named users-<today>.csv, by name", async () => {
+    const manager = await createUser({ name: "Meera Manager", role: "SALES_MANAGER" });
+    await createUser({
+      name: "Ravi Rep",
+      email: "ravi@example.com",
+      role: "SALES_REP",
+      managerId: manager.id,
+    });
+    await createUser({ name: "Ira Invited", role: "READ_ONLY", invited: true });
+    await createUser({ name: "Dev Deactivated", isActive: false });
+    await prisma.user.update({
+      where: { id: admin.id },
+      data: { createdAt: new Date("2026-03-01T22:30:00Z") },
+    });
+
+    const response = await asAdmin.get(EXPORT).query({ tz: "Asia/Kolkata" });
+    const records = recordsOf(response);
+    const byName = new Map(records.map((record) => [record.Name, record]));
+
+    expect(response.headers["content-type"]).toBe("text/csv; charset=utf-8");
+    expect(response.headers["content-disposition"]).toBe(
+      `attachment; filename="users-${dayIn("Asia/Kolkata", new Date())}.csv"`,
+    );
+    expect(response.headers["x-export-truncated"]).toBe("false");
+    expect(response.text.startsWith("\uFEFF")).toBe(true);
+    expect(records.map((record) => record.Name)).toEqual([
+      "Asha Admin",
+      "Dev Deactivated",
+      "Ira Invited",
+      "Meera Manager",
+      "Ravi Rep",
+    ]);
+    expect(byName.get("Asha Admin")).toEqual({
+      Name: "Asha Admin",
+      Email: "admin@example.com",
+      Role: "Admin",
+      Status: "Active",
+      Manager: "",
+      // 22:30 UTC is 04:00 the next day in India.
+      Created: "2026-03-02 04:00",
+    });
+    expect(byName.get("Ravi Rep")).toMatchObject({
+      Email: "ravi@example.com",
+      Role: "Sales Rep",
+      Manager: "Meera Manager",
+    });
+    expect(byName.get("Meera Manager")?.Role).toBe("Sales Manager");
+    expect(byName.get("Ira Invited")).toMatchObject({ Role: "Read-only", Status: "Invited" });
+    expect(byName.get("Dev Deactivated")?.Status).toBe("Deactivated");
+  });
+
+  it("never holds a password hash, a token, a session or lock data", async () => {
+    const locked = await createUser({ name: "Lou Locked" });
+    await prisma.user.update({
+      where: { id: locked.id },
+      data: { failedLoginCount: 4, lockedUntil: new Date(Date.now() + 60_000) },
+    });
+    const invited = await invite({ name: "Ina New", email: "ina@example.com", role: "SALES_REP" });
+    const link = (invited.body as Envelope<{ invite: LinkResult }>).data.invite.link ?? "";
+    const { passwordHash } = await prisma.user.findUniqueOrThrow({ where: { id: admin.id } });
+
+    const response = await asAdmin.get(EXPORT);
+
+    expect(response.status).toBe(200);
+    expect(passwordHash).not.toBeNull();
+    expect(response.text).not.toContain(passwordHash ?? "argon2");
+    expect(response.text).not.toContain("argon2");
+    expect(link).not.toBe("");
+    expect(response.text).not.toContain(tokenFromLink(link));
+    expect(response.text.split("\r\n")[0]).not.toMatch(/password|token|lock|failed|session/i);
+  });
+
+  it("puts an apostrophe before a name a spreadsheet would run as a formula", async () => {
+    await createUser({ name: '=HYPERLINK("http://evil.example","click")' });
+    await createUser({ name: "@SUM(1)" });
+
+    const response = await asAdmin.get(EXPORT);
+    const names = recordsOf(response).map((record) => record.Name);
+
+    expect(names).toContain(`'=HYPERLINK("http://evil.example","click")`);
+    expect(names).toContain("'@SUM(1)");
+    const cells = parseCsv(response.text).flat();
+    expect(cells.filter((cell) => /^[=+\-@\t\r]/.test(cell))).toEqual([]);
+  });
+
+  it("refuses a time zone that is not one", async () => {
+    const response = await asAdmin.get(EXPORT).query({ tz: "Mars/Olympus" });
+
+    expect(response.status).toBe(400);
+    expect(detailPaths(response)).toEqual(["tz"]);
   });
 });
 

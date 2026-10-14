@@ -6,10 +6,11 @@ import { managerUser, readOnlyUser } from "@/features/leads/leads.fixtures";
 import { INVOICE, QUOTE } from "@/features/timeline/timeline.fixtures";
 import type { ApiError } from "@/lib/api/http";
 import { formatDayHeading, formatTime, toDateInputValue } from "@/lib/format";
+import { saveFile } from "@/lib/save-file";
 import { followNavigation, mockRouter, setMockLocation } from "@/test/navigation-mock";
 import { adminUser, renderWithStore, repUser } from "@/test/render-with-store";
 
-import { listActivity, listActivityAuthors } from "./activity.api";
+import { exportActivity, listActivity, listActivityAuthors } from "./activity.api";
 import {
   activityList,
   allActivity,
@@ -30,6 +31,7 @@ import { dayEnd, dayStart } from "./activity-labels";
 import { ActivityPage } from "./activity-page";
 
 vi.mock("./activity.api");
+vi.mock("@/lib/save-file");
 
 async function renderActivity(me: Me = adminUser, list: ActivityList = activityList()) {
   vi.mocked(listActivity).mockResolvedValue(list);
@@ -59,34 +61,62 @@ describe("ActivityPage", () => {
     followNavigation();
   });
 
-  it.each([repUser, readOnlyUser])(
-    "tells a $role they have no access and does not ask the API",
-    (me) => {
-      renderWithStore(<ActivityPage />, { me });
+  it("tells a Sales Rep they have no access and does not ask the API", () => {
+    renderWithStore(<ActivityPage />, { me: repUser });
 
-      expect(screen.getByText("You do not have access to Activity")).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "Back to Home" })).toHaveAttribute("href", "/");
-      expect(screen.queryByRole("heading", { name: "Activity" })).not.toBeInTheDocument();
-      expect(listActivity).not.toHaveBeenCalled();
-      expect(listActivityAuthors).not.toHaveBeenCalled();
+    expect(screen.getByText("You do not have access to Activity")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back to Home" })).toHaveAttribute("href", "/");
+    expect(screen.queryByRole("heading", { name: "Activity" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Export CSV" })).not.toBeInTheDocument();
+    expect(listActivity).not.toHaveBeenCalled();
+    expect(listActivityAuthors).not.toHaveBeenCalled();
+  });
+
+  it("exports the feed with the person, type and dates on screen", async () => {
+    setMockLocation("/activity", `userId=${authors[0]?.id ?? ""}&kind=NOTE&range=30d&page=2`);
+    vi.mocked(exportActivity).mockResolvedValue({
+      blob: new Blob(["x"]),
+      filename: "activity-2026-10-14.csv",
+      truncated: false,
+    });
+    const { user } = await renderActivity(readOnlyUser);
+
+    await user.click(screen.getByRole("button", { name: "Export CSV" }));
+
+    await waitFor(() => {
+      expect(exportActivity).toHaveBeenCalledTimes(1);
+    });
+    // The list's own query: downloadExport leaves out the page and adds the time zone.
+    expect(vi.mocked(exportActivity).mock.calls[0]?.[0]).toEqual(
+      vi.mocked(listActivity).mock.lastCall?.[0],
+    );
+    expect(vi.mocked(exportActivity).mock.calls[0]?.[0]).toMatchObject({
+      userId: authors[0]?.id,
+      kind: "NOTE",
+      from: dayStart(dayInput(29)),
+      to: dayEnd(dayInput(0)),
+    });
+    expect(saveFile).toHaveBeenCalledWith(expect.any(Blob), "activity-2026-10-14.csv");
+  });
+
+  it.each([adminUser, managerUser, readOnlyUser])(
+    "shows a $role the feed for the last 7 days",
+    async (me) => {
+      await renderActivity(me);
+
+      expect(screen.getByRole("heading", { level: 1, name: "Activity" })).toBeInTheDocument();
+      expect(screen.getByText("What your team did and when.")).toBeInTheDocument();
+      expect(listActivity).toHaveBeenCalledWith({
+        from: dayStart(dayInput(6)),
+        to: dayEnd(dayInput(0)),
+        page: 1,
+        pageSize: 25,
+      });
+      expect(screen.getByRole("combobox", { name: "Dates" })).toHaveTextContent("Last 7 days");
+      expect(fromBox()).toHaveValue(dayInput(6));
+      expect(toBox()).toHaveValue(dayInput(0));
     },
   );
-
-  it.each([adminUser, managerUser])("shows a $role the feed for the last 7 days", async (me) => {
-    await renderActivity(me);
-
-    expect(screen.getByRole("heading", { level: 1, name: "Activity" })).toBeInTheDocument();
-    expect(screen.getByText("What your team did and when.")).toBeInTheDocument();
-    expect(listActivity).toHaveBeenCalledWith({
-      from: dayStart(dayInput(6)),
-      to: dayEnd(dayInput(0)),
-      page: 1,
-      pageSize: 25,
-    });
-    expect(screen.getByRole("combobox", { name: "Dates" })).toHaveTextContent("Last 7 days");
-    expect(fromBox()).toHaveValue(dayInput(6));
-    expect(toBox()).toHaveValue(dayInput(0));
-  });
 
   it("shows the loading state while the first page is on its way", () => {
     vi.mocked(listActivity).mockReturnValue(new Promise(() => undefined));

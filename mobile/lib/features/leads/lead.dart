@@ -200,6 +200,7 @@ class LeadInput {
     this.phone = '',
     this.estimatedValue,
     this.notes = '',
+    this.customFields,
   });
 
   final String firstName;
@@ -211,6 +212,10 @@ class LeadInput {
   final String phone;
   final double? estimatedValue;
   final String notes;
+
+  /// The custom fields to send, by field id (`CustomFieldValues.forCreate` or `.changes`);
+  /// null leaves `customFields` out, so the record keeps the values it has.
+  final Json? customFields;
 
   static String? _orNull(String text) =>
       text.trim().isEmpty ? null : text.trim();
@@ -226,6 +231,7 @@ class LeadInput {
       'phone': _orNull(phone),
       'estimatedValue': estimatedValue,
       'notes': _orNull(notes),
+      'customFields': ?customFields,
     };
   }
 }

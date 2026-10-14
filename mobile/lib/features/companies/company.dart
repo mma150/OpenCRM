@@ -83,6 +83,7 @@ class CompanyInput {
     this.phone = '',
     this.address = '',
     this.notes = '',
+    this.customFields,
   });
 
   final String name;
@@ -91,6 +92,10 @@ class CompanyInput {
   final String phone;
   final String address;
   final String notes;
+
+  /// The custom fields to send, by field id (`CustomFieldValues.forCreate` or `.changes`);
+  /// null leaves `customFields` out, so the record keeps the values it has.
+  final Json? customFields;
 
   static String? _orNull(String text) =>
       text.trim().isEmpty ? null : text.trim();
@@ -103,6 +108,7 @@ class CompanyInput {
       'phone': _orNull(phone),
       'address': _orNull(address),
       'notes': _orNull(notes),
+      'customFields': ?customFields,
     };
   }
 }

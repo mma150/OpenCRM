@@ -1,6 +1,14 @@
 import { type AuthTokenType, Prisma, type Role, type User } from "../../generated/prisma/client";
 import { createAccountLink, inviteMessage, passwordResetMessage } from "../../lib/account-links";
 import { AppError } from "../../lib/app-error";
+import {
+  buildCsvExport,
+  type CsvExport,
+  enumLabel,
+  type ExportColumn,
+  exportWindow,
+  momentFormatter,
+} from "../../lib/csv-export";
 import { sendMail } from "../../lib/mailer";
 import { lockUserAdministration, prisma } from "../../lib/prisma";
 import { type Actor, assignableUsers } from "../../lib/record-access";
@@ -10,6 +18,7 @@ import type {
   CreateUserBody,
   LinkResult,
   UpdateUserBody,
+  UserExportQuery,
   UserStatus,
 } from "./users.schema";
 
@@ -105,13 +114,40 @@ async function findUser(id: string): Promise<User> {
   return user;
 }
 
+const byName = [{ name: "asc" }, { createdAt: "asc" }] as const;
+
 // Everyone, deactivated users included. Not paged: an installation has tens of users.
 export async function listUsers(): Promise<ApiUser[]> {
-  const users = await prisma.user.findMany({
-    include: withManager,
-    orderBy: [{ name: "asc" }, { createdAt: "asc" }],
-  });
+  const users = await prisma.user.findMany({ include: withManager, orderBy: [...byName] });
   return users.map((user) => toApiUser(user));
+}
+
+// How a role is written in the app: "Sales Manager", "Read-only".
+const ROLE_LABELS: Record<Role, string> = {
+  ADMIN: "Admin",
+  SALES_MANAGER: "Sales Manager",
+  SALES_REP: "Sales Rep",
+  READ_ONLY: "Read-only",
+};
+
+// DATA-03: the users list as a CSV file, for Admins. Only what the list shows: no password
+// hash, token, session or sign-in lock data ever goes in the file. The last sign-in is not
+// stored (sessions are deleted when they end), so there is no column for it.
+export async function exportUsers(query: UserExportQuery): Promise<CsvExport> {
+  const moment = momentFormatter(query.tz);
+  const columns: ExportColumn<ApiUser>[] = [
+    { header: "Name", value: (user) => user.name },
+    { header: "Email", value: (user) => user.email },
+    { header: "Role", value: (user) => ROLE_LABELS[user.role] },
+    { header: "Status", value: (user) => enumLabel(user.status) },
+    { header: "Manager", value: (user) => user.manager?.name ?? null },
+    { header: "Created", value: (user) => moment(user.createdAt) },
+  ];
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({ include: withManager, orderBy: [...byName], ...exportWindow }),
+    prisma.user.count(),
+  ]);
+  return buildCsvExport(columns, { items: users.map((user) => toApiUser(user)), total });
 }
 
 // The people the caller may make the owner of a record; the rule is in lib/record-access.ts.

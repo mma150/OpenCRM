@@ -6,6 +6,7 @@ import { useState } from "react";
 import { daysAgo, formatDate, formatDateTime, formatRelativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+import { RECORD_TYPES } from "./record-types";
 import type { TimelineEntry } from "./timeline.types";
 import { TimelineEntryIcon } from "./timeline-entry-icon";
 import { emailOf, entryLink, entryText, entryTitle } from "./timeline-labels";
@@ -92,8 +93,22 @@ function EntryText({ text }: { text: string }) {
   );
 }
 
+// On the timeline of a contact, a company or an opportunity, an entry of the lead that was
+// converted into it says so, and links to that lead.
+function FromLead({ lead }: { lead: NonNullable<TimelineEntry["fromLead"]> }) {
+  return (
+    <p className="text-muted-foreground text-xs wrap-anywhere">
+      From lead{" "}
+      <Link href={`/${RECORD_TYPES.lead.path}/${lead.id}`} className={linkClass}>
+        {lead.name}
+      </Link>
+    </p>
+  );
+}
+
 // One entry of a timeline: an icon for its kind, the title, who made it and when, and its
-// text. Entries are permanent, so there is nothing to edit or delete here.
+// text. Entries are permanent, so there is nothing to edit or delete here. An entry of a
+// converted lead (`fromLead`) is titled as the lead's ("Lead created") and labelled with it.
 export function TimelineEntryItem({
   entry,
   recordLabel,
@@ -103,6 +118,7 @@ export function TimelineEntryItem({
 }) {
   const text = entryText(entry);
   const isEmail = entry.kind === "EMAIL";
+  const label = entry.fromLead ? RECORD_TYPES.lead.label : recordLabel;
   const relative = formatRelativeTime(entry.occurredAt);
   // A conversation written down on a later day than it happened says so.
   const loggedLater = daysAgo(entry.createdAt, new Date(entry.occurredAt)) < 0;
@@ -124,7 +140,7 @@ export function TimelineEntryItem({
           <p className="text-sm font-medium wrap-anywhere">
             {/* The link of an email is the line "With Quote Q-0001" below, not its title. */}
             <LinkedTitle
-              title={entryTitle(entry, recordLabel)}
+              title={entryTitle(entry, label)}
               link={isEmail ? null : entryLink(entry)}
             />
           </p>
@@ -134,6 +150,7 @@ export function TimelineEntryItem({
             {relative ? ` (${relative})` : null}
             {loggedLater ? ` · logged ${formatDate(entry.createdAt)}` : null}
           </p>
+          {entry.fromLead ? <FromLead lead={entry.fromLead} /> : null}
         </div>
         {isEmail ? <EmailFacts entry={entry} /> : null}
         {text ? <EntryText text={text} /> : null}

@@ -96,6 +96,7 @@ Map<String, Object?> entryJson({
   Map<String, Object?>? details,
   String occurredAt = '2026-10-05T09:30:00.000Z',
   User author = rep,
+  Map<String, Object?>? fromLead,
 }) {
   return {
     'id': id,
@@ -106,6 +107,7 @@ Map<String, Object?> entryJson({
     'occurredAt': occurredAt,
     'author': {'id': author.id, 'name': author.name},
     'createdAt': occurredAt,
+    'fromLead': fromLead,
   };
 }
 
@@ -470,4 +472,66 @@ Map<String, Object?> activityJson({
     ),
     'record': record,
   };
+}
+
+/// A custom field definition as `GET /custom-fields` answers it.
+Map<String, Object?> customFieldJson({
+  String id = 'field-1',
+  String label = 'Region',
+  String type = 'TEXT',
+  String recordType = 'LEAD',
+  List<String> options = const [],
+  bool required = false,
+}) {
+  return {
+    'id': id,
+    'recordType': recordType,
+    'label': label,
+    'type': type,
+    'options': options,
+    'required': required,
+    'position': 0,
+    'archived': false,
+    'createdAt': '2026-09-01T09:00:00.000Z',
+    'updatedAt': '2026-09-01T09:00:00.000Z',
+  };
+}
+
+/// One field of each type for [recordType]: Account code (text), Region (dropdown of
+/// North and South), Team size (number) and Renewal (date). [required] lists the ids of
+/// the ones that are required.
+List<Map<String, Object?>> customFieldsJson({
+  String recordType = 'LEAD',
+  Set<String> required = const {},
+}) {
+  return [
+    customFieldJson(
+      id: 'cf-text',
+      label: 'Account code',
+      recordType: recordType,
+      required: required.contains('cf-text'),
+    ),
+    customFieldJson(
+      id: 'cf-region',
+      label: 'Region',
+      type: 'DROPDOWN',
+      options: const ['North', 'South'],
+      recordType: recordType,
+      required: required.contains('cf-region'),
+    ),
+    customFieldJson(
+      id: 'cf-size',
+      label: 'Team size',
+      type: 'NUMBER',
+      recordType: recordType,
+      required: required.contains('cf-size'),
+    ),
+    customFieldJson(
+      id: 'cf-renewal',
+      label: 'Renewal',
+      type: 'DATE',
+      recordType: recordType,
+      required: required.contains('cf-renewal'),
+    ),
+  ];
 }

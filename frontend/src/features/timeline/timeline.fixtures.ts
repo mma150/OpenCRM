@@ -26,6 +26,7 @@ function entry(id: number, fields: Partial<TimelineEntry>): TimelineEntry {
     occurredAt: "2026-10-05T09:00:00.000Z",
     author: rob,
     createdAt: fields.occurredAt ?? "2026-10-05T09:00:00.000Z",
+    fromLead: null,
     ...fields,
   };
 }

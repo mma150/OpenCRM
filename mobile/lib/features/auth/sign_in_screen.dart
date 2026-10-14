@@ -11,7 +11,8 @@ import 'package:opencrm/features/auth/auth_layout.dart';
 
 /// Email and password, against `POST /auth/token`. What the API refuses (a wrong
 /// password, a locked or deactivated account, too many attempts) and a server that cannot
-/// be reached are each said in words above the form.
+/// be reached are each said in words above the form. "Forgot password?" opens the
+/// [Routes.forgotPassword] screen.
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
 
@@ -25,7 +26,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _password = TextEditingController();
   ServerErrors _errors = ServerErrors.none;
   bool _saving = false;
-  bool _showForgotHelp = false;
 
   @override
   void dispose() {
@@ -107,18 +107,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               TextButton(
+                // Over this screen, so Back returns to it; the email typed goes along.
                 onPressed: () =>
-                    setState(() => _showForgotHelp = !_showForgotHelp),
+                    context.push(Routes.forgotPassword, extra: _email.text),
                 child: const Text('Forgot password?'),
               ),
-              if (_showForgotHelp)
-                Semantics(
-                  liveRegion: true,
-                  child: MutedText(
-                    'Passwords are reset in the web app. Open $serverUrl in a browser, choose '
-                    '"Forgot password?" on its sign-in page, and follow the link in the email.',
-                  ),
-                ),
             ],
           ),
         ),

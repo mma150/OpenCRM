@@ -73,6 +73,11 @@ export const timelineEntrySchema = z
     occurredAt: z.string(),
     author: z.object({ id: z.string(), name: z.string() }),
     createdAt: z.string(),
+    // Set on the timeline of a contact, a company or an opportunity for an entry of a lead
+    // that was converted into that record: the lead's history shows where it went, labelled
+    // with the lead. null for the record's own entries, and always null in the activity feed
+    // and on a lead's own timeline. Written inline for the same reason as conversationType.
+    fromLead: z.object({ id: z.string(), name: z.string() }).nullable(),
   })
   .openapi("TimelineEntry");
 
@@ -83,7 +88,11 @@ export const withAuthor = { author: { select: { id: true, name: true } } } as co
 
 export type TimelineEntryWithAuthor = TimelineEntry & { author: { id: string; name: string } };
 
-export function toApiTimelineEntry(entry: TimelineEntryWithAuthor): ApiTimelineEntry {
+// `fromLead` is passed only by a record's timeline, for the entries of a converted lead.
+export function toApiTimelineEntry(
+  entry: TimelineEntryWithAuthor,
+  fromLead: ApiTimelineEntry["fromLead"] = null,
+): ApiTimelineEntry {
   return {
     id: entry.id,
     kind: entry.kind,
@@ -93,6 +102,7 @@ export function toApiTimelineEntry(entry: TimelineEntryWithAuthor): ApiTimelineE
     occurredAt: entry.occurredAt.toISOString(),
     author: entry.author,
     createdAt: entry.createdAt.toISOString(),
+    fromLead,
   };
 }
 

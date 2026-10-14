@@ -329,4 +329,87 @@ void main() {
       expect(find.text('Save changes'), findsNothing);
     });
   });
+
+  group('custom fields', () {
+    testWidgets(
+      'a new company sends them, the required one filled in',
+      variant: phones,
+      (tester) async {
+        final api = _api()
+          ..on(
+            'GET',
+            '/custom-fields',
+            (request) => customFieldsJson(
+              recordType: 'COMPANY',
+              required: {'cf-region'},
+            ),
+          )
+          ..on('POST', '/companies', (request) => companyJson());
+        await pumpApp(tester, api: api, user: rep, location: Routes.newCompany);
+
+        await enterField(tester, 'Company name', 'Northwind Logistics');
+        await enterField(tester, 'Team size', '12');
+        await _submit(tester, 'Create company');
+        // Region is required: nothing is sent until it is chosen.
+        expect(api.sent('POST', '/companies'), isEmpty);
+        await scrollTo(tester, find.text('Choose an option.'));
+
+        await chooseOption(tester, 'Region', 'North');
+        await _submit(tester, 'Create company');
+
+        expect(api.sent('GET', '/custom-fields').first.query, {
+          'recordType': 'COMPANY',
+        });
+        expect(api.sent('POST', '/companies').single.json['customFields'], {
+          'cf-region': 'North',
+          'cf-size': 12,
+        });
+      },
+    );
+
+    testWidgets(
+      'an edit sends only the ones changed, and shows refusals under them',
+      variant: phones,
+      (tester) async {
+        final api = _api()
+          ..on(
+            'GET',
+            '/custom-fields',
+            (request) => customFieldsJson(recordType: 'COMPANY'),
+          )
+          ..on(
+            'GET',
+            '/companies/company-1',
+            (request) => companyJson(
+              customFields: {
+                'cf-text': 'NW-104',
+                'cf-region': 'South',
+                'cf-size': 12,
+                'cf-renewal': null,
+              },
+            ),
+          )
+          ..on('PATCH', '/companies/company-1', (request) {
+            throw validationError({'customFields.cf-text': 'Too long'});
+          });
+        await pumpApp(
+          tester,
+          api: api,
+          user: rep,
+          location: Routes.editCompany('company-1'),
+        );
+
+        await enterField(tester, 'Account code', '');
+        await chooseOption(tester, 'Region', 'None');
+        await _submit(tester, 'Save changes');
+
+        expect(
+          api.sent('PATCH', '/companies/company-1').single.json['customFields'],
+          {'cf-text': null, 'cf-region': null},
+        );
+        await scrollTo(tester, find.text('Too long'));
+        expect(find.text('Too long'), findsOneWidget);
+      },
+    );
+  });
 }

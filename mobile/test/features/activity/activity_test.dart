@@ -206,7 +206,27 @@ void main() {
       expect(find.text('No activity yet'), findsOneWidget);
     });
 
-    for (final user in [rep, readOnly]) {
+    testWidgets(
+      'a Read-only user is offered it and reads it',
+      variant: phones,
+      (tester) async {
+        final api = FakeApi()
+          ..on('GET', '/activity', (request) => page([activityJson()]));
+        final app = await pumpApp(
+          tester,
+          api: api,
+          user: readOnly,
+          location: Routes.more,
+        );
+
+        await tapVisible(tester, find.text('Activity'));
+        expect(app.location, Routes.activity);
+        expect(_rich('logged a call with'), findsOneWidget);
+        expect(api.sent('GET', '/activity'), hasLength(1));
+      },
+    );
+
+    for (final user in [rep]) {
       testWidgets('${user.role.label}: not offered, and never asked for', (
         tester,
       ) async {

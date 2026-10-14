@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+  csvResponse,
   errorResponse,
   jsonBody,
   jsonResponse,
@@ -12,6 +13,7 @@ import { requireRole } from "../../middleware/require-role";
 import {
   createUserHandler,
   deactivateUserHandler,
+  exportUsersHandler,
   listAssignableUsersHandler,
   listUsersHandler,
   passwordResetLinkHandler,
@@ -26,6 +28,7 @@ import {
   linkResultResponseSchema,
   updateUserBodySchema,
   updateUserResponseSchema,
+  userExportQuerySchema,
   userIdParamsSchema,
   userListResponseSchema,
   userResponseSchema,
@@ -42,6 +45,7 @@ usersRouter.get("/assignable", listAssignableUsersHandler);
 usersRouter.use(requireRole("ADMIN"));
 
 usersRouter.get("/", listUsersHandler);
+usersRouter.get("/export", exportUsersHandler);
 usersRouter.post("/", createUserHandler);
 usersRouter.patch("/:id", updateUserHandler);
 usersRouter.post("/:id/deactivate", deactivateUserHandler);
@@ -69,6 +73,23 @@ registry.registerPath({
       "All users; meta.mailEnabled says whether email works",
       userListResponseSchema,
     ),
+    401: unauthenticated,
+    403: forbidden,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/users/export",
+  tags,
+  summary: "Download every user as a CSV file (Admin only)",
+  description:
+    "The users list as a file, in its order (by name), deactivated users included: Name, Email, Role, Status, Manager, Created. Never a password hash, a token, a session or sign-in lock data. UTF-8 with a byte order mark, one header row, CRLF line ends. Times are written as YYYY-MM-DD HH:mm in the time zone tz (UTC when left out), and the file is named users-YYYY-MM-DD.csv after the viewer's today. At most 10,000 rows (X-Export-Truncated says when the list was longer). A text cell that starts with =, +, -, @, a tab or a carriage return gets a leading apostrophe, so no spreadsheet runs it as a formula.",
+  security,
+  request: { query: userExportQuerySchema },
+  responses: {
+    200: csvResponse("The CSV file"),
+    400: validationFailed,
     401: unauthenticated,
     403: forbidden,
   },

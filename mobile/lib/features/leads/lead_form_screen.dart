@@ -10,8 +10,11 @@ import 'package:opencrm/core/widgets/form_fields.dart';
 import 'package:opencrm/core/widgets/skeleton.dart';
 import 'package:opencrm/core/widgets/snackbars.dart';
 import 'package:opencrm/core/widgets/state_views.dart';
+import 'package:opencrm/features/custom_fields/custom_fields.dart';
+import 'package:opencrm/features/custom_fields/custom_fields_form.dart';
 import 'package:opencrm/features/leads/lead.dart';
 import 'package:opencrm/features/leads/leads_providers.dart';
+import 'package:opencrm/features/timeline/record_ref.dart';
 
 /// The fields this form shows: a validation message for one of these paths goes under its
 /// field, and for any other path above the form.
@@ -30,8 +33,8 @@ const _fields = {
 /// "New lead" (no [id]) and "Edit lead". The form checks what it can before sending; what
 /// only the server knows comes back as a message under the field.
 ///
-/// Custom fields are not edited here yet. An edit leaves them as they are; a new lead in an
-/// installation with a *required* custom field is refused, and the form says which field.
+/// The custom fields of leads follow the lead's own ([CustomFieldsSection]): a new lead
+/// sends the ones filled in, an edit only the ones changed.
 class LeadFormScreen extends ConsumerWidget {
   const LeadFormScreen({super.key, this.id});
 
@@ -90,6 +93,7 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
   );
   late final _notes = TextEditingController(text: widget.lead?.notes);
   late LeadSource? _source = widget.lead?.source;
+  late final _custom = CustomFieldValues(stored: widget.lead?.customFields);
   ServerErrors _errors = ServerErrors.none;
   bool _saving = false;
 
@@ -117,6 +121,7 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
     ]) {
       controller.dispose();
     }
+    _custom.dispose();
     super.dispose();
   }
 
@@ -151,6 +156,9 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    final existing = widget.lead;
+    final fields =
+        ref.read(customFieldsProvider(RecordType.lead)).value ?? const [];
     final input = LeadInput(
       firstName: _firstName.text,
       lastName: _lastName.text,
@@ -161,10 +169,12 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
       phone: _phone.text,
       estimatedValue: double.tryParse(_value.text.trim()),
       notes: _notes.text,
+      customFields: existing == null
+          ? _custom.forCreate(fields)
+          : _custom.changes(fields),
     );
     setState(() => _saving = true);
     try {
-      final existing = widget.lead;
       final String id;
       if (existing == null) {
         id = (await ref.read(leadCreatorProvider).create(input)).id;
@@ -184,10 +194,20 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
     } on ApiError catch (error) {
       if (mounted) {
         setState(() {
-          _errors = ServerErrors.from(error, fields: _fields);
+          _errors = ServerErrors.from(
+            error,
+            fields: {..._fields, ...customFieldPaths(fields)},
+          );
           _saving = false;
         });
       }
+    }
+  }
+
+  /// Takes the server's message off a field the user changed.
+  void _clearError(String field) {
+    if (_errors[field] != null) {
+      setState(() => _errors = _errors.without(field));
     }
   }
 
@@ -218,11 +238,7 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
       hint: hint,
       autocorrect: keyboardType == null,
       serverError: _errors[field],
-      onChanged: (_) {
-        if (_errors[field] != null) {
-          setState(() => _errors = _errors.without(field));
-        }
-      },
+      onChanged: (_) => _clearError(field),
     );
   }
 
@@ -318,6 +334,12 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
               maxLength: 10000,
               maxLines: 6,
               capitalization: TextCapitalization.sentences,
+            ),
+            CustomFieldsSection(
+              recordType: RecordType.lead,
+              values: _custom,
+              errors: _errors,
+              onEdited: _clearError,
             ),
             SubmitButton(
               label: widget.lead == null ? 'Create lead' : 'Save changes',

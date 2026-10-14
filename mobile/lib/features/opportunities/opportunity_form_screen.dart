@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opencrm/app/routes.dart';
 import 'package:opencrm/core/api/api_error.dart';
-import 'package:opencrm/core/format/formatters.dart';
-import 'package:opencrm/core/theme/app_colors.dart';
 import 'package:opencrm/core/theme/app_spacing.dart';
 import 'package:opencrm/core/widgets/app_scaffold.dart';
 import 'package:opencrm/core/widgets/form_fields.dart';
@@ -15,10 +13,13 @@ import 'package:opencrm/core/widgets/snackbars.dart';
 import 'package:opencrm/core/widgets/state_views.dart';
 import 'package:opencrm/features/companies/company_picker.dart';
 import 'package:opencrm/features/contacts/contact_picker.dart';
+import 'package:opencrm/features/custom_fields/custom_fields.dart';
+import 'package:opencrm/features/custom_fields/custom_fields_form.dart';
 import 'package:opencrm/features/leads/lead.dart' show RecordLink;
 import 'package:opencrm/features/opportunities/opportunities_providers.dart';
 import 'package:opencrm/features/opportunities/opportunity.dart';
 import 'package:opencrm/features/pipeline_stages/pipeline_stages.dart';
+import 'package:opencrm/features/timeline/record_ref.dart';
 
 /// The fields this form shows: a validation message for one of these paths goes under its
 /// field, and for any other path above the form.
@@ -36,8 +37,9 @@ const _fields = {
 /// sending; what only the server knows comes back as a message under the field.
 ///
 /// A new opportunity also chooses its stage. An existing one changes stage on its page or
-/// on the pipeline, and owner with Reassign, so neither is here. Custom fields are not
-/// edited in the app yet: an edit leaves them as they are.
+/// on the pipeline, and owner with Reassign, so neither is here. The custom fields of
+/// opportunities follow ([CustomFieldsSection]): a new opportunity sends the ones filled
+/// in, an edit only the ones changed.
 class OpportunityFormScreen extends ConsumerWidget {
   const OpportunityFormScreen({super.key, this.id});
 
@@ -99,6 +101,12 @@ class _OpportunityFormState extends ConsumerState<_OpportunityForm> {
   late String? _expectedCloseDate = widget.opportunity?.expectedCloseDate;
   late PickedRecord? _company = _picked(widget.opportunity?.company);
   late PickedRecord? _contact = _picked(widget.opportunity?.contact);
+  late final _custom = CustomFieldValues(
+    stored: widget.opportunity?.customFields,
+  );
+
+  /// The picker offers five years back and ten ahead.
+  final _now = DateTime.now();
 
   /// The stage chosen for a new opportunity; null is the first open stage.
   String? _stageId;
@@ -124,6 +132,7 @@ class _OpportunityFormState extends ConsumerState<_OpportunityForm> {
     for (final controller in [_name, _value, _notes]) {
       controller.dispose();
     }
+    _custom.dispose();
     super.dispose();
   }
 
@@ -137,27 +146,6 @@ class _OpportunityFormState extends ConsumerState<_OpportunityForm> {
   void _clearError(String field) {
     if (_errors[field] != null) {
       setState(() => _errors = _errors.without(field));
-    }
-  }
-
-  Future<void> _pickDay() async {
-    final now = DateTime.now();
-    final current = DateTime.tryParse(_expectedCloseDate ?? '') ?? now;
-    final first = DateTime(now.year - 5);
-    final last = DateTime(now.year + 10, 12, 31);
-    final day = await showDatePicker(
-      context: context,
-      initialDate: current.isBefore(first) || current.isAfter(last)
-          ? now
-          : current,
-      firstDate: first,
-      lastDate: last,
-    );
-    if (day != null && mounted) {
-      setState(() {
-        _expectedCloseDate = toApiDay(day);
-        _errors = _errors.without('expectedCloseDate');
-      });
     }
   }
 
@@ -186,6 +174,10 @@ class _OpportunityFormState extends ConsumerState<_OpportunityForm> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    final existing = widget.opportunity;
+    final fields =
+        ref.read(customFieldsProvider(RecordType.opportunity)).value ??
+        const [];
     final input = OpportunityInput(
       name: _name.text,
       value: double.tryParse(_value.text.trim()),
@@ -194,10 +186,12 @@ class _OpportunityFormState extends ConsumerState<_OpportunityForm> {
       companyId: _company?.id,
       contactId: _contact?.id,
       notes: _notes.text,
+      customFields: existing == null
+          ? _custom.forCreate(fields)
+          : _custom.changes(fields),
     );
     setState(() => _saving = true);
     try {
-      final existing = widget.opportunity;
       final String id;
       if (existing == null) {
         id = (await ref.read(opportunityCreatorProvider).create(input)).id;
@@ -219,7 +213,10 @@ class _OpportunityFormState extends ConsumerState<_OpportunityForm> {
     } on ApiError catch (error) {
       if (mounted) {
         setState(() {
-          _errors = ServerErrors.from(error, fields: _fields);
+          _errors = ServerErrors.from(
+            error,
+            fields: {..._fields, ...customFieldPaths(fields)},
+          );
           _saving = false;
         });
       }
@@ -269,13 +266,14 @@ class _OpportunityFormState extends ConsumerState<_OpportunityForm> {
               validator: _validValue,
               onChanged: (_) => _clearError('value'),
             ),
-            _DayField(
+            DayField(
               label: 'Expected close date',
               day: _expectedCloseDate,
+              firstDate: DateTime(_now.year - 5),
+              lastDate: DateTime(_now.year + 10, 12, 31),
               errorText: _errors['expectedCloseDate'],
-              onPick: _pickDay,
-              onClear: () => setState(() {
-                _expectedCloseDate = null;
+              onChanged: (day) => setState(() {
+                _expectedCloseDate = day;
                 _errors = _errors.without('expectedCloseDate');
               }),
             ),
@@ -324,6 +322,12 @@ class _OpportunityFormState extends ConsumerState<_OpportunityForm> {
               serverError: _errors['notes'],
               onChanged: (_) => _clearError('notes'),
             ),
+            CustomFieldsSection(
+              recordType: RecordType.opportunity,
+              values: _custom,
+              errors: _errors,
+              onEdited: _clearError,
+            ),
             SubmitButton(
               label: isNew ? 'Create opportunity' : 'Save changes',
               saving: _saving,
@@ -335,67 +339,6 @@ class _OpportunityFormState extends ConsumerState<_OpportunityForm> {
               child: const Text('Cancel'),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// `2026-11-15`: a calendar day as the API takes it. It is the day the user picked, not a
-/// moment, so it is not moved into UTC.
-String toApiDay(DateTime day) {
-  final month = day.month.toString().padLeft(2, '0');
-  final date = day.day.toString().padLeft(2, '0');
-  return '${day.year}-$month-$date';
-}
-
-/// Picks a calendar day (no time) with the platform's picker, with its label above it.
-/// The cross clears it.
-class _DayField extends StatelessWidget {
-  const _DayField({
-    required this.label,
-    required this.day,
-    required this.onPick,
-    required this.onClear,
-    this.errorText,
-  });
-
-  final String label;
-
-  /// `2026-11-15`, or null.
-  final String? day;
-  final VoidCallback onPick;
-  final VoidCallback onClear;
-  final String? errorText;
-
-  @override
-  Widget build(BuildContext context) {
-    final value = day;
-    return LabeledField(
-      label: label,
-      child: Semantics(
-        button: true,
-        child: InkWell(
-          borderRadius: AppSpacing.borderRadius,
-          onTap: onPick,
-          child: InputDecorator(
-            decoration: InputDecoration(
-              errorText: errorText,
-              suffixIcon: value == null
-                  ? const Icon(Icons.calendar_today_outlined)
-                  : IconButton(
-                      tooltip: 'Clear ${label.toLowerCase()}',
-                      icon: const Icon(Icons.close),
-                      onPressed: onClear,
-                    ),
-            ),
-            child: Text(
-              value == null ? 'No date' : formatDay(value),
-              style: value == null
-                  ? TextStyle(color: context.colors.textMuted)
-                  : null,
-            ),
-          ),
         ),
       ),
     );

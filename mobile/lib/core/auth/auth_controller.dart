@@ -132,6 +132,13 @@ class AuthController extends Notifier<AuthState> {
     );
   }
 
+  /// Asks the server to email a link that sets a new password (`POST
+  /// /auth/forgot-password`). The server answers the same whether or not the email has an
+  /// account, so nothing here says which. The link opens the web app's reset page.
+  Future<void> requestPasswordReset(String email) async {
+    await _api.post('/auth/forgot-password', body: {'email': email});
+  }
+
   /// Signs out on this device at once, then tells the server to end the session. A server
   /// that cannot be reached does not keep the user signed in here.
   Future<void> signOut() async {

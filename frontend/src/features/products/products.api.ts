@@ -1,3 +1,4 @@
+import { type DownloadedFile, downloadExport } from "@/lib/api/download";
 import { http } from "@/lib/api/http";
 
 import type {
@@ -15,6 +16,12 @@ import type {
 export async function listProducts(query: ProductListQuery): Promise<ProductList> {
   const response = await http.get<ProductsResponse>("/products", { params: query });
   return { products: response.data.data, ...response.data.meta };
+}
+
+// The catalog as a CSV file: every product the search and the Status filter match, in the
+// list's order. For every signed-in user, like the list.
+export function exportProducts(query: ProductListQuery): Promise<DownloadedFile> {
+  return downloadExport("/products/export", query, "products.csv");
 }
 
 export async function getProduct(id: string): Promise<Product> {

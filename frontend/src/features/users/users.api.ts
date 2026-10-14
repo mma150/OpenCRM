@@ -1,3 +1,4 @@
+import { type DownloadedFile, downloadExport } from "@/lib/api/download";
 import { http } from "@/lib/api/http";
 
 import type {
@@ -21,6 +22,12 @@ import type {
 export async function listUsers(): Promise<UserList> {
   const response = await http.get<UsersResponse>("/users");
   return { users: response.data.data, mailEnabled: response.data.meta.mailEnabled };
+}
+
+// Every user as a CSV file (Admin only): name, email, role, status, manager and created.
+// The list has no filters, so there is no query beyond the time zone `downloadExport` adds.
+export function exportUsers(): Promise<DownloadedFile> {
+  return downloadExport("/users/export", {}, "users.csv");
 }
 
 export async function inviteUser(input: InviteUserInput): Promise<InviteUserResult> {

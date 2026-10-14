@@ -208,6 +208,7 @@ describe("POST /emails", () => {
           occurredAt: expect.any(String) as string,
           author: { id: ravi.id, name: "Ravi Rep" },
           createdAt: expect.any(String) as string,
+          fromLead: null,
         },
         meta: {},
       });

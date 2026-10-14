@@ -32,8 +32,13 @@ enum Role {
   bool get canReassignRecords =>
       this == Role.admin || this == Role.salesManager;
 
-  /// The team dashboard and the activity feed are for Admins and Sales Managers.
+  /// Admins and Sales Managers look after other people's work: they see everyone's tasks
+  /// and narrow Home's lists to their own records.
   bool get seesTeam => this == Role.admin || this == Role.salesManager;
+
+  /// The team dashboard and the activity feed: Admins, Sales Managers and Read-only users
+  /// (who are there to watch the team). A Sales Rep gets `FORBIDDEN`.
+  bool get seesTeamOverview => this != Role.salesRep;
 }
 
 /// The signed-in user, as `GET /auth/me` and `POST /auth/token` answer.

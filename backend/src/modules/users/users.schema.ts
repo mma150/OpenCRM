@@ -1,4 +1,5 @@
 import { envelope, z } from "../../lib/openapi";
+import { timeZoneSchema } from "../../lib/time-zone";
 import { emailSchema, nameSchema, roleSchema } from "../../lib/user-fields";
 
 // Derived, not stored: deactivated wins, then "invited" while no password has been set.
@@ -64,6 +65,12 @@ export const updateUserBodySchema = z
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;
 
 export const userIdParamsSchema = z.object({ id: z.uuid() });
+
+// The users list has no filters, so the export takes only the viewer's time zone, for the
+// times in the file and its name.
+export const userExportQuerySchema = z.object({ tz: timeZoneSchema });
+
+export type UserExportQuery = z.infer<typeof userExportQuerySchema>;
 
 export const userListResponseSchema = z.object({
   data: z.array(userSchema),

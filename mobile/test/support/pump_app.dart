@@ -127,9 +127,9 @@ Future<TestApp> pumpApp(
     api.onDefault('GET', '/auth/me', (request) => userJson(user));
     // Home is the first page of a signed-in user, so its figures are always asked for.
     api.onDefault('GET', '/dashboard/me', (request) => dashboardJson());
-    // Home shows the team's figures to those who manage one. Nobody else gets an answer,
-    // so a request made for a Sales Rep or a Read-only user fails the test.
-    if (user.role.seesTeam) {
+    // Home shows the team's figures to everyone but a Sales Rep. A Sales Rep gets no
+    // answer, so a request made for one fails the test.
+    if (user.role.seesTeamOverview) {
       api.onDefault('GET', '/dashboard/team', (request) => teamDashboardJson());
     }
   }

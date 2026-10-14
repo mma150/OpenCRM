@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo } from "react";
 
 import { FormAlert } from "@/components/shared/form-alert";
+import { ListActions } from "@/components/shared/list-actions";
 import { ListPagination, pageRange } from "@/components/shared/list-pagination";
 import { ListToolbar } from "@/components/shared/list-toolbar";
 import { type ListUrlConfig, useListUrlState } from "@/components/shared/list-url-state";
@@ -24,6 +25,7 @@ import { formatDayHeading, formatTime, toDateInputValue } from "@/lib/format";
 import { initials } from "@/lib/user-labels";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
+import { exportActivity } from "./activity.api";
 import {
   fetchActivity,
   fetchActivityAuthors,
@@ -209,6 +211,11 @@ function ActivityFeed() {
 
   return (
     <>
+      <PageHeader
+        title="Activity"
+        description="What your team did and when."
+        action={<ListActions onExport={() => exportActivity(query)} />}
+      />
       <div className="flex flex-col gap-2">
         <ListToolbar
           filters={[
@@ -338,9 +345,10 @@ function ActivityFeed() {
   );
 }
 
-// /activity: what each person on the team did and when (CONV-04). Admin and Sales Manager
-// only. Everyone else gets a clear "no access" state, not a blank page; the API refuses
-// them too (FORBIDDEN), so this is not the security boundary.
+// /activity: what each person on the team did and when (CONV-04). For an Admin, a Sales
+// Manager and a Read-only user (who sees everything, like an Admin, and writes nothing). A
+// Sales Rep gets a clear "no access" state, not a blank page; the API refuses them too
+// (FORBIDDEN), so this is not the security boundary.
 export function ActivityPage() {
   const { data: me } = useAppSelector(selectAuth);
 
@@ -348,12 +356,12 @@ export function ActivityPage() {
     return null;
   }
 
-  if (me.role !== "ADMIN" && me.role !== "SALES_MANAGER") {
+  if (me.role === "SALES_REP") {
     return (
       <PageState
         icon={ShieldAlert}
         title="You do not have access to Activity"
-        description="Only an Admin or a Sales Manager can see what the team did."
+        description="Only an Admin, a Sales Manager or a Read-only user can see what the team did."
         action={
           <Button asChild variant="outline" className="h-10 px-4">
             <Link href="/">Back to Home</Link>
@@ -363,10 +371,5 @@ export function ActivityPage() {
     );
   }
 
-  return (
-    <>
-      <PageHeader title="Activity" description="What your team did and when." />
-      <ActivityFeed />
-    </>
-  );
+  return <ActivityFeed />;
 }

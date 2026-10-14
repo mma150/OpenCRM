@@ -1,5 +1,6 @@
 import 'package:opencrm/core/api/json.dart';
 import 'package:opencrm/core/auth/user.dart';
+import 'package:opencrm/features/leads/lead.dart' show RecordLink;
 
 /// What a timeline entry is. `unknown` is a kind a newer server writes that this version
 /// of the app has no words for yet; it is shown as a plain "Update".
@@ -69,6 +70,7 @@ class TimelineEntry {
     required this.details,
     required this.occurredAt,
     required this.author,
+    this.fromLead,
   });
 
   factory TimelineEntry.fromJson(Json json) {
@@ -82,6 +84,8 @@ class TimelineEntry {
       details: readMapOrNull(json, 'details') ?? const {},
       occurredAt: readDate(json, 'occurredAt'),
       author: PersonRef.fromJson(asMap(json['author'])),
+      // Left out by an older server: the entry is the record's own.
+      fromLead: RecordLink.fromJsonOrNull(json['fromLead']),
     );
   }
 
@@ -97,4 +101,9 @@ class TimelineEntry {
   final Json details;
   final DateTime occurredAt;
   final PersonRef author;
+
+  /// On the timeline of a contact, a company or an opportunity: the lead that was converted
+  /// into the record, when this is one of that lead's entries (merged in by date). Null for
+  /// the record's own entries, and on a lead's timeline and the activity feed.
+  final RecordLink? fromLead;
 }

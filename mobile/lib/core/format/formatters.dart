@@ -178,3 +178,11 @@ String deviceTimeZone({DateTime? now}) {
 
 /// A moment as the API takes it: UTC, ISO 8601 (`2026-11-15T09:30:00.000Z`).
 String toApiMoment(DateTime moment) => moment.toUtc().toIso8601String();
+
+/// `2026-11-15`: a calendar day as the API takes it (an expected close date, a custom date
+/// field). It is the day the user picked, not a moment, so it is not moved into UTC.
+String toApiDay(DateTime day) {
+  final month = day.month.toString().padLeft(2, '0');
+  final date = day.day.toString().padLeft(2, '0');
+  return '${day.year}-$month-$date';
+}

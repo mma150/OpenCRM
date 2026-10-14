@@ -2,6 +2,7 @@ import { listEnvelope, listQuerySchema } from "../../lib/list-query";
 import { envelope, z } from "../../lib/openapi";
 import { moneySchema, optionalText } from "../../lib/record-fields";
 import { percentSchema } from "../../lib/sales-documents";
+import { timeZoneSchema } from "../../lib/time-zone";
 
 export const productSchema = z
   .object({
@@ -58,6 +59,12 @@ export const productListQuerySchema = listQuerySchema(
 });
 
 export type ProductListQuery = z.infer<typeof productListQuerySchema>;
+
+// The export takes what the list takes (paging is ignored), and the viewer's time zone for
+// the times in the file and its name.
+export const productExportQuerySchema = productListQuerySchema.extend({ tz: timeZoneSchema });
+
+export type ProductExportQuery = z.infer<typeof productExportQuerySchema>;
 
 export const productResponseSchema = envelope(productSchema);
 export const productListResponseSchema = listEnvelope(productSchema);

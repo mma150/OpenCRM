@@ -17,8 +17,13 @@ dashboardRouter.use(authenticate);
 
 // Every signed-in user has a page about their own work.
 dashboardRouter.get("/me", getMyDashboardHandler);
-// The figures of other people are for the people who run a team (DASH-02, DASH-03).
-dashboardRouter.get("/team", requireRole("ADMIN", "SALES_MANAGER"), getTeamDashboardHandler);
+// The figures of other people are for the people who run a team (DASH-02, DASH-03), and
+// for a Read-only user, who sees every record and so sees what an Admin sees.
+dashboardRouter.get(
+  "/team",
+  requireRole("ADMIN", "SALES_MANAGER", "READ_ONLY"),
+  getTeamDashboardHandler,
+);
 
 // Documented beside the routes so the two cannot drift apart.
 const tags = ["Dashboard"];
@@ -45,9 +50,9 @@ registry.registerPath({
   method: "get",
   path: "/dashboard/team",
   tags,
-  summary: "Figures per person for a range of days (Admin and Sales Manager only)",
+  summary: "Figures per person for a range of days (Admin, Sales Manager and Read-only)",
   description:
-    "An Admin sees every user who is not Read-only, a Sales Manager themselves and their team. from and to are days in the time zone tz and both are included; left out, they are the first day of the current month and today. The range is at most 366 days. openPipelineValue and overdueTasks are as of now, not of the range. A deactivated person is listed only while one of their figures is not zero.",
+    "An Admin and a Read-only user see every user who is not Read-only, a Sales Manager themselves and their team. from and to are days in the time zone tz and both are included; left out, they are the first day of the current month and today. The range is at most 366 days. openPipelineValue and overdueTasks are as of now, not of the range. A deactivated person is listed only while one of their figures is not zero.",
   security,
   request: { query: teamDashboardQuerySchema },
   responses: {
@@ -56,6 +61,6 @@ registry.registerPath({
       "VALIDATION_FAILED: bad input, a to before from, or a range of more than 366 days",
     ),
     401: unauthenticated,
-    403: errorResponse("Not an Admin or a Sales Manager (FORBIDDEN)"),
+    403: errorResponse("A Sales Rep (FORBIDDEN)"),
   },
 });

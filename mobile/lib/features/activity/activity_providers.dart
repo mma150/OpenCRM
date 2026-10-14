@@ -6,8 +6,8 @@ import 'package:opencrm/core/auth/auth_controller.dart';
 import 'package:opencrm/core/state/paged_notifier.dart';
 import 'package:opencrm/features/activity/activity_entry.dart';
 
-/// The activity routes of the API. Admins and Sales Managers only; the API answers
-/// `FORBIDDEN` to everyone else.
+/// The activity routes of the API. Admins, Sales Managers and Read-only users only; the API answers
+/// `FORBIDDEN` to a Sales Rep.
 class ActivityApi {
   const ActivityApi(this._client);
 
@@ -44,8 +44,8 @@ final activityKindProvider =
 
 /// The activity feed, page by page, for the type in [activityKindProvider].
 ///
-/// **Only an Admin and a Sales Manager are ever asked for**: for anyone else a page fails
-/// here, before any request is made.
+/// **Never asked for a Sales Rep** (`Role.seesTeamOverview`): for them a page fails here,
+/// before any request is made.
 class ActivityController extends PagedNotifier<ActivityEntry> {
   late ActivityKind _kind;
 
@@ -57,10 +57,10 @@ class ActivityController extends PagedNotifier<ActivityEntry> {
 
   @override
   Future<Page<ActivityEntry>> fetchPage(int page) async {
-    if (!ref.read(currentUserProvider).role.seesTeam) {
+    if (!ref.read(currentUserProvider).role.seesTeamOverview) {
       throw const ApiError(
         code: 'FORBIDDEN',
-        message: 'The activity feed is for Admins and Sales Managers.',
+        message: 'The activity feed is for Admins, Sales Managers and Read-only users.',
       );
     }
     return ref.read(activityApiProvider).list(_kind, page);

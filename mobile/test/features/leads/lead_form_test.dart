@@ -257,7 +257,7 @@ void main() {
       expect(sent['phone'], isNull);
       expect(sent['estimatedValue'], 1250.5);
       expect(sent['source'], 'REFERRAL');
-      // Not the status, and not the custom fields: an edit leaves them as they are.
+      // Not the status, and no custom fields: none were changed.
       expect(sent.containsKey('status'), false);
       expect(sent.containsKey('customFields'), false);
       expect(app.location, Routes.lead('lead-1'));
@@ -326,5 +326,88 @@ void main() {
         findsOneWidget,
       );
     });
+  });
+
+  group('custom fields', () {
+    testWidgets(
+      'a new lead sends them, the required one filled in',
+      variant: phones,
+      (tester) async {
+        final api = _api()
+          ..on(
+            'GET',
+            '/custom-fields',
+            (request) =>
+                customFieldsJson(recordType: 'LEAD', required: {'cf-region'}),
+          )
+          ..on('POST', '/leads', (request) => leadJson());
+        await pumpApp(tester, api: api, user: rep, location: Routes.newLead);
+
+        await enterField(tester, 'First name', 'Marcus');
+        await enterField(tester, 'Last name', 'Chen');
+        await _chooseSource(tester, 'Referral');
+        await enterField(tester, 'Team size', '12');
+        await _submit(tester, 'Create lead');
+        // Region is required: nothing is sent until it is chosen.
+        expect(api.sent('POST', '/leads'), isEmpty);
+        await scrollTo(tester, find.text('Choose an option.'));
+
+        await chooseOption(tester, 'Region', 'North');
+        await _submit(tester, 'Create lead');
+
+        expect(api.sent('GET', '/custom-fields').first.query, {
+          'recordType': 'LEAD',
+        });
+        expect(api.sent('POST', '/leads').single.json['customFields'], {
+          'cf-region': 'North',
+          'cf-size': 12,
+        });
+      },
+    );
+
+    testWidgets(
+      'an edit sends only the ones changed, and shows refusals under them',
+      variant: phones,
+      (tester) async {
+        final api = _api()
+          ..on(
+            'GET',
+            '/custom-fields',
+            (request) => customFieldsJson(recordType: 'LEAD'),
+          )
+          ..on(
+            'GET',
+            '/leads/lead-1',
+            (request) => leadJson(
+              customFields: {
+                'cf-text': 'NW-104',
+                'cf-region': 'South',
+                'cf-size': 12,
+                'cf-renewal': null,
+              },
+            ),
+          )
+          ..on('PATCH', '/leads/lead-1', (request) {
+            throw validationError({'customFields.cf-text': 'Too long'});
+          });
+        await pumpApp(
+          tester,
+          api: api,
+          user: rep,
+          location: Routes.editLead('lead-1'),
+        );
+
+        await enterField(tester, 'Account code', '');
+        await chooseOption(tester, 'Region', 'None');
+        await _submit(tester, 'Save changes');
+
+        expect(api.sent('PATCH', '/leads/lead-1').single.json['customFields'], {
+          'cf-text': null,
+          'cf-region': null,
+        });
+        await scrollTo(tester, find.text('Too long'));
+        expect(find.text('Too long'), findsOneWidget);
+      },
+    );
   });
 }

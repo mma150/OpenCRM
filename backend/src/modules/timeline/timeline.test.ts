@@ -24,6 +24,7 @@ interface ApiEntry {
   occurredAt: string;
   author: { id: string; name: string };
   createdAt: string;
+  fromLead: { id: string; name: string } | null;
 }
 
 interface ApiLead {
@@ -423,6 +424,7 @@ describe("POST /leads/:id/conversations", () => {
       occurredAt,
       author: { id: ravi.id, name: "Ravi Rep" },
       createdAt: stored?.createdAt.toISOString(),
+      fromLead: null,
     });
     expect(await storedEntries(lead.id)).toHaveLength(1);
   });
@@ -537,6 +539,7 @@ describe("POST /leads/:id/notes", () => {
       occurredAt: entry.occurredAt,
       author: { id: meera.id, name: "Meera Manager" },
       createdAt: entry.createdAt,
+      fromLead: null,
     });
     expect(new Date(entry.occurredAt).getTime()).toBeGreaterThanOrEqual(before);
     expect(new Date(entry.occurredAt).getTime()).toBeLessThanOrEqual(Date.now());
@@ -747,10 +750,13 @@ describe("GET /leads/:id/timeline", () => {
       "conversationType",
       "createdAt",
       "details",
+      "fromLead",
       "id",
       "kind",
       "occurredAt",
     ]);
+    // A lead's own timeline holds only its own entries.
+    expect(body.data.map((entry) => entry.fromLead)).toEqual([null, null, null, null, null]);
   });
 
   it("orders by when it happened, not by when it was written down", async () => {
@@ -962,10 +968,25 @@ describe("entries are permanent", () => {
 // remember when it was last spoken to. An opportunity's stage changes are tested with the
 // opportunities themselves.
 describe.each([
-  { type: "contact", base: "/api/v1/contacts", column: "contactId" },
-  { type: "company", base: "/api/v1/companies", column: "companyId" },
-  { type: "opportunity", base: "/api/v1/opportunities", column: "opportunityId" },
-] as const)("the timeline of a $type", ({ type, base, column }) => {
+  {
+    type: "contact",
+    base: "/api/v1/contacts",
+    column: "contactId",
+    convertedColumn: "convertedContactId",
+  },
+  {
+    type: "company",
+    base: "/api/v1/companies",
+    column: "companyId",
+    convertedColumn: "convertedCompanyId",
+  },
+  {
+    type: "opportunity",
+    base: "/api/v1/opportunities",
+    column: "opportunityId",
+    convertedColumn: "convertedOpportunityId",
+  },
+] as const)("the timeline of a $type", ({ type, base, column, convertedColumn }) => {
   const newRecord =
     type === "contact" ? { firstName: "Jane", lastName: "Doe" } : { name: "Acme Holdings" };
 
@@ -1128,6 +1149,7 @@ describe.each([
         occurredAt,
         author: { id: ravi.id, name: "Ravi Rep" },
         createdAt: entry.createdAt,
+        fromLead: null,
       });
       expect(await storedRecordEntries(record.id)).toHaveLength(1);
     });
@@ -1241,6 +1263,139 @@ describe.each([
         expect(errorOf(response).code).toBe("FORBIDDEN");
       }
       expect(await prisma.timelineEntry.count()).toBe(0);
+    });
+  });
+
+  describe("the history of a lead converted into it", () => {
+    // A lead of Tara's (another team) converted into a record of Ravi's, with its entries
+    // between the record's own: the record's are on the odd days, the lead's on the even.
+    async function convertedSetUp() {
+      const record = await makeRecord(ravi);
+      const lead = await makeLead(tara, {
+        firstName: "Lara",
+        lastName: "Lead",
+        status: "CONVERTED",
+        convertedAt: day(6),
+        [convertedColumn]: record.id,
+      });
+      const unrelated = await makeLead(tara, { firstName: "Other" });
+      await makeRecordEntry(record, ravi, { kind: "CREATED", body: null, occurredAt: day(1) });
+      await makeEntry(lead, tara, { kind: "CREATED", body: null, occurredAt: day(2) });
+      await makeRecordEntry(record, ravi, { body: "record note", occurredAt: day(3) });
+      await makeEntry(lead, tara, {
+        kind: "CONVERSATION",
+        conversationType: "CALL",
+        body: "lead call",
+        occurredAt: day(4),
+      });
+      await makeRecordEntry(record, meera, {
+        kind: "CONVERSATION",
+        conversationType: "MEETING",
+        body: "record meeting",
+        occurredAt: day(5),
+      });
+      await makeEntry(lead, tara, { body: "lead note", occurredAt: day(6) });
+      await makeEntry(unrelated, tara, { body: "not converted here", occurredAt: day(7) });
+      return { record, lead, url: `${base}/${record.id}/timeline` };
+    }
+
+    it("merges the lead's entries in date order, each labelled with the lead", async () => {
+      const { lead, url } = await convertedSetUp();
+
+      const response = await asRavi.get(url);
+      const entries = entriesOf(response);
+      const fromLead = { id: lead.id, name: "Lara Lead" };
+
+      expect(response.status).toBe(200);
+      expect(entries.map((entry) => [entry.kind, entry.body, entry.fromLead])).toEqual([
+        ["NOTE", "lead note", fromLead],
+        ["CONVERSATION", "record meeting", null],
+        ["CONVERSATION", "lead call", fromLead],
+        ["NOTE", "record note", null],
+        ["CREATED", null, fromLead],
+        ["CREATED", null, null],
+      ]);
+      expect(entries[0]?.author).toEqual({ id: tara.id, name: "Tara Rep" });
+      expect((response.body as Envelope<ApiEntry[]>).meta).toEqual({
+        page: 1,
+        pageSize: 25,
+        total: 6,
+      });
+    });
+
+    it("pages and filters over both together", async () => {
+      const { url } = await convertedSetUp();
+
+      const second = await asRavi.get(url).query({ pageSize: 4, page: 2 });
+      const notes = await asRavi.get(url).query({ kind: "NOTE" });
+      const calls = await asRavi.get(url).query({ kind: "CONVERSATION", pageSize: 1, page: 2 });
+      const system = await asRavi.get(url).query({ kind: "SYSTEM" });
+
+      expect(entriesOf(second).map((entry) => [entry.kind, entry.fromLead?.name ?? null])).toEqual([
+        ["CREATED", "Lara Lead"],
+        ["CREATED", null],
+      ]);
+      expect((second.body as Envelope<ApiEntry[]>).meta).toEqual({
+        page: 2,
+        pageSize: 4,
+        total: 6,
+      });
+      expect(bodiesOf(notes)).toEqual(["lead note", "record note"]);
+      expect(bodiesOf(calls)).toEqual(["lead call"]);
+      expect((calls.body as Envelope<ApiEntry[]>).meta).toEqual({
+        page: 2,
+        pageSize: 1,
+        total: 2,
+      });
+      expect(entriesOf(system).map((entry) => entry.fromLead?.name ?? null)).toEqual([
+        "Lara Lead",
+        null,
+      ]);
+    });
+
+    it("shows them to everyone who may see the record, whoever owns the lead", async () => {
+      const { url } = await convertedSetUp();
+      const asTara = await signInAs(app, tara);
+
+      for (const agent of [asRavi, asMeera, asAdmin, asViewer]) {
+        const response = await agent.get(url);
+        expect(response.status).toBe(200);
+        expect((response.body as Envelope<ApiEntry[]>).meta.total).toBe(6);
+      }
+      // Tara owns the lead but cannot see Ravi's record, so she does not get its timeline.
+      const forTara = await asTara.get(url);
+      expect(forTara.status).toBe(404);
+      expect(errorOf(forTara).code).toBe("NOT_FOUND");
+    });
+
+    it("leaves the lead's own timeline as it was", async () => {
+      const { lead } = await convertedSetUp();
+
+      const response = await asAdmin.get(`${LEADS}/${lead.id}/timeline`);
+
+      expect(bodiesOf(response)).toEqual(["lead note", "lead call", null]);
+      expect(entriesOf(response).map((entry) => entry.fromLead)).toEqual([null, null, null]);
+    });
+
+    it("leaves out the entries of a deleted lead", async () => {
+      const { lead, url } = await convertedSetUp();
+      await prisma.lead.update({ where: { id: lead.id }, data: { deletedAt: new Date() } });
+
+      expect(bodiesOf(await asRavi.get(url))).toEqual(["record meeting", "record note", null]);
+    });
+
+    it("writes a new conversation or note to the record only", async () => {
+      const { record, lead } = await convertedSetUp();
+      const before = await storedEntries(lead.id);
+
+      for (const [what, write] of writesOn(asRavi, record.id)) {
+        const response = await write();
+        expect(response.status, what).toBe(201);
+        expect(entryOf(response).fromLead, what).toBeNull();
+      }
+
+      expect(await storedEntries(lead.id)).toEqual(before);
+      expect(await storedRecordEntries(record.id)).toHaveLength(5);
     });
   });
 
@@ -1479,5 +1634,58 @@ describe("one record per entry", () => {
       }),
     ).rejects.toThrow();
     expect(await prisma.timelineEntry.count()).toBe(0);
+  });
+});
+
+// LEAD-04 end to end: what a real conversion leaves on each timeline.
+describe("a lead converted through the API", () => {
+  it("shows its history on the contact, company and opportunity it became; the lead keeps its own", async () => {
+    const created = await asRavi
+      .post(LEADS)
+      .send({ firstName: "Lara", lastName: "Lifecycle", source: "REFERRAL" });
+    const leadId = leadOf(created).id;
+    await asRavi
+      .post(`${LEADS}/${leadId}/conversations`)
+      .send(conversation({ summary: "Discovery call" }));
+    const converted = await asRavi.post(`${LEADS}/${leadId}/convert`).send({
+      company: { mode: "create", name: "Lifecycle Co" },
+      contact: { mode: "create" },
+      opportunity: { create: true, name: "Lifecycle Co - Pilot" },
+    });
+    expect(converted.status).toBe(200);
+    const to = (
+      converted.body as Envelope<{
+        convertedTo: Record<"contact" | "company" | "opportunity", { id: string }>;
+      }>
+    ).data.convertedTo;
+    const fromLead = { id: leadId, name: "Lara Lifecycle" };
+
+    for (const [path, id] of [
+      ["contacts", to.contact.id],
+      ["companies", to.company.id],
+      ["opportunities", to.opportunity.id],
+    ] as const) {
+      const response = await asRavi.get(`/api/v1/${path}/${id}/timeline`);
+      expect(response.status, path).toBe(200);
+      // Newest first: the lead's conversion (written last), the record's own CREATED, then
+      // the lead's CREATED and its call of an hour ago. The lead's are labelled with it.
+      expect(
+        entriesOf(response).map((entry) => [entry.kind, entry.fromLead]),
+        path,
+      ).toEqual([
+        ["STATUS_CHANGE", fromLead],
+        ["CREATED", null],
+        ["CREATED", fromLead],
+        ["CONVERSATION", fromLead],
+      ]);
+      expect(bodiesOf(response)[3], path).toBe("Discovery call");
+    }
+
+    const ownTimeline = await asRavi.get(`${LEADS}/${leadId}/timeline`);
+    expect(entriesOf(ownTimeline).map((entry) => [entry.kind, entry.fromLead])).toEqual([
+      ["STATUS_CHANGE", null],
+      ["CREATED", null],
+      ["CONVERSATION", null],
+    ]);
   });
 });

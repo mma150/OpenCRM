@@ -10,7 +10,9 @@ import {
   type ValidationDetail,
 } from "../../../test/helpers";
 import type { Lead, Prisma, User } from "../../generated/prisma/client";
+import { parseCsv } from "../../lib/csv";
 import { prisma } from "../../lib/prisma";
+import { dayIn } from "../../lib/time-zone";
 
 interface ActivityEntry {
   id: string;
@@ -21,6 +23,7 @@ interface ActivityEntry {
   occurredAt: string;
   author: { id: string; name: string };
   createdAt: string;
+  fromLead: { id: string; name: string } | null;
   record: { type: string; id: string; name: string };
 }
 
@@ -233,6 +236,8 @@ describe("GET /activity: who sees what", () => {
       occurredAt: "2026-03-03T10:00:00.000Z",
       author: { id: meera.id, name: "Meera Manager" },
       createdAt: entry?.createdAt,
+      // The feed shows each entry on its own record.
+      fromLead: null,
       record: { type: "LEAD", id: ravisLead.id, name: "Lead Of Ravi" },
     });
   });
@@ -256,12 +261,25 @@ describe("GET /activity: who sees what", () => {
     expect(labelsOf(response)).toEqual(["omar note, end of 5 Mar", "tara call, 4 Mar"]);
   });
 
-  it.each([
-    ["a Sales Rep", () => asRavi],
-    ["a Read-only user", () => asViewer],
-  ])("answers FORBIDDEN for %s, on the feed and on its authors", async (_who, agent) => {
-    for (const url of [ACTIVITY, AUTHORS]) {
-      const response = await agent().get(url);
+  it("shows a Read-only user everyone's entries, exactly as an Admin sees them", async () => {
+    const forViewer = await feed({}, asViewer);
+    const forAdmin = await feed();
+
+    expect(forViewer.status).toBe(200);
+    expect(labelsOf(forViewer)).toEqual(EVERYTHING);
+    expect(feedOf(forViewer)).toEqual(feedOf(forAdmin));
+  });
+
+  it("lets a Read-only user filter by anyone, like an Admin", async () => {
+    const taras = await feed({ userId: tara.id }, asViewer);
+
+    expect(taras.status).toBe(200);
+    expect(labelsOf(taras)).toEqual(["tara call, 4 Mar"]);
+  });
+
+  it("answers FORBIDDEN for a Sales Rep, on the feed, its authors and its export", async () => {
+    for (const url of [ACTIVITY, AUTHORS, `${ACTIVITY}/export`]) {
+      const response = await asRavi.get(url);
       expect(response.status, url).toBe(403);
       expect(errorOf(response).code, url).toBe("FORBIDDEN");
     }
@@ -489,6 +507,13 @@ describe("GET /activity/authors", () => {
       "Tara Rep",
     ]);
     expect(body.data[0]).toEqual({ id: admin.id, name: "Asha Admin" });
+  });
+
+  it("gives a Read-only user the same people as an Admin", async () => {
+    const forViewer = await asViewer.get(AUTHORS);
+
+    expect(forViewer.status).toBe(200);
+    expect(forViewer.body).toEqual((await asAdmin.get(AUTHORS)).body);
   });
 
   it("gives a Sales Manager themselves and their team", async () => {
@@ -768,5 +793,153 @@ describe("GET /activity: leads, contacts, companies and opportunities together",
     expect(seen(afterCompany)).toEqual(["CREATED CONTACT Nora New", "NOTE CONTACT Nora New"]);
     expect(feedOf(afterCompany).meta.summary.notes).toBe(1);
     expect(seen(afterBoth)).toEqual([]);
+  });
+});
+
+// Last, because the formula test adds entries (in May, away from the others).
+describe("GET /activity/export", () => {
+  const EXPORT = `${ACTIVITY}/export`;
+  const BOM = "\uFEFF";
+  const HEADERS = [
+    "When",
+    "Person",
+    "Type",
+    "Conversation type",
+    "Record type",
+    "Record",
+    "Details",
+    "Text",
+    "Logged",
+  ];
+  // Up to the end of March: the seeded feed, without what later tests add.
+  const SEEDED = { to: "2026-03-31" };
+
+  function rowsOf(response: request.Response): string[][] {
+    expect(response.status).toBe(200);
+    return parseCsv(response.text);
+  }
+
+  function recordsOf(response: request.Response): Record<string, string>[] {
+    const [header = [], ...rows] = rowsOf(response);
+    return rows.map((row) =>
+      Object.fromEntries(header.map((name, index) => [name, row[index] ?? ""])),
+    );
+  }
+
+  function textsOf(response: request.Response): string[] {
+    return recordsOf(response).map((record) => record.Text ?? "");
+  }
+
+  it("sends the feed as a CSV download named activity-<today>.csv", async () => {
+    const response = await asAdmin.get(EXPORT).query(SEEDED);
+
+    expect(response.headers["content-type"]).toBe("text/csv; charset=utf-8");
+    expect(response.headers["content-disposition"]).toBe(
+      `attachment; filename="activity-${dayIn("UTC", new Date())}.csv"`,
+    );
+    expect(response.headers["x-export-truncated"]).toBe("false");
+    expect(response.text.startsWith(BOM)).toBe(true);
+    expect(rowsOf(response)[0]).toEqual(HEADERS);
+    expect(textsOf(response)).toEqual(EVERYTHING);
+  });
+
+  it("holds exactly what each role's feed holds", async () => {
+    const texts = async (agent: Agent) => textsOf(await agent.get(EXPORT).query(SEEDED));
+
+    expect(await texts(asAdmin)).toEqual(EVERYTHING);
+    expect(await texts(asViewer)).toEqual(EVERYTHING);
+    expect(await texts(asMeera)).toEqual(MEERAS_TEAM);
+    expect(await texts(asOmar)).toEqual(["omar note, end of 5 Mar", "tara call, 4 Mar"]);
+  });
+
+  it("applies the feed's filters and ignores paging", async () => {
+    const notes = await asAdmin
+      .get(EXPORT)
+      .query({ ...SEEDED, userId: ravi.id, kind: "NOTE", page: "2", pageSize: "1" });
+    const days = await asMeera.get(EXPORT).query({ from: "2026-03-01", to: "2026-03-03" });
+    const outsideTeam = await asMeera.get(EXPORT).query({ userId: tara.id });
+
+    expect(textsOf(notes)).toEqual(["ravi note on tara's lead, 8 Mar", "ravi note, 2 Mar"]);
+    expect(textsOf(days)).toEqual([
+      "meera status change, 3 Mar",
+      "ravi note, 2 Mar",
+      "ravi call, 1 Mar",
+    ]);
+    expect(outsideTeam.status).toBe(400);
+    expect(detailPaths(outsideTeam)).toEqual(["userId"]);
+  });
+
+  it("writes who, what, on which record and when, on the viewer's clock", async () => {
+    const response = await asAdmin
+      .get(EXPORT)
+      .query({ ...SEEDED, userId: tara.id, kind: "CONVERSATION", tz: "Asia/Kolkata" });
+    const records = recordsOf(response);
+
+    expect(records).toHaveLength(1);
+    expect(records[0]).toMatchObject({
+      // 10:00 UTC is 15:30 in India.
+      When: "2026-03-04 15:30",
+      Person: "Tara Rep",
+      Type: "Conversation",
+      "Conversation type": "Call",
+      "Record type": "Lead",
+      Record: "Lead Of Tara",
+      Details: "",
+      Text: "tara call, 4 Mar",
+    });
+    expect(records[0]?.Logged).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
+  });
+
+  it("refuses a time zone that is not one", async () => {
+    const response = await asAdmin.get(EXPORT).query({ tz: "Mars/Olympus" });
+
+    expect(response.status).toBe(400);
+    expect(detailPaths(response)).toEqual(["tz"]);
+  });
+
+  it("describes system entries and emails in Details, and neutralises formulas", async () => {
+    const may = (date: number) => new Date(Date.UTC(2026, 4, date, 10));
+    const entry = (
+      occurredAt: Date,
+      kind: Prisma.TimelineEntryUncheckedCreateInput["kind"],
+      fields: Partial<Prisma.TimelineEntryUncheckedCreateInput> = {},
+    ) =>
+      prisma.timelineEntry.create({
+        data: { kind, occurredAt, authorId: ravi.id, leadId: ravisLead.id, ...fields },
+      });
+    await entry(may(1), "STATUS_CHANGE", { details: { from: "NEW", to: "CONTACTED" } });
+    await entry(may(2), "ASSIGNMENT", {
+      details: {
+        fromOwner: { id: ravi.id, name: "Ravi Rep" },
+        toOwner: { id: tara.id, name: "Tara Rep" },
+      },
+    });
+    await entry(may(3), "EMAIL", {
+      body: "Hello",
+      details: { to: ["lee@example.com"], cc: [], subject: "Our proposal" },
+    });
+    await entry(may(4), "QUOTE_STATUS", {
+      details: { quote: { id: UNKNOWN_ID, number: "Q-0001" }, from: "DRAFT", to: "SENT" },
+    });
+    const formulas = ['=HYPERLINK("http://evil.example","click")', "+1+1", "-2+3", "@SUM(1)"];
+    for (const [index, formula] of formulas.entries()) {
+      await entry(may(10 + index), "NOTE", { body: `${formula}\nsecond line, with a comma` });
+    }
+
+    const response = await asViewer.get(EXPORT).query({ from: "2026-05-01", to: "2026-05-31" });
+    const records = recordsOf(response);
+
+    expect(records.slice(4).map((record) => record.Details)).toEqual([
+      "Q-0001: Draft → Sent",
+      "To: lee@example.com · Our proposal",
+      "Ravi Rep → Tara Rep",
+      "New → Contacted",
+    ]);
+    expect(records.slice(0, 4).map((record) => record.Text)).toEqual(
+      [...formulas].reverse().map((formula) => `'${formula}\nsecond line, with a comma`),
+    );
+    // No cell of the file starts with a formula character.
+    const cells = rowsOf(response).flat();
+    expect(cells.filter((cell) => /^[=+\-@\t\r]/.test(cell))).toEqual([]);
   });
 });
