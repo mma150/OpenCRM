@@ -1,0 +1,8 @@
+OpenCRM
+Copyright 2026 The OpenCRM contributors
+
+This product is licensed under the Apache License, Version 2.0.
+
+OpenCRM uses third-party packages, listed in backend/package.json,
+frontend/package.json and mobile/pubspec.yaml. Each of them is distributed
+under its own licence.

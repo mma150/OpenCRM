@@ -239,8 +239,11 @@ check("Required files exist", () => {
     ".gitignore",
     ".nvmrc",
     "CODE_OF_CONDUCT.md",
+    "COLLABORATION.md",
     "CONTRIBUTING.md",
+    "FEATURES.md",
     "LICENSE",
+    "NOTICE",
     "README.md",
     "SECURITY.md",
     "commitlint.config.mjs",
@@ -257,6 +260,7 @@ check("Required files exist", () => {
     "scripts/test-secret-hook.mjs",
     "scripts/verify-foundation.mjs",
     // backend anchors
+    "backend/README.md",
     "backend/.env.example",
     "backend/Dockerfile",
     "backend/openapi/openapi.json",
@@ -268,6 +272,7 @@ check("Required files exist", () => {
     "backend/src/lib/app-error.ts",
     "backend/src/server.ts",
     // frontend anchors
+    "frontend/README.md",
     "frontend/.env.example",
     "frontend/Dockerfile",
     "frontend/package.json",

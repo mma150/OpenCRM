@@ -16,7 +16,7 @@ Related: [security practices](security.md), [commit standard](commits.md).
    git push -u origin main
    ```
 
-3. Replace the owner-input placeholders before the repository is public: the security contact in [`SECURITY.md`](../../SECURITY.md) and the conduct contact in [`CODE_OF_CONDUCT.md`](../../CODE_OF_CONDUCT.md). Run `pnpm verify:foundation`: it prints a `WARN` line for each placeholder that is left. Do not use a personal address you do not want published.
+3. Check that no owner-input placeholder is left before the repository is public. The security contact in [`SECURITY.md`](../../SECURITY.md) (GitHub private vulnerability reporting only) and the conduct contact in [`CODE_OF_CONDUCT.md`](../../CODE_OF_CONDUCT.md) (a private message to the maintainer's GitHub account) are filled in. Run `pnpm verify:foundation`: it prints a `WARN` line for each placeholder that is left. Do not use a personal address you do not want published.
 4. Open **Settings -> Actions -> General** and set **Workflow permissions** to **Read repository contents and packages permissions**. Every workflow also asks for read-only access itself; this makes read-only the default for any future workflow.
 
 The first push starts the workflows. `pr-title` and `dependency-review` only run on pull requests, so a required check list cannot be completed until a pull request has run them once (see [Required status checks](#required-status-checks)).
@@ -85,7 +85,7 @@ These can only be checked on GitHub. Each takes about a minute.
 4. **CodeQL runs (SEC-02).** The first run appears under **Security -> Code scanning**, for the pull request and for the push to `main`.
 5. **Secrets are blocked (SEC-03).** With push protection on, push a commit that contains a made-up credential to a throwaway branch and confirm GitHub blocks the push; also confirm the `gitleaks` job ran.
 6. **Branch protection works (CTB-05).** A pull request cannot be merged without the seven checks and one approval, and only the squash button is offered.
-7. **Security links work.** In **Issues -> New issue**, the **Report a vulnerability** link opens the security policy, and **Security -> Report a vulnerability** is available. If the link in [`.github/ISSUE_TEMPLATE/config.yml`](../../.github/ISSUE_TEMPLATE/config.yml) does not open the policy page, replace it with the full URL of the policy page.
+7. **Security links work.** In **Issues -> New issue**, the **Report a security vulnerability** link (from [`.github/ISSUE_TEMPLATE/config.yml`](../../.github/ISSUE_TEMPLATE/config.yml)) opens the private vulnerability report form, and **Security -> Report a vulnerability** is available. Private vulnerability reporting must be switched on (see [Repository settings](#repository-settings)); GitHub offers it for public repositories.
 8. **Weekly runs.** After the first Monday, `codeql` and `audit` show a scheduled run, and Dependabot has opened its grouped pull requests (one per app). Dependabot re-checking an unchanged manifest must not open a duplicate pull request.
 
 ## If the repository is private
