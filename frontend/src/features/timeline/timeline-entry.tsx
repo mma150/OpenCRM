@@ -38,9 +38,9 @@ export function LinkedTitle({
   );
 }
 
-// Under the title of an email: who it went to, and the quote it carried.
+// Under the title of an email: who it went to, the quote it carried and the file attached.
 function EmailFacts({ entry }: { entry: TimelineEntry }) {
-  const { to, cc } = emailOf(entry);
+  const { to, cc, attachment } = emailOf(entry);
   const link = entryLink(entry);
   return (
     <div className="text-muted-foreground flex min-w-0 flex-col gap-0.5 text-xs wrap-anywhere">
@@ -54,6 +54,7 @@ function EmailFacts({ entry }: { entry: TimelineEntry }) {
           </Link>
         </p>
       ) : null}
+      {attachment ? <p>Attached: {attachment}</p> : null}
     </div>
   );
 }

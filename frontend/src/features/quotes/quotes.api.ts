@@ -1,6 +1,6 @@
 import { SEND_TIMEOUT_MS } from "@/features/email-settings/email-settings.api";
 import type { Invoice } from "@/features/invoices/invoices.types";
-import { type DownloadedFile, downloadExport } from "@/lib/api/download";
+import { type DownloadedFile, downloadExport, downloadFile } from "@/lib/api/download";
 import { http } from "@/lib/api/http";
 import type { SalesDocument } from "@/lib/sales-document";
 import { browserTimeZone } from "@/lib/time-zone";
@@ -52,6 +52,11 @@ export async function getQuoteDocument(id: string): Promise<SalesDocument> {
   return response.data.data;
 }
 
+// The same document as a PDF file, named by the API ("Q-0001.pdf").
+export function downloadQuotePdf(id: string, number: string): Promise<DownloadedFile> {
+  return downloadFile(`/quotes/${id}/pdf`, {}, `${number}.pdf`);
+}
+
 // What is left out is filled in by the API: the buyer from the opportunity, today as the
 // issue date, the organisation's validity days and default terms.
 export async function createQuote(input: CreateQuoteInput): Promise<Quote> {
@@ -80,9 +85,9 @@ export async function duplicateQuote(id: string): Promise<Quote> {
   return response.data.data;
 }
 
-// DRAFT to SENT. With `email` the quote is also emailed (the API adds its lines and totals
-// below the body as text; there is no attachment), and a quote that is already SENT can be
-// emailed again. When sending fails the quote stays as it was.
+// DRAFT to SENT. With `email` the quote is also emailed (the API attaches it as a PDF file,
+// "Q-0001.pdf", and adds a short summary below the body), and a quote that is already SENT can
+// be emailed again. When sending fails the quote stays as it was.
 export async function sendQuote(id: string, email?: QuoteEmail): Promise<Quote> {
   const response = await http.post<QuoteResponse>(`/quotes/${id}/send`, email ? { email } : {}, {
     ...withTz(),

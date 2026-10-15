@@ -10,7 +10,8 @@ import { decryptSecret } from "./secret-box";
 // record): the settings an Admin saved in the app, or else the SMTP_* environment variables,
 // or else email is off.
 
-// Not sent by anything yet (a quote goes out as text in v1); a PDF renderer adds its file here.
+// A file sent with a message: the PDF of an emailed quote. Built in memory, never read from a
+// path or an address (the transport refuses both).
 export interface MailAttachment {
   filename: string;
   content: Buffer;

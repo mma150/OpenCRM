@@ -1,9 +1,10 @@
 "use client";
 
-import { FileText, Printer } from "lucide-react";
+import { FileText } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
 
+import { DocumentFileMenuItems } from "@/components/shared/document-file-actions";
 import { ListActions } from "@/components/shared/list-actions";
 import { ListToolbar } from "@/components/shared/list-toolbar";
 import {
@@ -16,7 +17,6 @@ import { RecordList } from "@/components/shared/record-list";
 import { RecordRowMenu } from "@/components/shared/record-menus";
 import type { ListColumn } from "@/components/shared/responsive-list";
 import { Button } from "@/components/ui/button";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { CompanyFilter } from "@/features/companies/company-picker";
 import { formatDay, formatMoney } from "@/lib/format";
@@ -25,7 +25,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { INVOICE_STATUSES, invoiceStatusOptions } from "./invoice-labels";
 import { InvoiceStatusBadge } from "./invoice-status-badge";
 import { InvoiceSummaryTiles } from "./invoice-summary-tiles";
-import { exportInvoices } from "./invoices.api";
+import { downloadInvoicePdf, exportInvoices } from "./invoices.api";
 import { fetchInvoices, selectInvoiceList } from "./invoices.slice";
 import type { Invoice, InvoiceListQuery, InvoiceSort, InvoiceStatus } from "./invoices.types";
 
@@ -240,12 +240,10 @@ export function InvoicesPage() {
         renderCard={(invoice) => <InvoiceCard invoice={invoice} />}
         rowActions={(invoice) => (
           <RecordRowMenu name={invoice.number} viewHref={`/invoices/${invoice.id}`}>
-            <DropdownMenuItem asChild>
-              <Link href={`/invoices/${invoice.id}/print`}>
-                <Printer aria-hidden />
-                Print / PDF
-              </Link>
-            </DropdownMenuItem>
+            <DocumentFileMenuItems
+              printHref={`/invoices/${invoice.id}/print`}
+              download={() => downloadInvoicePdf(invoice.id, invoice.number)}
+            />
           </RecordRowMenu>
         )}
         isFiltered={isFiltered}

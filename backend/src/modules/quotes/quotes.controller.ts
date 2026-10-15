@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import { sendCsv } from "../../lib/csv-export";
 import type { ListMeta } from "../../lib/list-query";
 import { recordIdParamsSchema } from "../../lib/record-fields";
+import { sendPdf } from "../../lib/sales-document-pdf";
 import type { SalesDocument } from "../../lib/sales-documents";
 import { dayIn } from "../../lib/time-zone";
 import { getAuth } from "../../middleware/authenticate";
@@ -25,6 +26,7 @@ import {
   exportQuotes,
   getQuote,
   getQuoteDocument,
+  getQuotePdf,
   listQuotes,
   reopenQuote,
   sendQuote,
@@ -66,6 +68,12 @@ export async function getQuoteDocumentHandler(req: Request, res: Response) {
   const { id } = recordIdParamsSchema.parse(req.params);
   const data: SalesDocument = await getQuoteDocument(getAuth(req).user, id, viewerDay(req));
   res.json({ data, meta: {} });
+}
+
+// The same document as a PDF file, downloaded as "Q-0001.pdf".
+export async function getQuotePdfHandler(req: Request, res: Response) {
+  const { id } = recordIdParamsSchema.parse(req.params);
+  sendPdf(res, await getQuotePdf(getAuth(req).user, id, viewerDay(req)));
 }
 
 export async function updateQuoteHandler(req: Request, res: Response) {

@@ -152,6 +152,7 @@ describe("Timeline", () => {
       "href",
       `/quotes/${QUOTE.id}`,
     );
+    expect(email.getByText("Attached: Q-0001.pdf")).toBeInTheDocument();
   });
 
   it("cuts a long email short until Show more is pressed", async () => {

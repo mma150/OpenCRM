@@ -198,13 +198,18 @@ export function composeEmail(sender: Sender, email: OutgoingEmail, values: Place
 }
 
 // The EMAIL entry of an email that was sent. Like a conversation, it moves the record's
-// `lastContactAt`. `quote` names the quote the email carried, if any.
+// `lastContactAt`. `quote` names the quote the email carried, if any, and `attachment` the
+// file attached to it (a quote's PDF); both are null on an email sent from a record.
 export async function addEmailEntry(
   tx: Prisma.TransactionClient,
   authorId: string,
   record: RecordRef,
   email: { to: string[]; cc: string[]; subject: string; body: string },
-  extra: { templateId?: string; quote?: { id: string; number: string } } = {},
+  extra: {
+    templateId?: string;
+    quote?: { id: string; number: string };
+    attachment?: { filename: string } | null;
+  } = {},
 ): Promise<TimelineEntryWithAuthor> {
   const occurredAt = new Date();
   await moveLastContactAt(tx, record, occurredAt);
@@ -222,6 +227,7 @@ export async function addEmailEntry(
       status: "SENT",
       templateId: extra.templateId ?? null,
       quote: extra.quote ?? null,
+      attachment: extra.attachment ?? null,
     },
   });
 }

@@ -9,8 +9,14 @@ import {
   momentFormatter,
 } from "../../lib/csv-export";
 import { type Page, pageWindow, searchWords } from "../../lib/list-query";
+import type { MailAttachment } from "../../lib/mailer";
 import { prisma } from "../../lib/prisma";
 import { type Actor, assertCanWrite, visibleLiveRecords } from "../../lib/record-access";
+import {
+  type PdfFile,
+  renderSalesDocumentPdf,
+  salesDocumentFilename,
+} from "../../lib/sales-document-pdf";
 import {
   addDays,
   computeTotals,
@@ -622,20 +628,14 @@ async function changeStatus(
   return quote.status;
 }
 
-// The lines and totals of a quote as text, for the email that carries it (no PDF yet).
-function quoteSummary(quote: QuoteWithDetails): string {
-  const lines = quote.lines.map((line) => {
-    const discount = line.discountPercent.isZero()
-      ? ""
-      : ` (${line.discountPercent.toString()}% off)`;
-    return `${line.quantity.toString()} x ${line.description} @ ${formatMoney(line.unitPrice)}${discount}: ${formatMoney(line.lineTotal)}`;
-  });
+// A short summary below the body of the email that carries the quote. The quote itself is the
+// attached PDF; the summary is for a mail program that hides attachments, so it names the file
+// and repeats the dates and the totals, not the lines.
+function quoteSummary(quote: QuoteWithDetails, filename: string): string {
   const validity = quote.validUntil ? `, valid until ${toDay(quote.validUntil)}` : "";
   return [
-    `Quote ${quote.number}`,
+    `Quote ${quote.number} is attached as ${filename}.`,
     `Issued ${toDay(quote.issueDate)}${validity}`,
-    "",
-    ...lines,
     "",
     `Subtotal: ${formatMoney(quote.subtotal)}`,
     ...(quote.discountTotal.isZero() ? [] : [`Discount: -${formatMoney(quote.discountTotal)}`]),
@@ -666,10 +666,16 @@ export async function sendQuote(
     throw new AppError("VALIDATION_FAILED", 400, "Add at least one line to the quote first");
   }
 
+  // The PDF shows the quote as the customer gets it: sent, or expired when an expired quote is
+  // emailed again.
+  const attachment = input.email ? await quoteAttachment(quote, today) : null;
   const email = input.email
     ? composeEmail(
         sender,
-        { ...input.email, body: `${input.email.body}\n\n${quoteSummary(quote)}` },
+        {
+          ...input.email,
+          body: `${input.email.body}\n\n${quoteSummary(quote, salesDocumentFilename(quote))}`,
+        },
         {
           "opportunity.name": quote.opportunity.name,
           "contact.firstName": quote.contact?.firstName,
@@ -681,7 +687,7 @@ export async function sendQuote(
       )
     : null;
   if (email) {
-    await deliverEmail(email.message);
+    await deliverEmail({ ...email.message, attachments: attachment ? [attachment] : [] });
   }
 
   await prisma.$transaction(async (tx) => {
@@ -695,6 +701,7 @@ export async function sendQuote(
     if (email) {
       await addEmailEntry(tx, sender.id, { type: "opportunity", id: quote.opportunityId }, email, {
         quote: { id: quote.id, number: quote.number },
+        attachment: attachment && { filename: attachment.filename },
       });
     }
   });
@@ -749,19 +756,20 @@ export async function reopenQuote(actor: Actor, id: string, today: Day): Promise
   return getQuote(actor, id, today);
 }
 
-// The quote as a sheet of paper (QUOT-03): seller, buyer, lines and totals, ready to print.
-export async function getQuoteDocument(
-  actor: Actor,
-  id: string,
-  today: Day,
-): Promise<SalesDocument> {
-  const quote = await findQuote(actor, id);
-  const organization = await findOrganization();
+type Organization = Awaited<ReturnType<typeof findOrganization>>;
+
+// The quote as a sheet of paper (QUOT-03): seller, buyer, lines and totals, ready to print or
+// to render as a PDF, in the status given.
+function toSalesDocument(
+  quote: QuoteWithDetails,
+  organization: Organization,
+  status: ApiQuoteStatus,
+): SalesDocument {
   const { contact, company } = quote;
   return {
     kind: "QUOTE",
     number: quote.number,
-    status: statusOn(quote, today),
+    status,
     currency: "USD",
     issueDate: toDay(quote.issueDate),
     validUntil: quote.validUntil ? toDay(quote.validUntil) : null,
@@ -793,5 +801,34 @@ export async function getQuoteDocument(
     total: quote.total.toNumber(),
     notes: quote.notes,
     terms: quote.terms,
+  };
+}
+
+// The PDF an emailed quote carries, as it reads once it is sent.
+async function quoteAttachment(quote: QuoteWithDetails, today: Day): Promise<MailAttachment> {
+  const status = statusOn({ status: "SENT", validUntil: quote.validUntil }, today);
+  const document = toSalesDocument(quote, await findOrganization(), status);
+  return {
+    filename: salesDocumentFilename(document),
+    content: await renderSalesDocumentPdf(document),
+    contentType: "application/pdf",
+  };
+}
+
+export async function getQuoteDocument(
+  actor: Actor,
+  id: string,
+  today: Day,
+): Promise<SalesDocument> {
+  const quote = await findQuote(actor, id);
+  return toSalesDocument(quote, await findOrganization(), statusOn(quote, today));
+}
+
+// The same document as a PDF file named like the quote ("Q-0001.pdf").
+export async function getQuotePdf(actor: Actor, id: string, today: Day): Promise<PdfFile> {
+  const document = await getQuoteDocument(actor, id, today);
+  return {
+    filename: salesDocumentFilename(document),
+    content: await renderSalesDocumentPdf(document),
   };
 }

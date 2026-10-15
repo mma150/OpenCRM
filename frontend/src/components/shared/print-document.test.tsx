@@ -1,12 +1,17 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { invoiceDocument, quoteDocument } from "@/features/invoices/invoices.fixtures";
+import type { DownloadedFile } from "@/lib/api/download";
 import type { ApiError } from "@/lib/api/http";
 import type { SalesDocument } from "@/lib/sales-document";
+import { saveFile } from "@/lib/save-file";
 
 import { PrintDocument, PrintDocumentPage } from "./print-document";
+
+vi.mock("@/lib/save-file");
+vi.mock("sonner");
 
 // The block under a heading such as "From" or "Bill to".
 function block(title: string) {
@@ -177,12 +182,15 @@ describe("PrintDocumentPage", () => {
     window.print = originalPrint;
   });
 
+  const downloadPdf = vi.fn<(id: string, number: string) => Promise<DownloadedFile>>();
+
   function renderPage(load: (id: string) => Promise<SalesDocument>) {
     const user = userEvent.setup();
     render(
       <PrintDocumentPage
         id="invoice-1"
         load={load}
+        downloadPdf={downloadPdf}
         backHref="/invoices/invoice-1"
         backLabel="Back to invoice"
       />,
@@ -195,17 +203,36 @@ describe("PrintDocumentPage", () => {
     const { user } = renderPage(load);
 
     expect(screen.getByText("Loading document...")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Print / Save as PDF" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Print" })).toBeDisabled();
 
     expect(await screen.findByRole("article", { name: "Invoice INV-0003" })).toBeInTheDocument();
     expect(load).toHaveBeenCalledWith("invoice-1");
     expect(load).toHaveBeenCalledTimes(1);
 
-    await user.click(screen.getByRole("button", { name: "Print / Save as PDF" }));
+    await user.click(screen.getByRole("button", { name: "Print" }));
     expect(print).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps the bar with Back and Print, and the hint, off the paper", async () => {
+  it("downloads the API's PDF of the document, once it is loaded", async () => {
+    const file: DownloadedFile = {
+      blob: new Blob(["%PDF-"], { type: "application/pdf" }),
+      filename: "INV-0003.pdf",
+      truncated: false,
+    };
+    downloadPdf.mockResolvedValue(file);
+    const { user } = renderPage(vi.fn().mockResolvedValue(invoiceDocument));
+    expect(screen.queryByRole("button", { name: "Download PDF" })).not.toBeInTheDocument();
+    await screen.findByRole("article");
+
+    await user.click(screen.getByRole("button", { name: "Download PDF" }));
+
+    await waitFor(() => {
+      expect(saveFile).toHaveBeenCalledWith(file.blob, "INV-0003.pdf");
+    });
+    expect(downloadPdf).toHaveBeenCalledWith("invoice-1", "INV-0003");
+  });
+
+  it("keeps the bar with Back, Download PDF and Print, and the hint, off the paper", async () => {
     renderPage(vi.fn().mockResolvedValue(invoiceDocument));
     await screen.findByRole("article");
 
@@ -213,8 +240,11 @@ describe("PrintDocumentPage", () => {
     expect(back).toHaveAttribute("href", "/invoices/invoice-1");
     const bar = back.parentElement;
     expect(bar).toHaveClass("print:hidden");
-    expect(bar).toContainElement(screen.getByRole("button", { name: "Print / Save as PDF" }));
-    expect(screen.getByText(/choose "Save as PDF" as the printer/)).toHaveClass("print:hidden");
+    expect(bar).toContainElement(screen.getByRole("button", { name: "Print" }));
+    expect(bar).toContainElement(screen.getByRole("button", { name: "Download PDF" }));
+    expect(screen.getByText(/For a PDF file to save or send, use Download PDF/)).toHaveClass(
+      "print:hidden",
+    );
     // Nothing of the bar is inside the sheet.
     expect(screen.getByRole("article")).not.toContainElement(back);
   });
@@ -237,7 +267,7 @@ describe("PrintDocumentPage", () => {
       screen.getByText("It does not exist, or you do not have access to it."),
     ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Retry" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Print / Save as PDF" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Print" })).toBeDisabled();
     expect(screen.getByRole("link", { name: "Back to invoice" })).toBeInTheDocument();
   });
 
@@ -256,12 +286,12 @@ describe("PrintDocumentPage", () => {
       "The service is temporarily unavailable. Try again in a moment.",
     );
     expect(alert).toHaveTextContent("Request id: req-42");
-    expect(screen.getByRole("button", { name: "Print / Save as PDF" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Print" })).toBeDisabled();
 
     await user.click(within(alert).getByRole("button", { name: "Retry" }));
 
     expect(await screen.findByRole("article", { name: "Quote Q-0003" })).toBeInTheDocument();
     expect(load).toHaveBeenCalledTimes(2);
-    expect(screen.getByRole("button", { name: "Print / Save as PDF" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Print" })).toBeEnabled();
   });
 });

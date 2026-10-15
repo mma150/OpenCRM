@@ -107,14 +107,25 @@ function documentOf(
   return typeof id === "string" && typeof number === "string" ? { id, number } : null;
 }
 
-// What an EMAIL entry says: the subject, who it went to, and the quote it carried (if any).
-// The text of the email as it was sent is the entry's `body`.
+// The name of the file an email carried: `{ filename }`, or null. Older entries have no key.
+function attachmentOf(details: TimelineEntry["details"]): string | null {
+  const value = details?.attachment;
+  if (typeof value !== "object" || value === null || !("filename" in value)) {
+    return null;
+  }
+  return typeof value.filename === "string" ? value.filename : null;
+}
+
+// What an EMAIL entry says: the subject, who it went to, the quote it carried (if any) and
+// the file attached to it (a quote's PDF). The text of the email as it was sent is the
+// entry's `body`.
 export function emailOf(entry: TimelineEntry) {
   return {
     subject: textOf(entry.details, "subject"),
     to: listOf(entry.details, "to"),
     cc: listOf(entry.details, "cc"),
     quote: documentOf(entry.details, "quote"),
+    attachment: attachmentOf(entry.details),
   };
 }
 

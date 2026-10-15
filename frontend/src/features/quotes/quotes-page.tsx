@@ -1,9 +1,10 @@
 "use client";
 
-import { Plus, Printer } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import { DocumentFileMenuItems } from "@/components/shared/document-file-actions";
 import { ListActions } from "@/components/shared/list-actions";
 import { type ListFilter, ListToolbar } from "@/components/shared/list-toolbar";
 import {
@@ -17,7 +18,6 @@ import { RecordList } from "@/components/shared/record-list";
 import { RecordRowMenu } from "@/components/shared/record-menus";
 import type { ListColumn } from "@/components/shared/responsive-list";
 import { Button } from "@/components/ui/button";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { selectAuth } from "@/features/auth/auth.slice";
 import { CompanyFilter } from "@/features/companies/company-picker";
 import { useOwnerFilter } from "@/features/users/use-owner-filter";
@@ -28,7 +28,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { QUOTE_STATUSES, quoteAccess, quoteActions, quoteStatusOptions } from "./quote-labels";
 import { QuoteOpportunityFilter } from "./quote-opportunity-filter";
 import { QuoteStatusBadge } from "./quote-status-badge";
-import { exportQuotes } from "./quotes.api";
+import { downloadQuotePdf, exportQuotes } from "./quotes.api";
 import { deleteQuote, fetchQuotes, selectQuoteList } from "./quotes.slice";
 import type { Quote, QuoteListQuery, QuoteSort, QuoteStatus } from "./quotes.types";
 
@@ -301,12 +301,10 @@ export function QuotesPage() {
                   : undefined
               }
             >
-              <DropdownMenuItem asChild>
-                <Link href={`/quotes/${quote.id}/print`}>
-                  <Printer aria-hidden />
-                  Print / PDF
-                </Link>
-              </DropdownMenuItem>
+              <DocumentFileMenuItems
+                printHref={`/quotes/${quote.id}/print`}
+                download={() => downloadQuotePdf(quote.id, quote.number)}
+              />
             </RecordRowMenu>
           );
         }}

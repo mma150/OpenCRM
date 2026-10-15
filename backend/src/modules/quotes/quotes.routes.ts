@@ -5,6 +5,7 @@ import {
   errorResponse,
   jsonBody,
   jsonResponse,
+  pdfResponse,
   registry,
   sessionSecurity,
 } from "../../lib/openapi";
@@ -22,6 +23,7 @@ import {
   exportQuotesHandler,
   getQuoteDocumentHandler,
   getQuoteHandler,
+  getQuotePdfHandler,
   listQuotesHandler,
   reopenQuoteHandler,
   sendQuoteHandler,
@@ -53,6 +55,7 @@ export function createQuotesRouter(limiters: AuthLimiters) {
   router.patch("/:id", updateQuoteHandler);
   router.delete("/:id", deleteQuoteHandler);
   router.get("/:id/document", getQuoteDocumentHandler);
+  router.get("/:id/pdf", getQuotePdfHandler);
   router.post("/:id/duplicate", duplicateQuoteHandler);
   // Sending may email the quote, so it counts towards the caller's sending limit.
   router.post("/:id/send", limiters.sendEmail, sendQuoteHandler);
@@ -161,6 +164,22 @@ registry.registerPath({
 });
 
 registry.registerPath({
+  method: "get",
+  path: "/quotes/{id}/pdf",
+  tags,
+  summary: "Download the quote as a PDF file",
+  description: `The print-ready document (GET /quotes/{id}/document) as an A4 PDF file named after the quote, such as Q-0001.pdf: the same content in the same order as the web print view, with "Page X of Y" at the foot of every page. A draft or sent quote carries no status; any other status is printed. Written with the PDF standard fonts, which only have the WinAnsi (Latin-1) characters: any other character, such as an emoji or a name in another script, is written as "?". Works from a plain link with the session cookie and with a Bearer token. Errors are the usual JSON. ${TZ}`,
+  security,
+  request: { params, query },
+  responses: {
+    200: pdfResponse("The PDF file", "Q-0001.pdf"),
+    400: validationFailed,
+    401: unauthenticated,
+    404: notFound,
+  },
+});
+
+registry.registerPath({
   method: "patch",
   path: "/quotes/{id}",
   tags,
@@ -217,7 +236,7 @@ registry.registerPath({
   path: "/quotes/{id}/send",
   tags,
   summary: "Mark a quote as sent, and optionally email it",
-  description: `Without a body the quote is only marked SENT. With email, the message is sent first, like POST /emails from the opportunity (the caller's name, Reply-To the caller, placeholders filled in, quote.number and quote.total included), with the quote's lines and totals added below the body as text; there is no attachment. Then the quote becomes SENT and the opportunity's timeline gets the QUOTE_STATUS entry and an EMAIL entry whose details.quote names the quote. When the email fails nothing changes. A quote that is already SENT can be emailed again; without email that is INVALID_STATUS_CHANGE. Needs at least one line. ${TZ}`,
+  description: `Without a body the quote is only marked SENT. With email, the message is sent first, like POST /emails from the opportunity (the caller's name, Reply-To the caller, placeholders filled in, quote.number and quote.total included), with the quote attached as a PDF file (Q-0001.pdf, as GET /quotes/{id}/pdf draws it once the quote is sent) and a short summary added below the body as text (the file name, the dates and the totals) for mail programs that hide attachments. Then the quote becomes SENT and the opportunity's timeline gets the QUOTE_STATUS entry and an EMAIL entry whose details.quote names the quote and details.attachment is { filename }. When the email fails nothing changes. A quote that is already SENT can be emailed again; without email that is INVALID_STATUS_CHANGE. Needs at least one line. ${TZ}`,
   security,
   request: {
     params,

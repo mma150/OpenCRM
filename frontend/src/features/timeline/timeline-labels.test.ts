@@ -29,8 +29,13 @@ describe("timeline labels: an email", () => {
       to: ["marcus.chen@acme.example", "ops@acme.example"],
       cc: ["mia@example.com"],
       quote: null,
+      attachment: null,
     });
     expect(entryText(emailSent)).toBe(emailSent.body);
+  });
+
+  it("names the file a quote's email carried", () => {
+    expect(emailOf(emailWithQuote).attachment).toBe("Q-0001.pdf");
   });
 
   it("links to the quote it carried, and to nothing without one", () => {
@@ -43,7 +48,16 @@ describe("timeline labels: an email", () => {
 
   it("survives details that are not what the API promises", () => {
     const odd = { ...emailSent, details: { to: "a@x.example", cc: [1, "b@x.example"], quote: 7 } };
-    expect(emailOf(odd)).toEqual({ subject: null, to: [], cc: ["b@x.example"], quote: null });
+    expect(emailOf(odd)).toEqual({
+      subject: null,
+      to: [],
+      cc: ["b@x.example"],
+      quote: null,
+      attachment: null,
+    });
+    expect(emailOf({ ...emailSent, details: { attachment: { filename: 3 } } }).attachment).toBe(
+      null,
+    );
   });
 });
 

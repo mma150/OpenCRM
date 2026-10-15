@@ -1,10 +1,13 @@
-import type request from "supertest";
+import request from "supertest";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import {
+  binaryBody,
   createTestApp,
   createUser,
   type ErrorEnvelope,
+  pdfPageCount,
+  pdfText,
   resetDatabase,
   resetPipelineStages,
   resetRecords,
@@ -23,6 +26,7 @@ import type {
 import { parseCsv } from "../../lib/csv";
 import { prisma } from "../../lib/prisma";
 import { addDays } from "../../lib/sales-documents";
+import { createSession } from "../../lib/sessions";
 
 interface Line {
   id: string;
@@ -506,7 +510,7 @@ describe("POST /quotes/:id/invoice", () => {
 
 describe("who may see and change an invoice", () => {
   const ACTIONS = ["mark-sent", "mark-paid", "mark-overdue", "mark-unpaid", "void", "restore"];
-  const READS = ["", "/document"];
+  const READS = ["", "/document", "/pdf"];
 
   it("answers NOT_FOUND on every route for an invoice outside the caller's reach", async () => {
     const invoice = await makeInvoice();
@@ -1123,5 +1127,75 @@ describe("GET /invoices/:id/document", () => {
       taxTotal: 92,
       total: 1242,
     });
+  });
+});
+
+describe("GET /invoices/:id/pdf", () => {
+  it("downloads the invoice as a PDF named after it, for every role that may read it", async () => {
+    await prisma.organizationSettings.create({ data: { name: "Acme Fleet Ltd" } });
+    const invoice = await makeInvoice(
+      {
+        discountType: "AMOUNT",
+        discountValue: 100,
+        lines: [...oneLine, { description: "Travel", quantity: 1, unitPrice: 250, taxRate: 0 }],
+      },
+      { issueDate: "2026-11-01", dueDate: "2026-11-15", notes: "PO 4417" },
+    );
+    await asRavi.post(`${INVOICES}/${invoice.id}/void`);
+
+    const response = await asViewer
+      .get(`${INVOICES}/${invoice.id}/pdf`)
+      .buffer(true)
+      .parse(binaryBody);
+
+    expect(response.status).toBe(200);
+    expect(response.headers["content-type"]).toBe("application/pdf");
+    expect(response.headers["content-disposition"]).toBe('attachment; filename="INV-0001.pdf"');
+    expect(response.headers["cache-control"]).toBe("no-store");
+    const pdf = response.body as Buffer;
+    expect(pdf.subarray(0, 5).toString()).toBe("%PDF-");
+    expect(pdfPageCount(pdf)).toBe(1);
+    const text = pdfText(pdf);
+    for (const part of [
+      "Invoice",
+      "INV-0001",
+      "Status: Void",
+      "Nov 1, 2026",
+      "Nov 15, 2026",
+      "14 days",
+      "Q-0001",
+      "Acme Fleet Ltd",
+      "BILL TO",
+      "Northwind Logistics",
+      "Consulting day",
+      "Travel",
+      "$1,250.00",
+      "-$100.00",
+      "Tax 10% on $920.00",
+      "$92.00",
+      "$1,242.00",
+      "PO 4417",
+      "Page 1 of 1",
+    ]) {
+      expect(text, part).toContain(part);
+    }
+  });
+
+  it("works with a Bearer token, and answers JSON errors", async () => {
+    const invoice = await makeInvoice();
+    const token = await createSession(ravi.id);
+
+    const bearer = await request(app)
+      .get(`${INVOICES}/${invoice.id}/pdf`)
+      .set("Authorization", `Bearer ${token}`)
+      .buffer(true)
+      .parse(binaryBody);
+    const outsider = await asTara.get(`${INVOICES}/${invoice.id}/pdf`);
+
+    expect(bearer.status).toBe(200);
+    expect((bearer.body as Buffer).subarray(0, 5).toString()).toBe("%PDF-");
+    expect(outsider.status).toBe(404);
+    expect(outsider.headers["content-type"]).toMatch(/^application\/json/);
+    expect(errorOf(outsider).code).toBe("NOT_FOUND");
   });
 });

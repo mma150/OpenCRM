@@ -12,6 +12,11 @@ import { type Page, pageWindow, searchWords } from "../../lib/list-query";
 import { prisma } from "../../lib/prisma";
 import { type Actor, assertCanWrite, visibleLiveRecords } from "../../lib/record-access";
 import {
+  type PdfFile,
+  renderSalesDocumentPdf,
+  salesDocumentFilename,
+} from "../../lib/sales-document-pdf";
+import {
   addDays,
   fromDay,
   nextDocumentNumber,
@@ -467,5 +472,14 @@ export async function getInvoiceDocument(
     total: invoice.total.toNumber(),
     notes: invoice.notes,
     terms: invoice.terms,
+  };
+}
+
+// The same document as a PDF file named like the invoice ("INV-0001.pdf").
+export async function getInvoicePdf(actor: Actor, id: string, today: Day): Promise<PdfFile> {
+  const document = await getInvoiceDocument(actor, id, today);
+  return {
+    filename: salesDocumentFilename(document),
+    content: await renderSalesDocumentPdf(document),
   };
 }

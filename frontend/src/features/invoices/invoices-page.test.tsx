@@ -11,7 +11,12 @@ import { saveFile } from "@/lib/save-file";
 import { followNavigation, mockRouter, setMockLocation } from "@/test/navigation-mock";
 import { adminUser, renderWithStore, repUser } from "@/test/render-with-store";
 
-import { exportInvoices, getInvoiceSummary, listInvoices } from "./invoices.api";
+import {
+  downloadInvoicePdf,
+  exportInvoices,
+  getInvoiceSummary,
+  listInvoices,
+} from "./invoices.api";
 import {
   allInvoices,
   defaultQuery,
@@ -224,19 +229,32 @@ describe("InvoicesPage", () => {
     }
   });
 
-  it("gives each row View and Print, and nothing that changes the invoice", async () => {
+  it("gives each row View, the PDF and Print, and nothing that changes the invoice", async () => {
     const { user, table } = await renderPage(readOnlyUser);
 
     await user.click(within(table).getByRole("button", { name: `Actions for ${overdue.number}` }));
     const menu = within(await screen.findByRole("menu"));
     expect(menu.getAllByRole("menuitem").map((item) => item.textContent)).toEqual([
       "View",
-      "Print / PDF",
+      "Download PDF",
+      "Print",
     ]);
-    expect(menu.getByRole("menuitem", { name: "Print / PDF" })).toHaveAttribute(
+    expect(menu.getByRole("menuitem", { name: "Print" })).toHaveAttribute(
       "href",
       `/invoices/${overdue.id}/print`,
     );
+
+    const pdf: DownloadedFile = {
+      blob: new Blob(["%PDF-"], { type: "application/pdf" }),
+      filename: `${overdue.number}.pdf`,
+      truncated: false,
+    };
+    vi.mocked(downloadInvoicePdf).mockResolvedValue(pdf);
+    await user.click(menu.getByRole("menuitem", { name: "Download PDF" }));
+    await waitFor(() => {
+      expect(saveFile).toHaveBeenCalledWith(pdf.blob, `${overdue.number}.pdf`);
+    });
+    expect(downloadInvoicePdf).toHaveBeenCalledWith(overdue.id, overdue.number);
   });
 
   it("says where invoices come from when there are none, with a link to the quotes", async () => {

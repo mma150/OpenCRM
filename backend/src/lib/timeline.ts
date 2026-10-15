@@ -59,8 +59,10 @@ export const timelineEntrySchema = z
     conversationType: z.enum(conversationTypeSchema.options).nullable(),
     // What was discussed, the note, or the text of an email. null for system entries.
     body: z.string().nullable(),
-    // An EMAIL: { to, cc, subject, status: "SENT", templateId, quote } (quote is { id, number }
-    // when the email carried a quote, otherwise null). A QUOTE_STATUS or INVOICE_STATUS:
+    // An EMAIL: { to, cc, subject, status: "SENT", templateId, quote, attachment } (quote is
+    // { id, number } when the email carried a quote, otherwise null; attachment is { filename }
+    // of the file it carried, such as the quote's PDF, otherwise null; entries written before
+    // attachments existed have no attachment key). A QUOTE_STATUS or INVOICE_STATUS:
     // { quote | invoice: { id, number }, from, to, total }, where `from` is null when it was
     // created and `to` is null when a draft quote was deleted.
     // System entries: { from, to } for a lead's status change (plus { reason, note } when it

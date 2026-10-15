@@ -5,6 +5,7 @@ import {
   errorResponse,
   jsonBody,
   jsonResponse,
+  pdfResponse,
   registry,
   sessionSecurity,
 } from "../../lib/openapi";
@@ -15,6 +16,7 @@ import {
   exportInvoicesHandler,
   getInvoiceDocumentHandler,
   getInvoiceHandler,
+  getInvoicePdfHandler,
   getInvoiceSummaryHandler,
   listInvoicesHandler,
   markInvoiceOverdueHandler,
@@ -49,6 +51,7 @@ invoicesRouter.get("/export", exportInvoicesHandler);
 invoicesRouter.get("/:id", getInvoiceHandler);
 invoicesRouter.patch("/:id", updateInvoiceHandler);
 invoicesRouter.get("/:id/document", getInvoiceDocumentHandler);
+invoicesRouter.get("/:id/pdf", getInvoicePdfHandler);
 invoicesRouter.post("/:id/mark-sent", markInvoiceSentHandler);
 invoicesRouter.post("/:id/mark-paid", markInvoicePaidHandler);
 invoicesRouter.post("/:id/mark-overdue", markInvoiceOverdueHandler);
@@ -144,6 +147,22 @@ registry.registerPath({
   request: { params, query },
   responses: {
     200: jsonResponse("The document", salesDocumentResponseSchema),
+    401: unauthenticated,
+    404: notFound,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/invoices/{id}/pdf",
+  tags,
+  summary: "Download the invoice as a PDF file",
+  description: `Like GET /quotes/{id}/pdf: the print-ready document (GET /invoices/{id}/document) as an A4 PDF file named after the invoice, such as INV-0001.pdf. A draft or sent invoice carries no status; paid, overdue and void are printed. Characters outside WinAnsi (Latin-1) are written as "?". Works from a plain link with the session cookie and with a Bearer token. Errors are the usual JSON. ${TZ}`,
+  security,
+  request: { params, query },
+  responses: {
+    200: pdfResponse("The PDF file", "INV-0001.pdf"),
+    400: validationFailed,
     401: unauthenticated,
     404: notFound,
   },

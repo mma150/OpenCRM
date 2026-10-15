@@ -73,6 +73,21 @@ export function csvResponse(description: string) {
   };
 }
 
+// A PDF file sent as a download (lib/sales-document-pdf.ts): the bytes of the file, named by
+// Content-Disposition.
+export function pdfResponse(description: string, filename: string) {
+  return {
+    description,
+    headers: {
+      "Content-Disposition": {
+        description: `attachment; filename="${filename}"`,
+        schema: { type: "string" as const },
+      },
+    },
+    content: { "application/pdf": { schema: { type: "string" as const, format: "binary" } } },
+  };
+}
+
 // `description` names the error codes this status can carry.
 export function errorResponse(description: string) {
   return jsonResponse(description, errorResponseSchema);

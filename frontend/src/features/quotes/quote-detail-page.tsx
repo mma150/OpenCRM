@@ -12,8 +12,8 @@ import {
   Ellipsis,
   FileText,
   Mail,
+  Paperclip,
   Pencil,
-  Printer,
   ReceiptText,
   RotateCcw,
   Send,
@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import { toast } from "sonner";
 
+import { DocumentFileButtons } from "@/components/shared/document-file-actions";
 import { DeleteRecordDialog } from "@/components/shared/record-dialogs";
 import {
   BackLink,
@@ -70,6 +71,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { quoteAccess, quoteActions } from "./quote-labels";
 import { QuoteLoader } from "./quote-loader";
 import { QuoteStatusBadge } from "./quote-status-badge";
+import { downloadQuotePdf } from "./quotes.api";
 import {
   changeQuoteStatus,
   createQuoteInvoice,
@@ -93,7 +95,7 @@ const STALE_CODES = new Set<ApiError["code"]>([
 const EMAIL_SUBJECT = "Quote {{quote.number}} from {{sender.name}}";
 const EMAIL_BODY = `Hello {{contact.firstName}},
 
-Thank you for your interest. Please find our quote {{quote.number}} for {{opportunity.name}} below. The total is {{quote.total}}.
+Thank you for your interest. Please find our quote {{quote.number}} for {{opportunity.name}} attached. The total is {{quote.total}}.
 
 If you have any questions, or would like anything changed, just reply to this email.
 
@@ -387,15 +389,13 @@ function QuoteDetail({ quote }: { quote: Quote }) {
   ) : null;
 
   const printButton = (
-    <Button asChild variant="outline" className="h-10 px-4">
-      <Link href={`/quotes/${quote.id}/print`}>
-        <Printer aria-hidden />
-        Print / PDF
-      </Link>
-    </Button>
+    <DocumentFileButtons
+      printHref={`/quotes/${quote.id}/print`}
+      download={() => downloadQuotePdf(quote.id, quote.number)}
+    />
   );
 
-  // Only what the API takes for this status; a Read-only user gets Print alone.
+  // Only what the API takes for this status; a Read-only user gets the PDF and Print alone.
   const actions = canWrite ? (
     <>
       {can.edit ? (
@@ -630,7 +630,15 @@ function QuoteDetail({ quote }: { quote: Quote }) {
           record={{ type: "OPPORTUNITY", id: quote.opportunity.id }}
           recordName={quote.opportunity.name}
           title={`Email quote ${quote.number}`}
-          note="The email carries a text summary of the quote's lines and totals below your message. There is no attachment."
+          note={
+            <span className="flex items-start gap-2">
+              <Paperclip aria-hidden className="mt-0.5 size-4 shrink-0" />
+              <span>
+                {quote.number}.pdf will be attached. A short summary (the dates and the totals) is
+                added below your message for mail programs that hide attachments.
+              </span>
+            </span>
+          }
           initial={{ subject: EMAIL_SUBJECT, body: EMAIL_BODY }}
           withQuotePlaceholders
           send={sendByEmail}

@@ -1,21 +1,24 @@
 "use client";
 
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, FileDown, Printer } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import type { DownloadedFile } from "@/lib/api/download";
 import type { ApiError } from "@/lib/api/http";
 import { formatDay, formatMoney, formatNumber, formatPercent } from "@/lib/format";
 import type { SalesDocument } from "@/lib/sales-document";
 
+import { useDocumentDownload } from "./document-file-actions";
 import { PageError, PageLoading, PageState } from "./page-state";
 import { discountLabel } from "./sales-document";
 
 // The print view of a quote or an invoice, drawn from the API's print-ready document
 // (GET /quotes/:id/document, GET /invoices/:id/document). It is a page without the app
-// frame: the browser's own print dialog turns it into paper or a PDF file ("Save as PDF").
-// There is no generated PDF file yet.
+// frame: the browser's own print dialog turns it into paper. The PDF file is drawn by the API
+// (GET /quotes/:id/pdf), and "Download PDF" on the record pages and here fetches it.
 //
 // Paper is white with dark ink in both themes: the page carries the `paper` class, which
 // gives everything inside it the light theme's tokens (globals.css), so a dark theme never
@@ -287,18 +290,38 @@ export function PrintDocument({ document }: { document: SalesDocument }) {
   );
 }
 
+// "Download PDF" in the bar: the API's PDF of the document on screen.
+function DownloadPdfButton({ download }: { download: () => Promise<DownloadedFile> }) {
+  const { downloading, start } = useDocumentDownload(download);
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      className="h-10 px-4"
+      disabled={downloading}
+      onClick={() => void start()}
+    >
+      {downloading ? <Spinner /> : <FileDown aria-hidden />}
+      Download PDF
+    </Button>
+  );
+}
+
 // /quotes/[id]/print and /invoices/[id]/print. `load` is the feature's own request for the
 // document (`getQuoteDocument`, `getInvoiceDocument`: pass the function itself, not a new
 // arrow on every render); its answer does not enter the store, because nothing else shows
-// it. The bar with Back and Print is left off the paper.
+// it. `downloadPdf` is the feature's request for the PDF file (`downloadQuotePdf`,
+// `downloadInvoicePdf`). The bar with Back, Download PDF and Print is left off the paper.
 export function PrintDocumentPage({
   id,
   load,
+  downloadPdf,
   backHref,
   backLabel,
 }: {
   id: string;
   load: (id: string) => Promise<SalesDocument>;
+  downloadPdf: (id: string, number: string) => Promise<DownloadedFile>;
   backHref: string;
   backLabel: string;
 }) {
@@ -338,21 +361,26 @@ export function PrintDocumentPage({
           <ArrowLeft aria-hidden className="size-4" />
           {backLabel}
         </Link>
-        <Button
-          type="button"
-          className="h-10 px-4"
-          disabled={!answer || "error" in answer}
-          onClick={() => {
-            window.print();
-          }}
-        >
-          <Printer aria-hidden />
-          Print / Save as PDF
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {answer && "document" in answer ? (
+            <DownloadPdfButton download={() => downloadPdf(id, answer.document.number)} />
+          ) : null}
+          <Button
+            type="button"
+            className="h-10 px-4"
+            disabled={!answer || "error" in answer}
+            onClick={() => {
+              window.print();
+            }}
+          >
+            <Printer aria-hidden />
+            Print
+          </Button>
+        </div>
       </div>
       <p className="mx-auto w-full max-w-[210mm] text-xs text-muted-foreground print:hidden">
-        This opens your browser&apos;s print dialog. To get a PDF file, choose &quot;Save as
-        PDF&quot; as the printer there.
+        Print opens your browser&apos;s print dialog. For a PDF file to save or send, use Download
+        PDF.
       </p>
 
       {answer === null ? (

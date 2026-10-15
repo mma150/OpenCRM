@@ -12,6 +12,7 @@ interface ResponseObject {
   content: {
     "application/json": { schema: Record<string, unknown> };
     "text/csv"?: { schema: Record<string, unknown> };
+    "application/pdf"?: { schema: Record<string, unknown> };
   };
   headers?: Record<string, unknown>;
 }
@@ -129,6 +130,7 @@ describe("OpenAPI document content", () => {
       "get /invoices/summary",
       "get /invoices/{id}",
       "get /invoices/{id}/document",
+      "get /invoices/{id}/pdf",
       "get /leads",
       "get /leads/export",
       "get /leads/{id}",
@@ -148,6 +150,7 @@ describe("OpenAPI document content", () => {
       "get /quotes/export",
       "get /quotes/{id}",
       "get /quotes/{id}/document",
+      "get /quotes/{id}/pdf",
       "get /settings/email",
       "get /settings/email/status",
       "get /settings/organization",
@@ -310,6 +313,8 @@ describe("OpenAPI document content", () => {
     expect(paths["/invoices/summary"]?.get.security).toEqual(session);
     expect(paths["/invoices/{id}/mark-paid"]?.post?.security).toEqual(session);
     expect(paths["/invoices/{id}/document"]?.get.security).toEqual(session);
+    expect(paths["/quotes/{id}/pdf"]?.get.security).toEqual(session);
+    expect(paths["/invoices/{id}/pdf"]?.get.security).toEqual(session);
     expect(paths["/auth/login"]?.post?.security).toBeUndefined();
     expect(paths["/auth/token"]?.post?.security).toBeUndefined();
     expect(paths["/health"]?.get.security).toBeUndefined();
@@ -325,6 +330,21 @@ describe("OpenAPI document content", () => {
       expect(Object.keys(ok?.headers ?? {})).toEqual(["Content-Disposition", "X-Export-Truncated"]);
     },
   );
+
+  it.each([
+    ["quotes", "Q-0001.pdf"],
+    ["invoices", "INV-0001.pdf"],
+  ])("describes /%s/{id}/pdf as a PDF download", (records, filename) => {
+    const responses = generated().paths[`/${records}/{id}/pdf`]?.get.responses;
+    const ok = responses?.["200"];
+
+    expect(Object.keys(ok?.content ?? {})).toEqual(["application/pdf"]);
+    expect(ok?.content["application/pdf"]?.schema).toEqual({ type: "string", format: "binary" });
+    expect(ok?.headers?.["Content-Disposition"]).toMatchObject({
+      description: `attachment; filename="${filename}"`,
+    });
+    expect(Object.keys(responses?.["404"]?.content ?? {})).toEqual(["application/json"]);
+  });
 
   it("gives the four record types their custom field values", () => {
     const schemas = generated().components.schemas as unknown as Record<

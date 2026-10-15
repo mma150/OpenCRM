@@ -1,4 +1,4 @@
-import { type DownloadedFile, downloadExport } from "@/lib/api/download";
+import { type DownloadedFile, downloadExport, downloadFile } from "@/lib/api/download";
 import { http } from "@/lib/api/http";
 import type { SalesDocument } from "@/lib/sales-document";
 import { browserTimeZone } from "@/lib/time-zone";
@@ -51,6 +51,11 @@ export async function getInvoice(id: string): Promise<Invoice> {
 export async function getInvoiceDocument(id: string): Promise<SalesDocument> {
   const response = await http.get<InvoiceDocumentResponse>(`/invoices/${id}/document`, withTz());
   return response.data.data;
+}
+
+// The same document as a PDF file, named by the API ("INV-0001.pdf").
+export function downloadInvoicePdf(id: string, number: string): Promise<DownloadedFile> {
+  return downloadFile(`/invoices/${id}/pdf`, {}, `${number}.pdf`);
 }
 
 // Only the due date and the notes, and nothing on a VOID invoice.

@@ -14,7 +14,7 @@ import { saveFile } from "@/lib/save-file";
 import { followNavigation, mockRouter, setMockLocation } from "@/test/navigation-mock";
 import { adminUser, renderWithStore, repUser } from "@/test/render-with-store";
 
-import { deleteQuote, exportQuotes, listQuotes } from "./quotes.api";
+import { deleteQuote, downloadQuotePdf, exportQuotes, listQuotes } from "./quotes.api";
 import { allQuotes, defaultQuery, draft, expired, quoteList, sent } from "./quotes.fixtures";
 import { QuotesPage } from "./quotes-page";
 
@@ -209,10 +209,11 @@ describe("QuotesPage", () => {
 
     let menu = await openMenu(user, table, "Q-0002");
     expect(menu.getByRole("menuitem", { name: "View" })).toBeInTheDocument();
-    expect(menu.getByRole("menuitem", { name: "Print / PDF" })).toHaveAttribute(
+    expect(menu.getByRole("menuitem", { name: "Print" })).toHaveAttribute(
       "href",
       `/quotes/${sent.id}/print`,
     );
+    expect(menu.getByRole("menuitem", { name: "Download PDF" })).toBeInTheDocument();
     expect(menu.queryByRole("menuitem", { name: "Edit" })).not.toBeInTheDocument();
     expect(menu.queryByRole("menuitem", { name: "Delete" })).not.toBeInTheDocument();
     await user.keyboard("{Escape}");
@@ -237,15 +238,28 @@ describe("QuotesPage", () => {
     });
   });
 
-  it("gives a Read-only user the list, View and Print, and nothing that changes a quote", async () => {
+  it("gives a Read-only user the list, View, the PDF and Print, and nothing that changes a quote", async () => {
     vi.mocked(listQuotes).mockResolvedValue(quoteList([draft]));
     const { user, table } = await renderPage(readOnlyUser);
 
     expect(screen.queryByRole("link", { name: "New quote" })).not.toBeInTheDocument();
     const menu = await openMenu(user, table, "Q-0001");
     expect(menu.getByRole("menuitem", { name: "View" })).toBeInTheDocument();
-    expect(menu.getByRole("menuitem", { name: "Print / PDF" })).toBeInTheDocument();
+    expect(menu.getByRole("menuitem", { name: "Print" })).toBeInTheDocument();
     expect(menu.queryByRole("menuitem", { name: "Edit" })).not.toBeInTheDocument();
     expect(menu.queryByRole("menuitem", { name: "Delete" })).not.toBeInTheDocument();
+
+    // The PDF is fetched from the API and saved under the name it gave.
+    const file: DownloadedFile = {
+      blob: new Blob(["%PDF-"], { type: "application/pdf" }),
+      filename: "Q-0001.pdf",
+      truncated: false,
+    };
+    vi.mocked(downloadQuotePdf).mockResolvedValue(file);
+    await user.click(menu.getByRole("menuitem", { name: "Download PDF" }));
+    await waitFor(() => {
+      expect(saveFile).toHaveBeenCalledWith(file.blob, "Q-0001.pdf");
+    });
+    expect(downloadQuotePdf).toHaveBeenCalledWith(draft.id, "Q-0001");
   });
 });

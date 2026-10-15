@@ -10,6 +10,7 @@ import { managerUser, readOnlyUser } from "@/features/leads/leads.fixtures";
 import { closeOpportunity, getOpportunity } from "@/features/opportunities/opportunities.api";
 import { fleet, wonDeal } from "@/features/opportunities/opportunities.fixtures";
 import type { ApiError } from "@/lib/api/http";
+import { saveFile } from "@/lib/save-file";
 import { mockRouter } from "@/test/navigation-mock";
 import { adminUser, renderWithStore, repUser } from "@/test/render-with-store";
 
@@ -18,6 +19,7 @@ import {
   changeQuoteStatus,
   createInvoice,
   deleteQuote,
+  downloadQuotePdf,
   duplicateQuote,
   getQuote,
   sendQuote,
@@ -28,6 +30,7 @@ import type { Quote } from "./quotes.types";
 vi.mock("./quotes.api");
 vi.mock("@/features/opportunities/opportunities.api");
 vi.mock("sonner");
+vi.mock("@/lib/save-file");
 
 // The composer belongs to the emails feature and has its own tests. Here a small stand-in
 // shows what the quote page hands it and calls `send` the way the real one does.
@@ -124,7 +127,8 @@ async function chooseFromMenu(user: TestUser, button: string, item: string) {
   await user.click(within(await screen.findByRole("menu")).getByRole("menuitem", { name: item }));
 }
 
-const PRINT = "Print / PDF";
+// The document actions every role gets: the API's PDF and the print view.
+const FILE = ["Download PDF", "Print"];
 
 describe("QuoteDetailPage", () => {
   beforeEach(() => {
@@ -184,37 +188,37 @@ describe("QuoteDetailPage", () => {
   it.each([
     {
       quote: draft,
-      buttons: ["Edit", "Send", "Accept", PRINT],
+      buttons: ["Edit", "Send", "Accept", ...FILE],
       send: ["Mark as sent", "Send by email..."],
       more: ["Decline", "Duplicate", "Delete"],
     },
     {
       quote: sent,
-      buttons: ["Send by email again", "Accept", "Decline", PRINT],
+      buttons: ["Send by email again", "Accept", "Decline", ...FILE],
       send: [],
       more: ["Reopen", "Duplicate"],
     },
     {
       // An expired quote takes every action a sent one takes.
       quote: expired,
-      buttons: ["Send by email again", "Accept", "Decline", PRINT],
+      buttons: ["Send by email again", "Accept", "Decline", ...FILE],
       send: [],
       more: ["Reopen", "Duplicate"],
     },
     {
       quote: accepted,
-      buttons: ["Create invoice", PRINT],
+      buttons: ["Create invoice", ...FILE],
       send: [],
       more: ["Reopen", "Duplicate"],
     },
     {
       // With an invoice there is nothing to create and no way back to a draft.
       quote: invoiced,
-      buttons: ["View invoice INV-0001", PRINT],
+      buttons: ["View invoice INV-0001", ...FILE],
       send: [],
       more: ["Duplicate"],
     },
-    { quote: declined, buttons: ["Reopen", PRINT], send: [], more: ["Duplicate"] },
+    { quote: declined, buttons: ["Reopen", ...FILE], send: [], more: ["Duplicate"] },
   ])("offers a writer the actions of a $quote.status quote", async ({ quote, ...expected }) => {
     const { user } = await renderQuote(quote, managerUser);
 
@@ -222,20 +226,57 @@ describe("QuoteDetailPage", () => {
   });
 
   it.each([
-    { quote: draft, buttons: [PRINT] },
-    { quote: sent, buttons: [PRINT] },
-    { quote: expired, buttons: [PRINT] },
-    { quote: accepted, buttons: [PRINT] },
-    { quote: invoiced, buttons: ["View invoice INV-0001", PRINT] },
-    { quote: declined, buttons: [PRINT] },
-  ])("offers a Read-only user only Print for a $quote.status quote", async ({ quote, buttons }) => {
-    const { user } = await renderQuote(quote, readOnlyUser);
+    { quote: draft, buttons: FILE },
+    { quote: sent, buttons: FILE },
+    { quote: expired, buttons: FILE },
+    { quote: accepted, buttons: FILE },
+    { quote: invoiced, buttons: ["View invoice INV-0001", ...FILE] },
+    { quote: declined, buttons: FILE },
+  ])(
+    "offers a Read-only user only the PDF and Print for a $quote.status quote",
+    async ({ quote, buttons }) => {
+      const { user } = await renderQuote(quote, readOnlyUser);
 
-    expect(await offered(user)).toEqual({ buttons, send: [], more: [] });
-    expect(within(header()).getByRole("link", { name: PRINT })).toHaveAttribute(
-      "href",
-      `/quotes/${quote.id}/print`,
-    );
+      expect(await offered(user)).toEqual({ buttons, send: [], more: [] });
+      expect(within(header()).getByRole("link", { name: "Print" })).toHaveAttribute(
+        "href",
+        `/quotes/${quote.id}/print`,
+      );
+    },
+  );
+
+  it("downloads the quote's PDF under the name the API gave it", async () => {
+    const blob = new Blob(["%PDF-"], { type: "application/pdf" });
+    vi.mocked(downloadQuotePdf).mockResolvedValue({
+      blob,
+      filename: "Q-0002.pdf",
+      truncated: false,
+    });
+    const { user } = await renderQuote(sent, readOnlyUser);
+
+    await user.click(within(header()).getByRole("button", { name: "Download PDF" }));
+
+    await waitFor(() => {
+      expect(saveFile).toHaveBeenCalledWith(blob, "Q-0002.pdf");
+    });
+    expect(downloadQuotePdf).toHaveBeenCalledWith(sent.id, "Q-0002");
+    expect(toast.success).toHaveBeenCalledWith("Q-0002.pdf was downloaded.");
+  });
+
+  it("says why the PDF could not be downloaded", async () => {
+    const refused: ApiError = { code: "NOT_FOUND", message: "Quote not found", details: null };
+    vi.mocked(downloadQuotePdf).mockRejectedValue(refused);
+    const { user } = await renderQuote();
+
+    await user.click(within(header()).getByRole("button", { name: "Download PDF" }));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.stringMatching(/^The PDF could not be downloaded\. /),
+      );
+    });
+    expect(saveFile).not.toHaveBeenCalled();
+    expect(within(header()).getByRole("button", { name: "Download PDF" })).toBeEnabled();
   });
 
   it("switches Send and Accept off for a draft without lines, and says why", async () => {
@@ -277,8 +318,9 @@ describe("QuoteDetailPage", () => {
 
     await chooseFromMenu(user, "Send", "Send by email...");
     const dialog = within(await screen.findByRole("dialog", { name: "Email quote Q-0001" }));
-    expect(dialog.getByText(/text summary of the quote's lines and totals/)).toBeInTheDocument();
-    expect(dialog.getByText(/There is no attachment/)).toBeInTheDocument();
+    expect(dialog.getByText(/Q-0001.pdf will be attached/)).toBeInTheDocument();
+    expect(dialog.getByText(/A short summary \(the dates and the totals\)/)).toBeInTheDocument();
+    expect(dialog.getByText(/Please find our quote {{quote.number}} .* attached/)).toBeVisible();
     expect(dialog.getByText(`record: OPPORTUNITY ${draft.opportunity.id}`)).toBeInTheDocument();
     expect(dialog.getByText(/subject: Quote {{quote.number}} from {{sender.name}}/)).toBeVisible();
     expect(dialog.getByText(/The total is {{quote.total}}/)).toBeInTheDocument();

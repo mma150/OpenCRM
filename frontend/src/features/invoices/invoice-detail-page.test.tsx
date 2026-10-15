@@ -6,15 +6,17 @@ import type { Me } from "@/features/auth/auth.types";
 import { managerUser, readOnlyUser } from "@/features/leads/leads.fixtures";
 import type { ApiError } from "@/lib/api/http";
 import { formatDateTime } from "@/lib/format";
+import { saveFile } from "@/lib/save-file";
 import { adminUser, renderWithStore, repUser } from "@/test/render-with-store";
 
 import { InvoiceDetailPage } from "./invoice-detail-page";
-import { changeInvoiceStatus, getInvoice, updateInvoice } from "./invoices.api";
+import { changeInvoiceStatus, downloadInvoicePdf, getInvoice, updateInvoice } from "./invoices.api";
 import { draft, markedOverdue, overdue, paid, sent, voided } from "./invoices.fixtures";
 import type { Invoice } from "./invoices.types";
 
 vi.mock("./invoices.api");
 vi.mock("sonner");
+vi.mock("@/lib/save-file");
 
 type TestUser = ReturnType<typeof renderWithStore>["user"];
 
@@ -169,7 +171,7 @@ describe("InvoiceDetailPage", () => {
       for (const me of [adminUser, managerUser, repUser]) {
         const { user, unmount } = await renderInvoice(invoice, me);
         expect(await offered(user)).toEqual({ main, menu });
-        expect(screen.getByRole("link", { name: "Print / PDF" })).toHaveAttribute(
+        expect(screen.getByRole("link", { name: "Print" })).toHaveAttribute(
           "href",
           `/invoices/${invoice.id}/print`,
         );
@@ -181,12 +183,29 @@ describe("InvoiceDetailPage", () => {
       const { user } = await renderInvoice(invoice, readOnlyUser);
 
       expect(await offered(user)).toEqual({ main: [], menu: [] });
-      expect(screen.getByRole("link", { name: "Print / PDF" })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: "Print" })).toHaveAttribute(
         "href",
         `/invoices/${invoice.id}/print`,
       );
       expect(screen.getByRole("table", { name: "Line items" })).toBeInTheDocument();
     });
+  });
+
+  it("downloads the invoice's PDF for every role, a Read-only user too", async () => {
+    const blob = new Blob(["%PDF-"], { type: "application/pdf" });
+    vi.mocked(downloadInvoicePdf).mockResolvedValue({
+      blob,
+      filename: `${sent.number}.pdf`,
+      truncated: false,
+    });
+    const { user } = await renderInvoice(sent, readOnlyUser);
+
+    await user.click(screen.getByRole("button", { name: "Download PDF" }));
+
+    await waitFor(() => {
+      expect(saveFile).toHaveBeenCalledWith(blob, `${sent.number}.pdf`);
+    });
+    expect(downloadInvoicePdf).toHaveBeenCalledWith(sent.id, sent.number);
   });
 
   describe("status changes", () => {

@@ -4319,6 +4319,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/invoices/{id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the invoice as a PDF file
+         * @description Like GET /quotes/{id}/pdf: the print-ready document (GET /invoices/{id}/document) as an A4 PDF file named after the invoice, such as INV-0001.pdf. A draft or sent invoice carries no status; paid, overdue and void are printed. Characters outside WinAnsi (Latin-1) are written as "?". Works from a plain link with the session cookie and with a Bearer token. Errors are the usual JSON. tz is the viewer's time zone (UTC when left out): it decides whether a sent invoice past its dueDate reads as OVERDUE.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The PDF file */
+                200: {
+                    headers: {
+                        /** @description attachment; filename="INV-0001.pdf" */
+                        "Content-Disposition"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/pdf": string;
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No invoice has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/invoices/{id}/mark-sent": {
         parameters: {
             query?: never;
@@ -8214,6 +8286,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/quotes/{id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the quote as a PDF file
+         * @description The print-ready document (GET /quotes/{id}/document) as an A4 PDF file named after the quote, such as Q-0001.pdf: the same content in the same order as the web print view, with "Page X of Y" at the foot of every page. A draft or sent quote carries no status; any other status is printed. Written with the PDF standard fonts, which only have the WinAnsi (Latin-1) characters: any other character, such as an emoji or a name in another script, is written as "?". Works from a plain link with the session cookie and with a Bearer token. Errors are the usual JSON. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The PDF file */
+                200: {
+                    headers: {
+                        /** @description attachment; filename="Q-0001.pdf" */
+                        "Content-Disposition"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/pdf": string;
+                    };
+                };
+                /** @description The request is not acceptable (VALIDATION_FAILED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not signed in (UNAUTHENTICATED) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description No quote has this id, or its opportunity is not one the caller may see (NOT_FOUND) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/quotes/{id}/duplicate": {
         parameters: {
             query?: never;
@@ -8300,7 +8444,7 @@ export interface paths {
         put?: never;
         /**
          * Mark a quote as sent, and optionally email it
-         * @description Without a body the quote is only marked SENT. With email, the message is sent first, like POST /emails from the opportunity (the caller's name, Reply-To the caller, placeholders filled in, quote.number and quote.total included), with the quote's lines and totals added below the body as text; there is no attachment. Then the quote becomes SENT and the opportunity's timeline gets the QUOTE_STATUS entry and an EMAIL entry whose details.quote names the quote. When the email fails nothing changes. A quote that is already SENT can be emailed again; without email that is INVALID_STATUS_CHANGE. Needs at least one line. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
+         * @description Without a body the quote is only marked SENT. With email, the message is sent first, like POST /emails from the opportunity (the caller's name, Reply-To the caller, placeholders filled in, quote.number and quote.total included), with the quote attached as a PDF file (Q-0001.pdf, as GET /quotes/{id}/pdf draws it once the quote is sent) and a short summary added below the body as text (the file name, the dates and the totals) for mail programs that hide attachments. Then the quote becomes SENT and the opportunity's timeline gets the QUOTE_STATUS entry and an EMAIL entry whose details.quote names the quote and details.attachment is { filename }. When the email fails nothing changes. A quote that is already SENT can be emailed again; without email that is INVALID_STATUS_CHANGE. Needs at least one line. tz is the viewer's time zone (UTC when left out): it decides whether a sent quote past its validUntil reads as EXPIRED.
          */
         post: {
             parameters: {

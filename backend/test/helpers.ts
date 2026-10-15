@@ -1,3 +1,5 @@
+import { inflateSync } from "node:zlib";
+
 import { createTransport } from "nodemailer";
 import request, { type Response } from "supertest";
 import { vi } from "vitest";
@@ -262,4 +264,45 @@ export function restoreEnv(): void {
     }
   }
   Object.assign(env, originalEnv);
+}
+
+// Reads a binary answer (a PDF) into a Buffer: supertest only buffers text by itself.
+//   await agent.get(url).buffer(true).parse(binaryBody)
+export function binaryBody(
+  response: Response,
+  callback: (error: Error | null, body: Buffer) => void,
+): void {
+  // In Node, what supertest hands a parser is the response stream itself.
+  const stream = response as unknown as NodeJS.ReadableStream;
+  const chunks: Buffer[] = [];
+  stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+  stream.on("end", () => {
+    callback(null, Buffer.concat(chunks));
+  });
+}
+
+// The text drawn in a PDF the API made (lib/sales-document-pdf.ts), one line per text
+// operation, in the order drawn. pdfkit writes text as hex strings in TJ arrays; compressed
+// content streams are inflated first. The characters come back as Latin-1.
+export function pdfText(pdf: Buffer): string {
+  const lines: string[] = [];
+  for (const match of pdf.toString("latin1").matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)) {
+    const bytes = Buffer.from(match[1] ?? "", "latin1");
+    let content: string;
+    try {
+      content = inflateSync(bytes).toString("latin1");
+    } catch {
+      content = bytes.toString("latin1");
+    }
+    for (const operation of content.matchAll(/\[([^\]]*)\]\s*TJ/g)) {
+      const hex = [...(operation[1] ?? "").matchAll(/<([\da-f]*)>/gi)].map((part) => part[1]);
+      lines.push(hex.map((part) => Buffer.from(part ?? "", "hex").toString("latin1")).join(""));
+    }
+  }
+  return lines.join("\n");
+}
+
+// How many pages a PDF has: its /Type /Page objects (not the /Pages tree).
+export function pdfPageCount(pdf: Buffer): number {
+  return pdf.toString("latin1").match(/\/Type \/Page\b(?!s)/g)?.length ?? 0;
 }

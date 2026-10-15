@@ -12,16 +12,15 @@ import {
   Info,
   type LucideIcon,
   Pencil,
-  Printer,
   RotateCcw,
   Send,
   Target,
   Undo2,
 } from "lucide-react";
-import Link from "next/link";
 import { Fragment, type ReactNode, useState } from "react";
 import { toast } from "sonner";
 
+import { DocumentFileButtons } from "@/components/shared/document-file-actions";
 import { BackLink, DetailLink, RecordFact, RecordHeader } from "@/components/shared/record-layout";
 import { DocumentLines, DocumentTotals } from "@/components/shared/sales-document";
 import { Button } from "@/components/ui/button";
@@ -43,6 +42,7 @@ import { type InvoiceDialog, InvoiceDialogs } from "./invoice-dialogs";
 import { INVOICE_ACTION_LABELS, invoiceAccess, invoiceActions } from "./invoice-labels";
 import { InvoiceLoader } from "./invoice-loader";
 import { InvoiceStatusBadge } from "./invoice-status-badge";
+import { downloadInvoicePdf } from "./invoices.api";
 import type { Invoice, InvoiceAction } from "./invoices.types";
 import { useInvoiceStatus } from "./use-invoice-status";
 
@@ -274,12 +274,10 @@ function InvoiceDetail({ invoice }: { invoice: Invoice }) {
                 {INVOICE_ACTION_LABELS[mainAction]}
               </Button>
             ) : null}
-            <Button asChild variant="outline" className="h-10 px-4">
-              <Link href={`/invoices/${invoice.id}/print`}>
-                <Printer aria-hidden />
-                Print / PDF
-              </Link>
-            </Button>
+            <DocumentFileButtons
+              printHref={`/invoices/${invoice.id}/print`}
+              download={() => downloadInvoicePdf(invoice.id, invoice.number)}
+            />
             {canEdit || otherActions.length > 0 ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -340,8 +338,8 @@ function InvoiceDetail({ invoice }: { invoice: Invoice }) {
 }
 
 // /invoices/[id]: the header with the invoice's status and actions, where it stands in a
-// sentence, and the invoice as a document. Every role may print it; every role but Read-only
-// may change its status, its due date and its notes.
+// sentence, and the invoice as a document. Every role may download its PDF and print it; every
+// role but Read-only may change its status, its due date and its notes.
 export function InvoiceDetailPage({ id }: { id: string }) {
   return <InvoiceLoader id={id}>{(invoice) => <InvoiceDetail invoice={invoice} />}</InvoiceLoader>;
 }

@@ -122,8 +122,8 @@ afterAll(async () => {
 
 describe("endpoint contract", () => {
   it("covers the auth, users, record, pipeline, timeline, activity, task, notification, dashboard, custom field, export, import, settings, email, product, quote and invoice routes", () => {
-    expect(routes.length).toBeGreaterThanOrEqual(149);
-    expect(signedInRoutes.length).toBeGreaterThanOrEqual(141);
+    expect(routes.length).toBeGreaterThanOrEqual(151);
+    expect(signedInRoutes.length).toBeGreaterThanOrEqual(143);
     expect(routes.map((route) => route.key)).toEqual(
       expect.arrayContaining([
         "get /leads/{id}/timeline",
@@ -213,12 +213,14 @@ describe("endpoint contract", () => {
         "get /invoices/summary",
         "get /invoices/{id}",
         "get /invoices/{id}/document",
+        "get /invoices/{id}/pdf",
         "get /products",
         "get /products/{id}",
         "get /quotes",
         "get /quotes/export",
         "get /quotes/{id}",
         "get /quotes/{id}/document",
+        "get /quotes/{id}/pdf",
         "get /settings/email",
         "get /settings/email/status",
         "get /settings/organization",

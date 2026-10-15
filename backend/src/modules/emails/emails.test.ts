@@ -204,6 +204,7 @@ describe("POST /emails", () => {
             status: "SENT",
             templateId: null,
             quote: null,
+            attachment: null,
           },
           occurredAt: expect.any(String) as string,
           author: { id: ravi.id, name: "Ravi Rep" },

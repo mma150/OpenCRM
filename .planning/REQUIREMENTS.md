@@ -124,7 +124,7 @@ Requirements for the first release (web + API). Each maps to roadmap phases.
 
 - [ ] **QUOT-01**: Admin can manage a product catalog with prices
 - [ ] **QUOT-02**: User can create a quote on an opportunity with line items, discount and tax
-- [ ] **QUOT-03**: User can download a quote as PDF and email it to the contact
+- [x] **QUOT-03**: User can download a quote as PDF and email it to the contact
 - [ ] **QUOT-04**: User can turn an accepted quote into an invoice
 - [ ] **QUOT-05**: User can mark an invoice as sent, paid or overdue
 
@@ -249,7 +249,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MAIL-04 | Phase 8 | Pending |
 | QUOT-01 | Phase 8 | Pending |
 | QUOT-02 | Phase 8 | Pending |
-| QUOT-03 | Phase 8 | Pending |
+| QUOT-03 | Phase 8 | Complete |
 | QUOT-04 | Phase 8 | Pending |
 | QUOT-05 | Phase 8 | Pending |
 | UI-01 | Phase 2 | Pending |

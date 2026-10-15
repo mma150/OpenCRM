@@ -1,11 +1,14 @@
-import type request from "supertest";
+import request from "supertest";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  binaryBody,
   createTestApp,
   createUser,
   type ErrorEnvelope,
   MAIL_SERVER_TEXT,
+  pdfPageCount,
+  pdfText,
   resetDatabase,
   resetPipelineStages,
   resetRecords,
@@ -19,6 +22,7 @@ import type { Company, Contact, Opportunity, Product, User } from "../../generat
 import { parseCsv } from "../../lib/csv";
 import { prisma } from "../../lib/prisma";
 import { addDays } from "../../lib/sales-documents";
+import { createSession } from "../../lib/sessions";
 
 interface Line {
   id: string;
@@ -596,7 +600,7 @@ describe("who may see and change a quote", () => {
     ["invoice", "post", "/invoice", undefined],
     ["DELETE", "delete", "", undefined],
   ];
-  const READS = ["", "/document"];
+  const READS = ["", "/document", "/pdf"];
 
   it("answers NOT_FOUND on every route for a quote of an opportunity outside the caller's reach", async () => {
     const quote = await makeQuote();
@@ -1103,11 +1107,8 @@ describe("POST /quotes/:id/send with an email", () => {
       "",
       "Ravi Rep",
       "",
-      "Quote Q-0001",
+      "Quote Q-0001 is attached as Q-0001.pdf.",
       "Issued 2026-11-01, valid until 2026-12-01",
-      "",
-      "10 x Fleet tracking licence @ $29.00 (10% off): $261.00",
-      "1.5 x Onboarding package @ $1,200.00: $1,800.00",
       "",
       "Subtotal: $2,061.00",
       "Discount: -$61.00",
@@ -1127,7 +1128,23 @@ describe("POST /quotes/:id/send with an email", () => {
       cc: ["office@northwind.example"],
       subject: "Quote Q-0001 for Northwind Logistics",
       text,
+      attachments: [
+        expect.objectContaining({ filename: "Q-0001.pdf", contentType: "application/pdf" }),
+      ],
     });
+    // The attachment is the quote as GET /quotes/:id/pdf draws it once sent: no status. The
+    // in-memory transport turns the file into base64 in place when it builds the message.
+    const [message] = send.mock.calls[0] ?? [];
+    const content = (message as { attachments: { content: Buffer | string }[] }).attachments[0]
+      ?.content;
+    const pdf = typeof content === "string" ? Buffer.from(content, "base64") : content;
+    expect(pdf?.subarray(0, 5).toString()).toBe("%PDF-");
+    const drawn = pdfText(pdf ?? Buffer.alloc(0));
+    expect(drawn).toContain("Q-0001");
+    expect(drawn).toContain("Fleet tracking licence");
+    expect(drawn).toContain("Total (USD)");
+    expect(drawn).toContain("$2,020.90");
+    expect(drawn).not.toContain("Status");
     // On the opportunity's timeline: the email, and the change of status.
     const entries = await timeline();
     expect(entries.map((entry) => entry.kind).sort()).toEqual([
@@ -1144,6 +1161,7 @@ describe("POST /quotes/:id/send with an email", () => {
         status: "SENT",
         templateId: null,
         quote: { id: quote.id, number: "Q-0001" },
+        attachment: { filename: "Q-0001.pdf" },
       },
       author: { id: ravi.id, name: "Ravi Rep" },
     });
@@ -1498,5 +1516,117 @@ describe("GET /quotes/:id/document", () => {
         taxes: [{ rate: 10, taxableAmount: 1000, taxAmount: 100 }],
       },
     });
+  });
+});
+
+describe("GET /quotes/:id/pdf", () => {
+  function download(agent: Agent, path: string) {
+    return agent.get(path).buffer(true).parse(binaryBody);
+  }
+
+  async function makeFullQuote(): Promise<Quote> {
+    await asAdmin.put(`${API}/settings/organization`).send({
+      name: "Acme Fleet Solutions",
+      address: "12 Market Street, Bristol",
+      email: "sales@acme.example",
+    });
+    return makeQuote({
+      issueDate: "2026-11-01",
+      validUntil: "2026-12-01",
+      discountType: "PERCENT",
+      discountValue: 10,
+      notes: "Thank you.",
+      lines: [
+        { productId: licence.id, quantity: 10 },
+        { description: "Onboarding package", quantity: 1.5, unitPrice: 1200, taxRate: 20 },
+      ],
+    });
+  }
+
+  it("downloads the quote as a PDF named after it, with the same totals as the quote", async () => {
+    const quote = await makeFullQuote();
+
+    const response = await download(asRavi, `${QUOTES}/${quote.id}/pdf`);
+
+    expect(response.status).toBe(200);
+    expect(response.headers["content-type"]).toBe("application/pdf");
+    expect(response.headers["content-disposition"]).toBe('attachment; filename="Q-0001.pdf"');
+    expect(response.headers["cache-control"]).toBe("no-store");
+    expect(response.headers["x-content-type-options"]).toBe("nosniff");
+    const pdf = response.body as Buffer;
+    expect(response.headers["content-length"]).toBe(String(pdf.length));
+    expect(pdf.subarray(0, 5).toString()).toBe("%PDF-");
+    expect(pdfPageCount(pdf)).toBe(1);
+    const text = pdfText(pdf);
+    // 10 x 29.00 = 290.00 at 8.25%; 1.5 x 1200.00 = 1800.00 at 20%; less 10% (209.00):
+    // 8.25% of 261.00 is 21.53 and 20% of 1620.00 is 324.00, so 2226.53 in all.
+    expect(quote.total).toBe(2226.53);
+    for (const part of [
+      "Quote",
+      "Q-0001",
+      "Acme Fleet Solutions",
+      "Northwind Logistics",
+      "Elena Rostova",
+      "Fleet tracking rollout",
+      "Ravi Rep (ravi@example.com)",
+      "Fleet tracking licence",
+      "Onboarding package",
+      "$2,090.00",
+      "Discount (10%)",
+      "-$209.00",
+      "Tax 8.25% on $261.00",
+      "Tax 20% on $1,620.00",
+      "$21.53",
+      "$324.00",
+      "$2,226.53",
+      "Thank you.",
+      "Page 1 of 1",
+    ]) {
+      expect(text, part).toContain(part);
+    }
+  });
+
+  it("works with a Bearer token, without a cookie or an Origin", async () => {
+    const quote = await makeQuote();
+    const token = await createSession(ravi.id);
+
+    const response = await request(app)
+      .get(`${QUOTES}/${quote.id}/pdf`)
+      .set("Authorization", `Bearer ${token}`)
+      .buffer(true)
+      .parse(binaryBody);
+
+    expect(response.status).toBe(200);
+    expect(response.headers["content-disposition"]).toBe('attachment; filename="Q-0001.pdf"');
+    expect((response.body as Buffer).subarray(0, 5).toString()).toBe("%PDF-");
+  });
+
+  it("answers with the JSON error envelope when it cannot", async () => {
+    const quote = await makeQuote();
+
+    const outsider = await asTara.get(`${QUOTES}/${quote.id}/pdf`);
+    const signedOut = await request(app).get(`${QUOTES}/${quote.id}/pdf`);
+    const badZone = await asRavi.get(`${QUOTES}/${quote.id}/pdf?tz=Mars/Base`);
+
+    expect(outsider.status).toBe(404);
+    expect(outsider.headers["content-type"]).toMatch(/^application\/json/);
+    expect(errorOf(outsider).code).toBe("NOT_FOUND");
+    expect(signedOut.status).toBe(401);
+    expect(errorOf(signedOut).code).toBe("UNAUTHENTICATED");
+    expect(badZone.status).toBe(400);
+    expect(errorOf(badZone).code).toBe("VALIDATION_FAILED");
+  });
+
+  it("prints the status the viewer reads, except draft and sent", async () => {
+    const draft = await makeQuote();
+    const accepted = await quoteIn("ACCEPTED");
+    const expired = await quoteIn("SENT", { issueDate: "2020-01-01", validUntil: "2020-01-31" });
+
+    const textOf = async (id: string) =>
+      pdfText((await download(asViewer, `${QUOTES}/${id}/pdf`)).body as Buffer);
+
+    expect(await textOf(draft.id)).not.toContain("Status");
+    expect(await textOf(accepted.id)).toContain("Status: Accepted");
+    expect(await textOf(expired.id)).toContain("Status: Expired");
   });
 });

@@ -97,7 +97,7 @@ export const emailSent = entry(20, {
 });
 export const emailWithQuote = entry(21, {
   kind: "EMAIL",
-  body: "Please find our quote below.",
+  body: "Please find our quote attached.",
   details: {
     to: ["marcus.chen@acme.example"],
     cc: [],
@@ -105,6 +105,7 @@ export const emailWithQuote = entry(21, {
     status: "SENT",
     templateId: null,
     quote: QUOTE,
+    attachment: { filename: "Q-0001.pdf" },
   },
   occurredAt: "2026-10-09T10:00:00.000Z",
 });
