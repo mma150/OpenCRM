@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:opencrm/core/api/api_client.dart';
 import 'package:opencrm/core/api/api_error.dart';
@@ -27,8 +30,10 @@ class DioApiClient extends ApiClient {
         queryParameters: request.query.isEmpty ? null : request.query,
         options: Options(
           method: request.method,
+          // A file comes as bytes; its failure is still the JSON envelope, read below.
+          responseType: request.file ? ResponseType.bytes : null,
           headers: {
-            'Accept': 'application/json',
+            'Accept': request.file ? '*/*' : 'application/json',
             if (request.body != null) 'Content-Type': 'application/json',
             if (request.token != null)
               'Authorization': 'Bearer ${request.token}',
@@ -41,7 +46,26 @@ class DioApiClient extends ApiClient {
 
     final status = response.statusCode ?? 0;
     final requestId = response.headers.value('x-request-id');
-    final body = response.data;
+    final Object? body;
+    if (request.file) {
+      final data = response.data;
+      final bytes = data is Uint8List
+          ? data
+          : Uint8List.fromList(data is List<int> ? data : const []);
+      final type = response.headers.value(Headers.contentTypeHeader);
+      if (status >= 200 && status < 300 && !_isJson(type)) {
+        return ApiResponse(
+          ApiFile(
+            bytes: bytes,
+            contentType: type,
+            fileName: fileNameOf(response.headers.value('content-disposition')),
+          ),
+        );
+      }
+      body = _decodeJson(bytes);
+    } else {
+      body = response.data;
+    }
 
     final error = ApiError.fromEnvelope(
       body,
@@ -66,6 +90,18 @@ class DioApiClient extends ApiClient {
       statusCode: status,
       requestId: requestId,
     );
+  }
+
+  static bool _isJson(String? contentType) =>
+      contentType != null && contentType.toLowerCase().contains('json');
+
+  /// The body of a file request that failed: the JSON error envelope, or null.
+  static Object? _decodeJson(Uint8List bytes) {
+    try {
+      return jsonDecode(utf8.decode(bytes));
+    } on FormatException {
+      return null;
+    }
   }
 
   ApiError _connectionError(DioException error) {
@@ -96,4 +132,18 @@ class DioApiClient extends ApiClient {
         );
     }
   }
+}
+
+/// The file name of a `Content-Disposition` header (`attachment; filename="Q-0001.pdf"`),
+/// or null when it names none.
+String? fileNameOf(String? contentDisposition) {
+  if (contentDisposition == null) {
+    return null;
+  }
+  final match = RegExp(
+    r'''filename\*?=(?:UTF-8'')?"?([^";]+)"?''',
+    caseSensitive: false,
+  ).firstMatch(contentDisposition);
+  final name = match?.group(1)?.trim();
+  return name == null || name.isEmpty ? null : name;
 }

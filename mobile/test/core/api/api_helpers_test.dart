@@ -159,6 +159,24 @@ void main() {
       );
     });
 
+    test('the email and status codes of a quote, in the web wording', () {
+      expect(
+        describe('EMAIL_NOT_CONFIGURED'),
+        'Outgoing email is not set up, so nothing was sent. An Admin can set it up '
+        'under Settings, Email.',
+      );
+      // The API's sentence names the kind of problem and never the mail server's text.
+      expect(
+        describe('EMAIL_SEND_FAILED'),
+        'The email was not sent. Server text',
+      );
+      expect(
+        describe('INVALID_STATUS_CHANGE'),
+        'That is no longer possible: the status has changed in the meantime. The '
+        'page now shows the current status.',
+      );
+    });
+
     test('shows the code and the server text for a code it does not know', () {
       expect(describe('BRAND_NEW_CODE'), 'BRAND_NEW_CODE: Server text');
     });

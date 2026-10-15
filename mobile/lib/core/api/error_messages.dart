@@ -1,7 +1,7 @@
 import 'package:opencrm/core/api/api_error.dart';
 
-/// "Try again in N minutes" for the lock and rate-limit errors.
-String _retryHint(ApiError error) {
+/// "Try again in N minutes" for the lock and rate-limit errors (`details.retryAfterSeconds`).
+String retryHint(ApiError error) {
   final seconds = error.retryAfterSeconds;
   if (seconds == null || seconds <= 0) {
     return 'Try again in a few minutes.';
@@ -21,17 +21,25 @@ String describeApiError(ApiError error) {
     case 'INVALID_CREDENTIALS':
       return 'Email or password is incorrect.';
     case 'ACCOUNT_LOCKED':
-      return 'This account is locked after too many wrong passwords. ${_retryHint(error)}';
+      return 'This account is locked after too many wrong passwords. ${retryHint(error)}';
     case 'ACCOUNT_DEACTIVATED':
       return 'This account has been deactivated. Ask an Admin to reactivate it.';
     case 'RATE_LIMITED':
-      return 'Too many attempts. ${_retryHint(error)}';
+      return 'Too many attempts. ${retryHint(error)}';
     case 'UNAUTHENTICATED':
       return 'Your session has ended. Sign in again.';
     case 'FORBIDDEN':
       return 'You do not have permission to do that.';
     case 'LEAD_CONVERTED':
       return 'This lead has been converted and can no longer be changed.';
+    case 'EMAIL_NOT_CONFIGURED':
+      return 'Outgoing email is not set up, so nothing was sent. An Admin can set it up under Settings, Email.';
+    case 'EMAIL_SEND_FAILED':
+      // The API's sentence says what kind of problem it was (cannot connect, login refused)
+      // and never repeats the mail server's own text, so it is shown as it is.
+      return 'The email was not sent. ${error.message}';
+    case 'INVALID_STATUS_CHANGE':
+      return 'That is no longer possible: the status has changed in the meantime. The page now shows the current status.';
     case 'VALIDATION_FAILED':
       return 'Some of the details are not valid. Check them and try again.';
     case 'NOT_FOUND':

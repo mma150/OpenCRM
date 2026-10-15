@@ -6,10 +6,12 @@ import 'package:opencrm/app/app.dart';
 import 'package:opencrm/app/router.dart';
 import 'package:opencrm/core/api/api_client.dart';
 import 'package:opencrm/core/auth/user.dart';
+import 'package:opencrm/core/share/file_sharer.dart';
 import 'package:opencrm/core/storage/key_value_store.dart';
 import 'package:opencrm/core/widgets/form_fields.dart';
 
 import 'fake_api.dart';
+import 'fake_file_sharer.dart';
 import 'fixtures.dart';
 
 const testServer = 'https://crm.example.test';
@@ -75,11 +77,14 @@ class PhonesVariant extends TestVariant<Surface> {
 
 /// What [pumpApp] hands back: the pieces a test asserts on.
 class TestApp {
-  const TestApp(this.api, this.store, this.container);
+  const TestApp(this.api, this.store, this.container, this.sharer);
 
   final FakeApi api;
   final MemoryKeyValueStore store;
   final ProviderContainer container;
+
+  /// What the app handed to the phone's share sheet.
+  final FakeFileSharer sharer;
 
   GoRouter get router => container.read(routerProvider);
 
@@ -94,6 +99,7 @@ class TestApp {
 /// - [server] false starts without a saved server address: the first launch.
 /// - [location] opens a page directly, such as `/leads/lead-1`.
 /// - [surface] defaults to the current value of the `phones` variant, or [phone].
+/// - [sharer] stands in for the share sheet; one that records is made when left out.
 ///
 /// At the end of the test it fails if the app made a request no handler answered.
 Future<TestApp> pumpApp(
@@ -104,6 +110,7 @@ Future<TestApp> pumpApp(
   String? location,
   Surface? surface,
   bool settle = true,
+  FakeFileSharer? sharer,
 }) async {
   // A tap that lands on something else (a button under a bar) fails the test.
   WidgetController.hitTestWarningShouldBeFatal = true;
@@ -143,12 +150,16 @@ Future<TestApp> pumpApp(
   api.onDefault('GET', '/tasks', (request) => page(const []));
   // A record page asks for the custom fields of its type; none, unless a test says so.
   api.onDefault('GET', '/custom-fields', (request) => const <Object?>[]);
+  // An opportunity's page has a Quotes card; no quotes, unless a test says so.
+  api.onDefault('GET', '/quotes', (request) => page(const []));
 
+  final fileSharer = sharer ?? FakeFileSharer();
   final container = ProviderContainer(
     retry: noRetry,
     overrides: [
       apiClientProvider.overrideWithValue(api),
       keyValueStoreProvider.overrideWithValue(store),
+      fileSharerProvider.overrideWithValue(fileSharer),
     ],
   );
   addTearDown(container.dispose);
@@ -164,7 +175,7 @@ Future<TestApp> pumpApp(
     UncontrolledProviderScope(container: container, child: const OpenCrmApp()),
   );
   await tester.pumpAndSettle();
-  final app = TestApp(api, store, container);
+  final app = TestApp(api, store, container, fileSharer);
   if (location != null) {
     app.router.go(location);
     if (settle) {

@@ -22,6 +22,8 @@ import 'package:opencrm/features/opportunities/opportunities_providers.dart';
 import 'package:opencrm/features/opportunities/opportunity.dart';
 import 'package:opencrm/features/opportunities/opportunity_sheets.dart';
 import 'package:opencrm/features/pipeline_stages/pipeline_stages.dart';
+import 'package:opencrm/features/quotes/opportunity_quotes_card.dart';
+import 'package:opencrm/features/quotes/quotes_providers.dart';
 import 'package:opencrm/features/tasks/record_tasks_card.dart';
 import 'package:opencrm/features/timeline/record_ref.dart';
 import 'package:opencrm/features/timeline/timeline_section.dart';
@@ -105,6 +107,7 @@ class OpportunityDetailScreen extends ConsumerWidget {
           : null,
       body: RefreshIndicator(
         onRefresh: () async {
+          ref.invalidate(opportunityQuotesProvider(id));
           try {
             await controller.refresh();
           } on ApiError catch (error) {
@@ -168,6 +171,9 @@ class _OpportunityBodyState extends ConsumerState<_OpportunityBody> {
           recordName: opportunity.name,
           canWrite: canWrite,
         ),
+        gap,
+        // Its quotes, read-only: they are made in the web app.
+        OpportunityQuotesCard(opportunityId: opportunity.id),
         gap,
         SegmentedButton<_Tab>(
           showSelectedIcon: false,

@@ -80,10 +80,7 @@ class _TimelineSectionState extends ConsumerState<TimelineSection> {
           for (final entry in timeline.items)
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: TimelineEntryTile(
-                entry: entry,
-                recordType: widget.record.type,
-              ),
+              child: TimelineEntryTile(entry: entry, record: widget.record),
             ),
           if (moreError != null)
             ErrorState(
@@ -104,22 +101,30 @@ class _TimelineSectionState extends ConsumerState<TimelineSection> {
 
 /// One entry: its icon and title, when it happened and who wrote it, and its text. An entry
 /// of the lead the record was converted from (`fromLead`) is titled as the lead's ("Lead
-/// created", "Converted") and says "From lead" with its name, which opens the lead.
+/// created", "Converted") and says "From lead" with its name, which opens the lead. On an
+/// opportunity's timeline, an entry about one of its quotes (a status change, the email it
+/// was sent with) has "View quote Q-0001", which opens the quote.
 class TimelineEntryTile extends StatelessWidget {
   const TimelineEntryTile({
     super.key,
     required this.entry,
-    required this.recordType,
+    required this.record,
   });
 
   final TimelineEntry entry;
-  final RecordType recordType;
+
+  /// The record whose timeline this is.
+  final RecordRef record;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final body = entryText(entry);
     final fromLead = entry.fromLead;
+    // A quote's page sits under its opportunity's.
+    final quote = record.type == RecordType.opportunity
+        ? entryQuote(entry)
+        : null;
     final tone = context.colors.tone(
       entry.kind == TimelineKind.conversation ? Tone.info : Tone.neutral,
     );
@@ -146,7 +151,7 @@ class TimelineEntryTile extends StatelessWidget {
                   Text(
                     entryTitle(
                       entry,
-                      fromLead == null ? recordType : RecordType.lead,
+                      fromLead == null ? record.type : RecordType.lead,
                     ),
                     style: text.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
@@ -163,6 +168,11 @@ class TimelineEntryTile extends StatelessWidget {
                     if (fromLead == null) const SizedBox(height: AppSpacing.sm),
                     Text(body, style: text.bodyMedium),
                   ],
+                  if (quote != null)
+                    _EntryLink(
+                      label: 'View quote ${quote.number}',
+                      path: Routes.quote(record.id, quote.id),
+                    ),
                 ],
               ),
             ),
@@ -208,6 +218,38 @@ class _FromLead extends StatelessWidget {
                 ],
               ),
               style: style,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A line of an entry that opens a page: "View quote Q-0001".
+class _EntryLink extends StatelessWidget {
+  const _EntryLink({required this.label, required this.path});
+
+  final String label;
+  final String path;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      link: true,
+      child: InkWell(
+        onTap: () => context.go(path),
+        borderRadius: AppSpacing.borderRadius,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: AppSpacing.touchTarget),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: context.colors.primary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ),

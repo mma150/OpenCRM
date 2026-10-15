@@ -535,3 +535,108 @@ List<Map<String, Object?>> customFieldsJson({
     ),
   ];
 }
+
+/// One line of a quote as the API answers it.
+Map<String, Object?> quoteLineJson({
+  String id = 'line-1',
+  String description = 'Fleet tracker, 12 months',
+  num quantity = 2,
+  num unitPrice = 1250,
+  num discountPercent = 0,
+  num taxRate = 8,
+  num lineTotal = 2500,
+}) {
+  return {
+    'id': id,
+    'productId': null,
+    'description': description,
+    'quantity': quantity,
+    'unitPrice': unitPrice,
+    'discountPercent': discountPercent,
+    'taxRate': taxRate,
+    'lineTotal': lineTotal,
+  };
+}
+
+/// A quote as the API answers it, of the opportunity of [opportunityJson]. Pass only what
+/// a test is about. The totals are taken as given: the API counts them, never the app.
+Map<String, Object?> quoteJson({
+  String id = 'quote-1',
+  String number = 'Q-0001',
+  String status = 'DRAFT',
+  String opportunityId = 'opp-1',
+  String opportunityName = 'Fleet renewal',
+  Map<String, Object?>? contact = const {
+    'id': 'contact-1',
+    'name': 'Marcus Chen',
+    'email': 'marcus@northwind.example',
+  },
+  Map<String, Object?>? company = const {
+    'id': 'company-1',
+    'name': 'Northwind Logistics',
+  },
+  String issueDate = '2026-10-05',
+  String? validUntil = '2026-11-04',
+  List<Map<String, Object?>>? lines,
+  String discountType = 'NONE',
+  num discountValue = 0,
+  num subtotal = 2500,
+  num discountTotal = 0,
+  num taxTotal = 200,
+  num total = 2700,
+  String? notes,
+  String? terms,
+  String? sentAt,
+  String? acceptedAt,
+  String? declinedAt,
+  Map<String, Object?>? invoice,
+}) {
+  return {
+    'id': id,
+    'number': number,
+    'opportunity': {'id': opportunityId, 'name': opportunityName},
+    'contact': contact,
+    'company': company,
+    'status': status,
+    'issueDate': issueDate,
+    'validUntil': validUntil,
+    'lines': lines ?? [quoteLineJson()],
+    'discountType': discountType,
+    'discountValue': discountValue,
+    'subtotal': subtotal,
+    'discountTotal': discountTotal,
+    'taxTotal': taxTotal,
+    'total': total,
+    'notes': notes,
+    'terms': terms,
+    'sentAt': sentAt,
+    'acceptedAt': acceptedAt,
+    'declinedAt': declinedAt,
+    'invoice': invoice,
+    'createdBy': {'id': rep.id, 'name': rep.name},
+    'createdAt': '2026-10-05T09:00:00.000Z',
+    'updatedAt': '2026-10-05T09:00:00.000Z',
+  };
+}
+
+/// An email template as `GET /email-templates` answers it.
+Map<String, Object?> emailTemplateJson({
+  String id = 'template-1',
+  String name = 'Follow-up',
+  String subject = 'Following up on {{opportunity.name}}',
+  String body = 'Hello {{contact.firstName}}, any questions?',
+  bool shared = false,
+  User owner = rep,
+}) {
+  return {
+    'id': id,
+    'name': name,
+    'subject': subject,
+    'body': body,
+    'shared': shared,
+    'owner': {'id': owner.id, 'name': owner.name},
+    'editable': true,
+    'createdAt': '2026-09-01T09:00:00.000Z',
+    'updatedAt': '2026-09-01T09:00:00.000Z',
+  };
+}

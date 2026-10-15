@@ -107,6 +107,12 @@ void main() {
       expect(formatNumber(12500.5), '12,500.5');
       expect(formatNumber(3), '3');
     });
+
+    test('a rate is a number with a percent sign', () {
+      expect(formatPercent(8), '8%');
+      expect(formatPercent(12.5), '12.5%');
+      expect(formatPercent(0), '0%');
+    });
   });
 
   group('people', () {

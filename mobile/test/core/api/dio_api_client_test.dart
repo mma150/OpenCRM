@@ -315,4 +315,103 @@ void main() {
       },
     );
   });
+
+  group('a file', () {
+    ResponseBody pdf(List<int> bytes, {String? disposition}) {
+      return ResponseBody.fromBytes(
+        bytes,
+        200,
+        headers: {
+          Headers.contentTypeHeader: ['application/pdf'],
+          'content-disposition': ?(disposition == null ? null : [disposition]),
+        },
+      );
+    }
+
+    test('comes back as its bytes, its type and its name', () async {
+      final (:client, :adapter) = _client(
+        (_) => pdf([
+          37,
+          80,
+          68,
+          70,
+        ], disposition: 'attachment; filename="Q-0001.pdf"'),
+      );
+
+      final file = await client.getFile('/quotes/quote-1/pdf');
+
+      expect(file.bytes, [37, 80, 68, 70]);
+      expect(file.contentType, 'application/pdf');
+      expect(file.fileName, 'Q-0001.pdf');
+      final sent = adapter.requests.single;
+      expect(sent.uri.path, '/api/v1/quotes/quote-1/pdf');
+      expect(sent.headers['Authorization'], 'Bearer secret-token');
+    });
+
+    test('without a Content-Disposition has no name', () async {
+      final (:client, adapter: _) = _client((_) => pdf([1, 2, 3]));
+
+      expect((await client.getFile('/quotes/quote-1/pdf')).fileName, isNull);
+    });
+
+    test('that failed is the API error of its JSON body', () async {
+      final (:client, adapter: _) = _client(
+        (_) => _json(
+          {
+            'error': {
+              'code': 'NOT_FOUND',
+              'message': 'Quote not found',
+              'details': null,
+            },
+          },
+          status: 404,
+          requestId: 'req-9',
+        ),
+      );
+
+      final error = await _errorOf(client.getFile('/quotes/quote-1/pdf'));
+
+      expect(error.code, 'NOT_FOUND');
+      expect(error.statusCode, 404);
+      expect(error.requestId, 'req-9');
+    });
+
+    test('answered as JSON data is not a file', () async {
+      final (:client, adapter: _) = _client(
+        (_) =>
+            _json({'data': <String, Object?>{}, 'meta': <String, Object?>{}}),
+      );
+
+      final error = await _errorOf(client.getFile('/quotes/quote-1/pdf'));
+
+      expect(error.code, ApiError.invalidResponse);
+    });
+
+    test('that failed without JSON is not an OpenCRM answer', () async {
+      final (:client, adapter: _) = _client(
+        (_) => ResponseBody.fromString(
+          '<html>Bad gateway</html>',
+          502,
+          headers: {
+            Headers.contentTypeHeader: ['text/html'],
+          },
+        ),
+      );
+
+      final error = await _errorOf(client.getFile('/quotes/quote-1/pdf'));
+
+      expect(error.code, ApiError.invalidResponse);
+    });
+
+    test('reads the names a Content-Disposition can carry', () {
+      expect(fileNameOf('attachment; filename="Q-0001.pdf"'), 'Q-0001.pdf');
+      expect(fileNameOf('attachment; filename=Q-0002.pdf'), 'Q-0002.pdf');
+      expect(
+        fileNameOf("attachment; filename*=UTF-8''Q-0003.pdf"),
+        'Q-0003.pdf',
+      );
+      expect(fileNameOf('attachment'), isNull);
+      expect(fileNameOf(null), isNull);
+    });
+  });
 }

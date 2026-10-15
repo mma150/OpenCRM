@@ -29,7 +29,8 @@ mobile/
 │   │   ├── storage/                  key_value_store.dart (secure storage; memory in tests)
 │   │   ├── state/                    paged_notifier.dart (every paged list)
 │   │   ├── theme/                    app_colors.dart, app_theme.dart, app_spacing.dart, theme_controller.dart
-│   │   ├── format/                   formatters.dart (dates, money, initials, the tz the API is sent)
+│   │   ├── format/                   formatters.dart (dates, money, percentages, initials, the tz the API is sent)
+│   │   ├── share/                    file_sharer.dart (the phone's share sheet; the only file that imports share_plus)
 │   │   └── widgets/                  The shared widgets (table below)
 │   └── features/
 │       ├── auth/                     server_address_screen.dart, sign_in_screen.dart, forgot_password_screen.dart,
@@ -54,6 +55,10 @@ mobile/
 │       ├── notifications/            notification.dart, notifications_api.dart, notifications_providers.dart,
 │       │                             notification_bell.dart (the bell and the poller), notifications_screen.dart
 │       ├── activity/                 activity_entry.dart, activity_providers.dart, activity_labels.dart, activity_screen.dart
+│       ├── quotes/                   quote.dart, quotes_api.dart, quotes_providers.dart, quote_screen.dart,
+│       │                             opportunity_quotes_card.dart (the Quotes card of an opportunity's page)
+│       ├── emails/                   email.dart (recipients, templates, the message), emails_api.dart
+│       │                             (/emails/defaults and /email-templates), send_email_sheet.dart
 │       └── more/                     more_screen.dart (profile, theme, server, sign out, version)
 └── test/
     ├── support/                      fake_api.dart, fixtures.dart, pump_app.dart
@@ -146,6 +151,7 @@ See [Testing](#testing).
 
 - **Two implementations, one seam.** [`DioApiClient`](../../mobile/lib/core/api/dio_api_client.dart) is the real one and the only file that imports dio. The tests' `FakeApi` is the other. They differ only in `perform`; what happens around a request is shared in `ApiClient.send`.
 - **The server address and the token belong to the auth controller.** It sets `serverUrl`, `token` and `onUnauthenticated` on the client. The token travels as `Authorization: Bearer`, as [the API's token sign-in](backend.md#authentication-and-access) expects. No cookie is ever used.
+- **A file is `getFile`.** A route that answers a file instead of JSON (`GET /quotes/:id/pdf`) is read with `client.getFile(path)`, which answers an `ApiFile` (`bytes`, `contentType`, and `fileName` from `Content-Disposition`). The request is like any other (the Bearer token; `ApiRequest.file` is set); dio reads the body as bytes, and a failure is still the JSON error envelope, read into an `ApiError`. A success that is JSON, or a failure that is not JSON, is `INVALID_RESPONSE`.
 - **Every failure is an [`ApiError`](../../mobile/lib/core/api/api_error.dart)** with `code`, `message`, `details`, `statusCode` and `requestId` (the `X-Request-Id` header). Besides the API's codes there are four of the app's own: `NETWORK_ERROR`, `TIMEOUT`, `INVALID_RESPONSE` (the answer is not the API's envelope: probably not an OpenCRM server) and `UNEXPECTED` (a bug on this side).
 - **Switch on `code`, never on the HTTP status or the message** ([backend.md](backend.md#error-codes-d-12)). `error.fieldErrors` gives a validation failure as `{ path: message }`; `error.retryAfterSeconds` reads the lock and rate-limit detail.
 - **A session that has ended is handled in one place.** When any answer carries `UNAUTHENTICATED`, the client calls `onUnauthenticated`, the auth controller signs the user out, and the router shows the sign-in screen. The check is on the code, never on HTTP 401: a wrong password is a 401 too. No screen or notifier redirects by itself.
@@ -314,6 +320,7 @@ One feature serves every kind of record, as on the web and in the API ([backend.
 - **A record page shows its history with one widget**: `TimelineSection(record: RecordRef(RecordType.contact, id), canWrite: ...)`, inside the page's own scroll view. It has the filter (All, Conversations, Notes, Changes), the entries and "Load more".
 - **Writing**: `showLogConversationSheet(context, record: ..., recordName: ..., onSaved: ...)` and `showAddNoteSheet(...)`. Pass `onSaved` to read the record again when a conversation moves something on it (a lead's "last contact").
 - **After a change that writes an entry** (a status change, an assignment) call `refreshTimelines(ref, record)`.
+- **An entry about a quote links to it** on an opportunity's timeline: a `QUOTE_STATUS` entry (not the deletion of a draft) and an `EMAIL` entry that carries `details.quote` (`{ id, number }`) have "View quote Q-0001" (`entryQuote` in `timeline_labels.dart`), which opens the quote's page under the opportunity.
 - The words for an entry are in [`timeline_labels.dart`](../../mobile/lib/features/timeline/timeline_labels.dart), the same as the web's `timeline-labels.ts`. They already cover the entries of all four record types, quotes and invoices included.
 - **A converted lead's history follows it.** The timeline of a contact, a company or an opportunity made from a lead also carries that lead's entries, merged by date by the API, each with `fromLead: { id, name }` (null on the record's own entries, on a lead's timeline and in the activity feed; an older server that leaves it out reads as null). `TimelineEntryTile` titles such an entry as the lead's ("Lead created", "Converted") and adds a line "From lead <name>" that opens the lead, as the web's `timeline-entry.tsx` does. Writing a conversation or a note still writes on the record itself.
 - Entries are permanent: there is no edit and no delete, in the API or here.
@@ -342,7 +349,9 @@ Use these before writing a new one. All are in [`mobile/lib/core/widgets/`](../.
 | `showRecordPicker`, `PickedRecord`, `RecordPickerField` | `record_picker.dart` | A sheet that finds one record by typing against a list endpoint, and the form field that holds the choice. Features wrap it: `showCompanyPicker`, `showContactPicker` |
 | `FollowUpCard`, `showRecordFollowUpSheet` | `follow_up.dart` | The follow-up reminder of a record (set, change, clear), given the time, the note and the function that sends them |
 
-Shared by features rather than `core/`: `TimelineSection` and the two timeline sheets (`features/timeline`), `CustomFieldsCard`, `CustomFieldsSection` and `CustomFieldValues` (`features/custom_fields`), `showReassignSheet` (`features/users`), `RecordTasksCard`, `TaskRow` and `showTaskSheet` (`features/tasks`).
+Shared by features rather than `core/`: `TimelineSection` and the two timeline sheets (`features/timeline`), `CustomFieldsCard`, `CustomFieldsSection` and `CustomFieldValues` (`features/custom_fields`), `showReassignSheet` (`features/users`), `RecordTasksCard`, `TaskRow` and `showTaskSheet` (`features/tasks`), `showSendEmailSheet` (`features/emails`), `OpportunityQuotesCard` (`features/quotes`).
+
+Not a widget, but shared the same way: `fileSharerProvider` ([`core/share/file_sharer.dart`](../../mobile/lib/core/share/file_sharer.dart)) hands bytes to the phone's share sheet (`shareFile(bytes, fileName: ..., mimeType: ..., origin: ...)`). The tests replace it with `FakeFileSharer`.
 
 ## Roles
 
@@ -376,6 +385,7 @@ The four roles and what they may do are in [`core/auth/user.dart`](../../mobile/
 `flutter test` runs everything in `mobile/test/`, with no network and no device. Tests sit in the folder of the code they test and end in `_test.dart`.
 
 - **The whole app runs in a widget test.** `pumpApp(tester, api: api, user: rep, location: Routes.lead('lead-1'))` in [`test/support/pump_app.dart`](../../mobile/test/support/pump_app.dart) starts the real app (router, shell, themes, controllers) signed in as that person and opens the page. Only two things are replaced: the API client and the device's storage.
+- **The share sheet** is `FakeFileSharer` ([`test/support/fake_file_sharer.dart`](../../mobile/test/support/fake_file_sharer.dart)): `pumpApp` puts one in, and `app.sharer.shared` lists what the app shared (set `app.sharer.error` to make the sheet fail). A test never reaches a platform channel.
 - **`FakeApi`** ([`test/support/fake_api.dart`](../../mobile/test/support/fake_api.dart)) is the API of the tests. A test says what each route answers and reads back what the app sent:
 
   ```dart
@@ -386,7 +396,7 @@ The four roles and what they may do are in [`core/auth/user.dart`](../../mobile/
   expect(api.sent('PATCH', '/leads/lead-1').single.json, {'status': 'QUALIFIED'});
   ```
 
-  A handler returns the `data` (or `page(...)` for a list), throws `apiError('FORBIDDEN')` or `validationError({...})`, or returns a `Future` to keep the app waiting. The handler added last wins, so a test can change an answer part-way through. **A request no handler answers fails the test.** The feature's API file and its models are real, so a test also proves the JSON is read correctly.
+  A handler returns the `data` (or `page(...)` for a list, or an `ApiFile` for a file route), throws `apiError('FORBIDDEN')` or `validationError({...})`, or returns a `Future` to keep the app waiting. The handler added last wins, so a test can change an answer part-way through. **A request no handler answers fails the test.** The feature's API file and its models are real, so a test also proves the JSON is read correctly.
 - **Fixtures** ([`test/support/fixtures.dart`](../../mobile/test/support/fixtures.dart)): one user per role (`admin`, `manager`, `rep`, `readOnly`) and JSON builders (`leadJson(status: 'LOST')`, `entryJson(...)`, `dashboardJson(...)`) that take only what a test is about. Add a builder for each new model.
 - **Two phones.** `testWidgets('...', variant: phones, (tester) async { ... })` runs the test on a 360 x 800 phone in the light theme and on a 320 x 640 phone in the dark theme with text at 130%. Flutter reports an overflow as an error, so either one fails the test. `surface: tablet` checks the wide layout. Use the variant for every screen and every state of it; a test of logic only needs one run.
 - **Helpers**: `enterField(tester, 'Email', '...')`, `field('Email')`, `chooseOption(tester, 'Source', 'Referral')`, `tapVisible(tester, finder)` (scrolls to it first), `scrollTo(tester, finder)`. A tap that lands on something else fails the test.
@@ -434,7 +444,9 @@ The mobile app needs no CORS entry and no `Origin`: it sends no cookie, so the A
 
 Adding or changing a package needs the owner's approval, exactly as for the two other apps ([security.md](security.md#dependency-rules)). Versions in `pubspec.yaml` are exact (no `^`), `pubspec.lock` is committed, and CI installs with `flutter pub get --enforce-lockfile`. The Flutter version is pinned in `environment.flutter` in `pubspec.yaml` and in the `mobile` job of CI; change both together.
 
-Approved today: `flutter_riverpod`, `dio`, `go_router`, `flutter_secure_storage`, `intl`, and `flutter_lints` for development. No code generation packages.
+Approved today: `flutter_riverpod`, `dio`, `go_router`, `flutter_secure_storage`, `intl`, `share_plus` (the share sheet, for a quote's PDF; approved on 2026-10-14), and `flutter_lints` for development. No code generation packages.
+
+**share_plus on Android and iOS.** It needs no setting of ours: its own Android manifest declares the `FileProvider` and the receiver it uses, and iOS needs no permission to share a file (the app's deployment target, 15.0, is above its 13.0). On an iPad the sheet points at the button that opened it (`origin`). One build setting came with it: `kotlin.incremental=false` in [`android/gradle.properties`](../../mobile/android/gradle.properties), because share_plus is written in Kotlin and Kotlin's incremental compiler fails when the pub cache and the project are on different drives (`C:` and `D:` on Windows: "this and base files have different roots").
 
 ## Contacts and companies
 
@@ -460,7 +472,27 @@ Approved today: `flutter_riverpod`, `dio`, `go_router`, `flutter_secure_storage`
 - **An edit sends only what changed** (`OpportunityInput.changesFrom`), unlike the lead form. A company or contact the reader may not see is null in the answer; sending every field back would unlink it. A new opportunity sends what was filled in and also chooses its stage (the open ones; the first when the stages cannot be read).
 - **`expectedCloseDate` is a calendar day** (`"2026-11-15"`): it is picked without a time (`DayField`), sent with `toApiDay` and shown with `formatDay`, never moved into a time zone.
 - **The follow-up is shared**: `FollowUpCard` and `showRecordFollowUpSheet` in [`core/widgets/follow_up.dart`](../../mobile/lib/core/widgets/follow_up.dart) take the time, the note and a function that sends them, so they serve any record with `PUT .../follow-up`. A closed opportunity takes no new follow-up; one that is still set can be cleared. (The lead page still has its own copy of the same sheet.)
-- **The company, the contact and the lead it came from** are rows on the Details half that open their pages. Quotes and invoices are not in the app.
+- **The company, the contact and the lead it came from** are rows on the Details half that open their pages. Its quotes are the Quotes card ([Quotes](#quotes)); invoices are not in the app.
+
+## Quotes
+
+[`features/quotes/`](../../mobile/lib/features/quotes/) **reads** quotes and **sends** them: a quote can be opened, shared as a PDF and emailed with its PDF attached. Making, changing, duplicating, accepting, declining and reopening a quote, and invoices, stay in the web app ([backend.md](backend.md#quotes) has the rules).
+
+- **Access follows the opportunity**, as in the API: whoever sees the opportunity sees its quotes (a Read-only user too); whoever may change it (`role.canWriteRecords`) may email them.
+- **The Quotes card** (`OpportunityQuotesCard(opportunityId: ...)`) is on every opportunity's page, between the Tasks card and the timeline: the newest 10 (`GET /quotes?opportunityId=&sort=createdAt&order=desc&pageSize=10`), each with its number, status, total and "valid until", opening the quote. None says "No quotes yet. Quotes are created in the web app."; more than 10 says so and points to the web app. There is no "New quote". Pull to refresh on the page reads it again.
+- **The quote's page** is `/more/opportunities/<opportunity id>/quotes/<quote id>` (`Routes.quote`), under its opportunity so Back leads there: the number, the status, the total, the dates, who it is for, the lines (one stacked block each: description, quantity × unit price, discount, tax, line total), the totals (subtotal, discount with its percentage, tax, total), notes and terms. Every amount is the API's: the app adds nothing up.
+- **Every quote request sends `tz`** (`deviceTimeZone()`), because `EXPIRED` is what a sent quote reads as once its "valid until" day has passed for the viewer. It is not stored.
+- **"Share PDF"** (everyone who sees the quote) downloads `GET /quotes/:id/pdf` (`getFile`) with a spinner on the button, then opens the phone's share sheet with `Q-0001.pdf` (the server's name, cleaned to a safe file name). Saving, mailing or sending it on is the phone's business: the app keeps no copy (share_plus writes the bytes to the app's cache folder, which the system clears). A failed download says why ("The PDF could not be downloaded. ..."); an answer that is not a PDF is `INVALID_RESPONSE`.
+- **"Email quote"** is offered while the API takes it (`Quote.canBeEmailed`, the table in [backend.md](backend.md#quotes)): a draft with at least one line (it becomes sent), a sent or an expired quote (sent again). Not for an accepted or a declined quote, and a draft without lines says to add one in the web app. It opens the email sheet (below) with the web's wording, and sends `POST /quotes/:id/send?tz=` with `{ email: { to, cc?, subject, body } }`; the server attaches the PDF. On success the quote, its opportunity (the email moved its "last contact"), the Quotes card and the opportunity's timeline load again (`quoteSent`). `INVALID_STATUS_CHANGE` (someone changed the quote meanwhile) reads the quote again; the sheet keeps the draft and says so.
+
+### The email sheet
+
+`showSendEmailSheet(context, record: ..., recordName: ..., title: ..., note: ..., subject: ..., body: ..., send: ...)` in [`features/emails/`](../../mobile/lib/features/emails/) is the app's side of the web's `send-email-dialog.tsx`, without its preview. It is a full-screen page above the tabs. A quote is its only user so far; `send` is the caller's route, so sending from a record (`POST /emails`) would be one more caller.
+
+- **To and Cc are chips**: an address typed and followed by a comma, a semicolon, a space or Done becomes a chip (lower case, a repeat dropped); one that is not valid stays in the box with the web's sentence; 1 to 10 in To, up to 10 in Cc. What is still in the box when Send is pressed is added first. The record's usual recipients (`GET /emails/defaults`) fill To when there is one (an opportunity's contact) and are offered as "+ Name" when there are several.
+- **A template** (`GET /email-templates`, only read: templates are written in the web app) fills the subject and the message. Text the user changed is replaced only after "Replace what you wrote?". The field is not shown when there are no templates.
+- **Placeholders** such as `{{contact.firstName}}` stay in the text; the server fills them in when it sends. A line under the message says so.
+- **Errors keep the draft** and are said above the form, the page scrolling up to them: `EMAIL_NOT_CONFIGURED` (with where an Admin sets it up), `EMAIL_SEND_FAILED` (the API's sentence), `RATE_LIMITED` (with when to try again, `retryHint`), `INVALID_STATUS_CHANGE`, and a validation failure under its field (`email.to.2` is "To"). The sheet cannot be closed while the email is on its way, and Send cannot be pressed twice.
 
 ## Tasks
 
@@ -502,7 +534,7 @@ Both are for `role.seesTeamOverview` (Admin, Sales Manager, Read-only: a Read-on
 
 ## What is not here yet
 
-- **Converting a lead** (it needs the contact, company and opportunity pages), **sending email**, **quotes and invoices**, **CSV import and export**, and everything under Settings stay in the web app.
+- **Converting a lead** (it needs the contact, company and opportunity pages), **sending email from a record** (only a quote is emailed here), **making and changing quotes** (they are read, shared and emailed here), **invoices**, **writing email templates** (they are applied here), **CSV import and export**, and everything under Settings stay in the web app.
 - **Setting up custom fields** (adding, ordering, archiving them) is in the web app's Settings; the app fills them in.
 - **Tap to call and tap to email** need the package `url_launcher`, which is not approved. Email addresses and phone numbers are selectable text instead. "Forgot password?" needs no browser: the server emails the link.
 - **The device's IANA time zone name** needs a plugin (`flutter_timezone`); the app sends the UTC offset instead.
@@ -527,5 +559,6 @@ Both are for `role.seesTeamOverview` (Admin, Sales Manager, Read-only: a Read-on
 | The team dashboard and the activity feed are never asked for a Sales Rep | `home_team_tasks_test.dart`, `activity_test.dart` (no handler for that role in `pumpApp`) |
 | The unread count is polled only in the foreground | `notifications_test.dart` |
 | The token is never a cookie, and only in secure storage | `auth.test.ts` in the API; code review here (`key_value_store.dart` is the only file that stores anything) |
-| Only `dio_api_client.dart` imports dio, only `key_value_store.dart` imports flutter_secure_storage | Code review |
+| Only `dio_api_client.dart` imports dio, only `key_value_store.dart` imports flutter_secure_storage, only `file_sharer.dart` imports share_plus | Code review |
+| Quotes: every role sees them, only a role that writes emails them and only when the API takes it, the PDF is shared, every error of the email sheet keeps the draft | `quote_screen_test.dart`, `send_email_sheet_test.dart`, `quote_model_test.dart` |
 | The wording equals the web app's | Code review |

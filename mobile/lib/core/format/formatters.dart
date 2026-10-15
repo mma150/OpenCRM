@@ -62,6 +62,9 @@ String formatCurrency(num amount) {
 /// A plain number as people write it: `12,500.5`. Not money.
 String formatNumber(num value) => _number.format(value);
 
+/// A rate as people write it: `8%`, `12.5%`. [value] is 0 to 100.
+String formatPercent(num value) => '${formatNumber(value)}%';
+
 DateTime _startOfDay(DateTime moment) {
   final local = moment.toLocal();
   return DateTime(local.year, local.month, local.day);

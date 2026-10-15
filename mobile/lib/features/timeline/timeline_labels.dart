@@ -39,6 +39,23 @@ String? _documentNumber(Json details, String key) {
       : null;
 }
 
+/// The quote an entry is about, when it can be opened: a quote's status change (not the
+/// deletion of a draft, which is gone) and an email the quote was sent with
+/// (`details.quote`). Null for every other entry.
+({String id, String number})? entryQuote(TimelineEntry entry) {
+  final isStatus = entry.kind == TimelineKind.quoteStatus;
+  if (!isStatus && entry.kind != TimelineKind.email) {
+    return null;
+  }
+  if (isStatus && _text(entry.details, 'to') == null) {
+    return null;
+  }
+  final quote = entry.details['quote'];
+  return quote is Map && quote['id'] is String && quote['number'] is String
+      ? (id: quote['id'] as String, number: quote['number'] as String)
+      : null;
+}
+
 IconData entryIcon(TimelineEntry entry) {
   switch (entry.kind) {
     case TimelineKind.conversation:

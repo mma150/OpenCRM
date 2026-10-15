@@ -4,6 +4,8 @@
 
 Accepted. The owner approved the five packages on 2026-10-13, when the mobile app was started; the rest follows from that approval and from the project's rule of simple, readable code.
 
+Amended 2026-10-14: the owner approved a sixth package, `share_plus` (Flutter Community, BSD-3-Clause, pinned at 13.3.0), so that a quote's PDF can be handed to the phone's share sheet. It is used through one file, `core/share/file_sharer.dart`, and needs no `path_provider` of ours.
+
 ## Context
 
 The web app and API v1 are finished. The Flutter app in `mobile/` is a second client of the same API, to be built feature by feature by several contributors at once. It needs one way to hold state, call the API, navigate and keep a session, chosen before the first feature so that every feature looks alike.

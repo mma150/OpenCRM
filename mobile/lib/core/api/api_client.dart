@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opencrm/core/api/api_error.dart';
 import 'package:opencrm/core/api/dio_api_client.dart';
@@ -14,6 +16,21 @@ class ApiResponse {
   final Json meta;
 }
 
+/// A file the API answered instead of JSON (a quote's PDF): its bytes, its media type and
+/// the name the server gave it in `Content-Disposition`, if any. A failure is still the
+/// JSON error envelope, read into an [ApiError] like any other.
+class ApiFile {
+  const ApiFile({required this.bytes, this.contentType, this.fileName});
+
+  final Uint8List bytes;
+
+  /// Such as `application/pdf`.
+  final String? contentType;
+
+  /// Such as `Q-0001.pdf`.
+  final String? fileName;
+}
+
 /// One request, as the feature API files describe it. [path] starts after `/api/v1`.
 class ApiRequest {
   const ApiRequest({
@@ -23,6 +40,7 @@ class ApiRequest {
     this.query = const {},
     this.body,
     this.token,
+    this.file = false,
   });
 
   final String method;
@@ -31,6 +49,9 @@ class ApiRequest {
   final Map<String, String> query;
   final Object? body;
   final String? token;
+
+  /// The answer is a file ([ApiFile]), not the JSON envelope.
+  final bool file;
 
   String get url => '$serverUrl$apiPrefix$path';
 }
@@ -65,6 +86,7 @@ abstract class ApiClient {
     Object? body,
     String? serverUrl,
     String? token,
+    bool file = false,
   }) async {
     final server = serverUrl ?? this.serverUrl;
     if (server == null) {
@@ -83,6 +105,7 @@ abstract class ApiClient {
           query: query,
           body: body,
           token: token ?? (serverUrl == null ? this.token : null),
+          file: file,
         ),
       );
     } on ApiError catch (error) {
@@ -101,6 +124,22 @@ abstract class ApiClient {
 
   Future<ApiResponse> get(String path, {Map<String, String> query = const {}}) {
     return send('GET', path, query: query);
+  }
+
+  /// A route that answers a file (`GET /quotes/:id/pdf`). An answer that is not a file is
+  /// `INVALID_RESPONSE`.
+  Future<ApiFile> getFile(
+    String path, {
+    Map<String, String> query = const {},
+  }) async {
+    final data = (await send('GET', path, query: query, file: true)).data;
+    if (data is ApiFile) {
+      return data;
+    }
+    throw const ApiError(
+      code: ApiError.invalidResponse,
+      message: 'The server sent an answer the app could not read.',
+    );
   }
 
   Future<ApiResponse> post(String path, {Object? body}) =>

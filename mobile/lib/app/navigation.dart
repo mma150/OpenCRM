@@ -18,6 +18,7 @@ import 'package:opencrm/features/notifications/notifications_screen.dart';
 import 'package:opencrm/features/opportunities/opportunities_screen.dart';
 import 'package:opencrm/features/opportunities/opportunity_detail_screen.dart';
 import 'package:opencrm/features/opportunities/opportunity_form_screen.dart';
+import 'package:opencrm/features/quotes/quote_screen.dart';
 import 'package:opencrm/features/tasks/tasks_screen.dart';
 
 /// The app's navigation, in one file. To add a feature:
@@ -186,6 +187,12 @@ final List<RouteBase> moreRoutes = [
             parentNavigatorKey: rootNavigatorKey,
             builder: (context, state) =>
                 OpportunityFormScreen(id: state.pathParameters['id']),
+          ),
+          // A quote of the opportunity: read here, so Back leads to the opportunity.
+          GoRoute(
+            path: 'quotes/:quoteId',
+            builder: (context, state) =>
+                QuoteScreen(id: state.pathParameters['quoteId']!),
           ),
         ],
       ),

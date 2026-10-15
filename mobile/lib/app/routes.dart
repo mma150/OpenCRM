@@ -40,6 +40,10 @@ abstract final class Routes {
   static String opportunity(String id) => '/more/opportunities/$id';
   static String editOpportunity(String id) => '/more/opportunities/$id/edit';
 
+  // Quotes: read on the page of their opportunity, so Back leads to it.
+  static String quote(String opportunityId, String quoteId) =>
+      '/more/opportunities/$opportunityId/quotes/$quoteId';
+
   // Tasks. A task has no page of its own: `?open=<id>` opens its sheet over the Tasks
   // tab (the link of a notification), and `?due=<group>` shows one due group (a Home tile).
   static String openTask(String id) => '/tasks?open=$id';
